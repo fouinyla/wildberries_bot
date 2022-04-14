@@ -25,7 +25,7 @@ async def command_start_process(message: types.Message):
         reply=False
     )
 
-@dp.message_handler(Text(equals="Notification"))
+@dp.message_handler(Text(equals="Notification")) 
 async def message_main_menu_button_notification_process(message: types.Message):
     response = await c.message_main_menu_buttons_click(message=message)
     await message.reply(
@@ -42,4 +42,3 @@ async def message_main_menu_buttons_click_process(message: types.Message):
         parse_mode="HTML",
         reply=False
     )
-    
