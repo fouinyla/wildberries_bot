@@ -6,13 +6,15 @@ def get_response(url: str) -> httpx.Response:
     return httpx.get(url)
 
 
-def generate_url(query: str, gender='common', locale='ru', lang='ru'):
+def generate_url(query: str, gender: str = 'common', locale: str = 'ru',
+                 lang: str = 'ru') -> str:
     base_api_url = 'https://suggestions.wildberries.ru/api/v2/hint?'
     parameters = f'query={query}&gender={gender}&locale={locale}&lang={lang}'
     return base_api_url + parameters
 
 
-def get_hints_from_wb(query: str, gender='common', locale='ru', lang='ru') -> list[str]:
+def get_hints_from_wb(query: str, gender: str = 'common', locale: str = 'ru',
+                      lang: str = 'ru') -> list[str]:
     url = generate_url(query, gender, locale, lang)
     response = get_response(url)
     json_array = json.loads(response.text)
