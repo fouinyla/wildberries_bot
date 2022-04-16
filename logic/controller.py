@@ -16,17 +16,37 @@ class Controller:
         )
 
     async def command_start(self, message):
-        name = message.from_user.first_name # имя пользователя
-        markup = markups.start_menu_markup() # клавиатура для пользователя
-        text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.' # текст возвращаемого пользователю сообщения
-        return dict(text=text, markup=markup) # {'text': 'Приветствую', 'markup': object.markup}
+        name = message.from_user.first_name
+        markup = markups.start_menu_markup()
+        text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+        return dict(text=text, markup=markup)
 
 
     async def search_query(self):
         markup = markups.search_query_markup()
         text = 'Пожалуйста, введите свой поисковой запрос.'
         return dict(text=text, markup=markup)
-    
+
+    async def building_seo(self):
+        markup = markups.building_seo_markup()
+        text = 'Супер! Теперь напишите мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
+        return dict(text=text, markup=markup)
+
+    async def other_menu(self):
+        markup = markups.other_menu_markup()
+        text = 'Теперь выберите необходиую опцию.'
+        return dict(text=text, markup=markup)
+
+    async def bot_payment(self):
+        markup = markups.bot_payment_markup()
+        text = 'Чтобы оплатить бота, необходимо ...'
+        return dict(text=text, markup=markup)
+
+    async def FAQ_bar(self):
+        markup = markups.FAQ_bar_markup()
+        text = 'Как пользоваться нашим ботом:\n...\n...'
+        return dict(text=text, markup=markup)
+
 '''
     async def message_main_menu_buttons_click(self, message):
         text = phrases.phrase_for_answer_to_main_menu_buttons(

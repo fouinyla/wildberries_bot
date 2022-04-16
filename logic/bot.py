@@ -37,6 +37,50 @@ async def search_query_process(message: types.Message):
         reply=False
     )
 
+# это меню "Сбор SEO ядра"
+@dp.message_handler(Text(equals='Сбор SEO ядра'))
+async def building_seo_core(message: types.Message):
+    response = await c.building_seo()
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+# это меню "Прочее"
+@dp.message_handler(Text(equals='Прочее'))
+@dp.message_handler(Text(equals='Назад в меню прочее'))
+async def other_menu_press(message: types.Message):
+    response = await c.other_menu()
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+# это меню "Оплата"
+@dp.message_handler(Text(equals='Оплата'))
+async def bot_payment_process(message: types.Message):
+    response = await c.bot_payment()
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+# это меню "FAQ"
+@dp.message_handler(Text(equals='FAQ'))
+async def FAQ_bar_choice(message: types.Message):
+    response = await c.FAQ_bar()
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
 
 '''
 @dp.message_handler(Text(equals="Notification")) 
