@@ -1,10 +1,13 @@
 from datetime import datetime
+from email import message
 from aiogram import types
 from db.db_connector import Database
 import const.phrases as phrases
 from const.const import *
 from . import markups
 from logic.notification_service import Notification_Service
+from . import states
+from . import wildberries
 
 
 class Controller:
@@ -22,10 +25,21 @@ class Controller:
         return dict(text=text, markup=markup)
 
 
-    async def search_query(self):
+    async def search_query(self, state):
         markup = markups.search_query_markup()
         text = 'Пожалуйста, введите свой поисковой запрос.'
+        await state.set_state(states.NameGroup.query)
         return dict(text=text, markup=markup)
+
+
+    async def giving_hints(self, message, state):
+        async with state.proxy() as data:
+            data['query'] = message.text
+        response = wildberries.get_hints_from_wb(data['query'])
+        markup = markups.giving_hints_markup()
+        text = '\n'.join(response)
+        return dict(text=text, markup=markup)
+
 
     async def building_seo(self):
         markup = markups.building_seo_markup()

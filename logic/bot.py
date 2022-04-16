@@ -4,6 +4,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from os import getenv
+from . import states
 
 #! temp
 from dotenv import load_dotenv
@@ -16,7 +17,7 @@ c = Controller(bot=bot)
 
 # это меню старт
 @dp.message_handler(commands='start')
-@dp.message_handler(Text(equals='Назад в главное меню'))
+@dp.message_handler(Text(equals='Назад в главное меню'), state='*')
 async def command_start_process(message: types.Message):
     response = await c.command_start(message=message)
     await message.reply(
@@ -28,8 +29,19 @@ async def command_start_process(message: types.Message):
 
 # это меню "поисковой запрос"
 @dp.message_handler(Text(equals='Поисковой запрос'))
-async def search_query_process(message: types.Message):
-    response = await c.search_query()
+async def search_query_process(message: types.Message, state: FSMContext):
+    response = await c.search_query(state)
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+# это меню получение поискового запроса
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.query)
+async def giving_hints_process(message: types.Message, state: FSMContext):
+    response = await c.giving_hints(message, state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
