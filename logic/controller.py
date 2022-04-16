@@ -16,17 +16,18 @@ class Controller:
         )
 
     async def command_start(self, message):
-        name = message.from_user.first_name
-        markup = markups.user_main_markup()
-        text = phrases.phrase_for_start_first_greeting(
-            data=dict(
-                user_name=name
-            )
-        )
-        sticker = open("static/hello.webp", 'rb')
-        await self.bot.send_sticker(message.chat.id, sticker)
-        return dict(text=text, markup=markup)
+        name = message.from_user.first_name # имя пользователя
+        markup = markups.start_menu_markup() # клавиатура для пользователя
+        text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.' # текст возвращаемого пользователю сообщения
+        return dict(text=text, markup=markup) # {'text': 'Приветствую', 'markup': object.markup}
 
+
+    async def search_query(self):
+        markup = markups.search_query_markup()
+        text = 'Пожалуйста, введите свой поисковой запрос.'
+        return dict(text=text, markup=markup)
+    
+'''
     async def message_main_menu_buttons_click(self, message):
         text = phrases.phrase_for_answer_to_main_menu_buttons(
             data=dict(
@@ -46,3 +47,4 @@ class Controller:
         )
         text = "Notification has been sent to admins"
         return dict(text=text)
+'''
