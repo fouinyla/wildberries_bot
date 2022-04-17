@@ -18,8 +18,8 @@ c = Controller(bot=bot)
 # это меню старт
 @dp.message_handler(commands='start')
 @dp.message_handler(Text(equals='Назад в главное меню'), state='*')
-async def command_start_process(message: types.Message):
-    response = await c.command_start(message=message)
+async def command_start_process(message: types.Message, state: FSMContext):
+    response = await c.command_start(message=message, state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
@@ -50,7 +50,7 @@ async def giving_hints_process(message: types.Message, state: FSMContext):
     )
 
 # это меню "Сбор SEO ядра"
-@dp.message_handler(Text(equals='Сбор SEO ядра'))
+@dp.message_handler(Text(equals='Сбор SEO ядра'), state='*')
 async def building_seo_core(message: types.Message):
     response = await c.building_seo()
     await message.reply(

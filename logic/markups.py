@@ -8,18 +8,14 @@ def start_menu_markup():
     markup.add(types.KeyboardButton("Прочее"))
     return markup
 
-def search_query_markup():
+def back_to_main_menu_markup():
     markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     markup.insert(types.KeyboardButton("Назад в главное меню"))
     return markup
 
-def giving_hints_markup():
+def go_to_seo_markup():
     markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    markup.insert(types.KeyboardButton("Назад в главное меню"))
-    return markup
-
-def building_seo_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.add(types.KeyboardButton("Сбор SEO ядра"))
     markup.insert(types.KeyboardButton("Назад в главное меню"))
     return markup
 
@@ -29,12 +25,17 @@ def other_menu_markup():
     markup.add(types.KeyboardButton("Назад в главное меню"))
     return markup
 
-def bot_payment_markup():
+def back_to_other_menu_markup():
     markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     markup.insert(types.KeyboardButton("Назад в меню прочее"))
     return markup
 
-def FAQ_bar_markup():
+"""def giving_hints_markup():
     markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    markup.insert(types.KeyboardButton("Назад в меню прочее"))
+    markup.insert(types.KeyboardButton("Назад в главное меню"))
     return markup
+
+def building_seo_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(types.KeyboardButton("Назад в главное меню"))
+    return markup"""
