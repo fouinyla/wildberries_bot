@@ -25,21 +25,28 @@ class Controller:
         text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
         return dict(text=text, markup=markup)
 
-
     async def search_query(self, state):
         markup = markups.back_to_main_menu_markup()
         text = 'Пожалуйста, введите свой поисковой запрос.'
         await state.set_state(states.NameGroup.query)
         return dict(text=text, markup=markup)
 
-
     async def giving_hints(self, message, state):
         async with state.proxy() as data:
             data['query'] = message.text
-        response = wildberries.get_hints_from_wb(data['query'])
-        markup = markups.go_to_seo_markup()
-        text = '\n'.join(response)
-        await state.finish()
+        hints = wildberries.get_hints_from_wb(data['query'])
+        if hints is None:
+            markup = None
+            text = 'Вы ввели некорректный поисковый запрос. Повторите попытку.'
+        elif not hints:
+            markup = None
+            text = 'Вы ввели конечный поисковый запрос.'
+            await state.finish()
+            # TODO logic for final request
+        else:
+            markup = markups.go_to_seo_markup()
+            text = '\n'.join(hints)
+            await state.finish()
         return dict(text=text, markup=markup)
 
     async def building_seo(self):
@@ -61,6 +68,7 @@ class Controller:
         markup = markups.back_to_other_menu_markup()
         text = 'Как пользоваться нашим ботом:\n...\n...'
         return dict(text=text, markup=markup)
+
 
 '''
     async def message_main_menu_buttons_click(self, message):
