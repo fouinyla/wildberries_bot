@@ -32,26 +32,36 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def giving_hints(self, message, state):
-        async with state.proxy() as data:
-            data['query'] = message.text
-        hints = wildberries.get_hints_from_wb(data['query'])
-        if hints is None:
-            markup = None
-            text = 'Вы ввели некорректный поисковый запрос. Повторите попытку.'
-        elif not hints:
-            markup = None
-            text = 'Вы ввели конечный поисковый запрос.'
-            await state.finish()
-            # TODO logic for final request
+        if message.text == 'Сбор SEO ядра':
+            markup = markups.back_to_main_menu_markup()
+            text = 'Супер! Теперь пришлите мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
+            await state.set_state(states.NameGroup.SEO_queries)
         else:
-            markup = markups.go_to_seo_markup()
-            text = '\n'.join(hints)
-            await state.finish()
+            async with state.proxy() as data:
+                data['query'] = message.text
+            hints = wildberries.get_hints_from_wb(data['query'])
+            if hints == 204:
+                markup = markups.back_to_main_menu_markup()
+                text = 'По вашему запросу продолжений на Wildberries не найдено. Попробуйте другой запрос.'
+            elif not hints:
+                markup = markups.go_to_seo_markup()
+                text = 'Вы ввели конечный поисковый запрос.'
+            else:
+                markup = markups.go_to_seo_markup()
+                text = '\n'.join(hints)
         return dict(text=text, markup=markup)
 
-    async def building_seo(self):
+    async def building_seo_core(self, state):
         markup = markups.back_to_main_menu_markup()
-        text = 'Супер! Теперь напишите мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
+        text = 'Супер! Теперь пришлите мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
+        await state.set_state(states.NameGroup.SEO_queries)
+        return dict(text=text, markup=markup)
+
+    async def building_seo_result(self, message, state):
+        async with state.proxy() as data:
+            data['SEO_queries'] = message.text
+            text = f'Вы прислали следующие запросы:\n{data["SEO_queries"]}'
+        markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)
 
     async def other_menu(self):
@@ -68,26 +78,3 @@ class Controller:
         markup = markups.back_to_other_menu_markup()
         text = 'Как пользоваться нашим ботом:\n...\n...'
         return dict(text=text, markup=markup)
-
-
-'''
-    async def message_main_menu_buttons_click(self, message):
-        text = phrases.phrase_for_answer_to_main_menu_buttons(
-            data=dict(
-                button_title=message.text
-            )
-        )
-        return dict(text=text)
-
-    async def message_main_menu_button_notification_click(self, message):
-        await self.notification.notify_admins_about_some_event(
-            data=dict(
-                user_name=message.from_user.first_name,
-                user_nickname=message.from_user.username,
-                date=datetime.now().date,
-                time=datetime.now().time,
-            )
-        )
-        text = "Notification has been sent to admins"
-        return dict(text=text)
-'''

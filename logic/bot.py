@@ -51,8 +51,19 @@ async def giving_hints_process(message: types.Message, state: FSMContext):
 
 # это меню "Сбор SEO ядра"
 @dp.message_handler(Text(equals='Сбор SEO ядра'), state='*')
-async def building_seo_core(message: types.Message):
-    response = await c.building_seo()
+async def building_seo_core_process(message: types.Message, state: FSMContext):
+    response = await c.building_seo_core(state)
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+# это ответ после передачи запросов для SEO
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.SEO_queries)
+async def building_seo_result_process(message: types.Message, state: FSMContext):
+    response = await c.building_seo_result(message, state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
@@ -63,7 +74,7 @@ async def building_seo_core(message: types.Message):
 # это меню "Прочее"
 @dp.message_handler(Text(equals='Прочее'))
 @dp.message_handler(Text(equals='Назад в меню прочее'))
-async def other_menu_press(message: types.Message):
+async def other_menu_process(message: types.Message):
     response = await c.other_menu()
     await message.reply(
         text=response["text"],
@@ -85,7 +96,7 @@ async def bot_payment_process(message: types.Message):
 
 # это меню "FAQ"
 @dp.message_handler(Text(equals='FAQ'))
-async def FAQ_bar_choice(message: types.Message):
+async def FAQ_bar_process(message: types.Message):
     response = await c.FAQ_bar()
     await message.reply(
         text=response["text"],
@@ -93,23 +104,3 @@ async def FAQ_bar_choice(message: types.Message):
         parse_mode="HTML",
         reply=False
     )
-
-'''
-@dp.message_handler(Text(equals="Notification")) 
-async def message_main_menu_button_notification_process(message: types.Message):
-    response = await c.message_main_menu_buttons_click(message=message)
-    await message.reply(
-        text=response["text"],
-        parse_mode="HTML",
-        reply=False
-    )
-
-@dp.message_handler(Text(contains="button"))
-async def message_main_menu_buttons_click_process(message: types.Message):
-    response = await c.message_main_menu_buttons_click(message=message)
-    await message.reply(
-        text=response["text"],
-        parse_mode="HTML",
-        reply=False
-    )
-'''
