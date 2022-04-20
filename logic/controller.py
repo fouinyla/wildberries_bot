@@ -7,7 +7,7 @@ from const.const import *
 from . import markups
 from logic.notification_service import Notification_Service
 from . import states
-from . import wildberries
+from . import wildberries as wb
 
 
 class Controller:
@@ -34,26 +34,28 @@ class Controller:
     async def giving_hints(self, message, state):
         if message.text == 'Сбор SEO ядра':
             markup = markups.back_to_main_menu_markup()
-            text = 'Супер! Теперь пришлите мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
+            text = 'Супер! Теперь отправьте мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
             await state.set_state(states.NameGroup.SEO_queries)
+            return dict(text=text, markup=markup)
+
+        async with state.proxy() as data:
+            data['query'] = message.text
+            print(data['query'])
+        hints = wb.get_hints_from_wb(data['query'])
+        if hints:
+            markup = markups.go_to_seo_markup()
+            text = '\n'.join(hints)
+        elif hints == [] or (hints is None and wb.product_exists(data['query'])):
+            markup = markups.go_to_seo_markup()
+            text = 'Вы ввели конечный поисковый запрос.'
         else:
-            async with state.proxy() as data:
-                data['query'] = message.text
-            hints = wildberries.get_hints_from_wb(data['query'])
-            if hints == 204:
-                markup = markups.back_to_main_menu_markup()
-                text = 'По вашему запросу продолжений на Wildberries не найдено. Попробуйте другой запрос.'
-            elif not hints:
-                markup = markups.go_to_seo_markup()
-                text = 'Вы ввели конечный поисковый запрос.'
-            else:
-                markup = markups.go_to_seo_markup()
-                text = '\n'.join(hints)
+            markup = markups.back_to_main_menu_markup()
+            text = 'По вашему запросу продолжений на Wildberries не найдено. Попробуйте другой запрос.'
         return dict(text=text, markup=markup)
 
     async def building_seo_core(self, state):
         markup = markups.back_to_main_menu_markup()
-        text = 'Супер! Теперь пришлите мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
+        text = 'Супер! Теперь отправьте мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
         await state.set_state(states.NameGroup.SEO_queries)
         return dict(text=text, markup=markup)
 
