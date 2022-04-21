@@ -11,19 +11,24 @@ def get_response(url: str, params: dict = None) -> httpx.Response:
     return response
 
 
-def get_hints_from_wb(query: str, gender: str = 'common', locale: str = 'ru',
-                      lang: str = 'ru') -> Union[list[str], None]:
+def get_hints(query: str, gender: str = 'common', locale: str = 'ru',
+              lang: str = 'ru') -> Union[list[str], None]:
+    """
+        Returns a list of Wildberries hints for the given query
+    """
     response = get_response(BASE_HINTS_API_URL, params={'query': query,
                                                         'gender': gender,
                                                         'locale': locale,
                                                         'lang': lang})
     if response.status_code == 204:
         return None
-    hints = [obj['name'] for obj in response.json() if obj['type'] == 'suggest']
-    return hints
+    return [obj['name'] for obj in response.json() if obj['type'] == 'suggest']
 
 
 def product_exists(query: str) -> bool:
+    """
+        Checks if there are products on Wildberries for the given query
+    """
     response = get_response(BASE_SEARCH_URL, params={'query': query})
     json = response.json()
     return (bool(json)

@@ -40,7 +40,7 @@ class Controller:
 
         async with state.proxy() as data:
             data['query'] = message.text
-        hints = wb.get_hints_from_wb(data['query'])
+        hints = wb.get_hints(data['query'])
         if hints:
             markup = markups.go_to_seo_markup()
             text = '\n'.join(hints)
