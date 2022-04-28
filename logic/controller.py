@@ -13,7 +13,7 @@ from . import wildberries as wb
 class Controller:
     def __init__(self, bot):
         self.bot = bot
-        #self.db = Database()
+        self.db = Database()
         self.notification = Notification_Service(
             bot=self.bot,
         )
@@ -23,6 +23,12 @@ class Controller:
         name = message.from_user.first_name
         markup = markups.start_menu_markup()
         text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+        user = self.db.get_user(tg_id=message.from_user.id)
+        if not user:
+            self.db.add_user(
+                tg_id=message.from_user.id,
+                tg_nickname=message.from_user.username
+            )
         return dict(text=text, markup=markup)
 
     async def search_query(self, state):

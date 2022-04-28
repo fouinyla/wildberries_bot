@@ -10,6 +10,15 @@ class Database:
         engine = database.create_engine(getenv("DATABASE"))
         self.session = scoped_session(sessionmaker(bind=engine))
 
+    def add_user(self, tg_id, tg_nickname):
+        with self.session() as session:
+            with session.begin():
+                user = User(
+                    tg_id=tg_id,
+                    tg_nickname=tg_nickname
+                )
+                session.add(user)
+
     def get_user(self, tg_id):
         with self.session() as session:
             with session.begin():
@@ -19,5 +28,5 @@ class Database:
                     .scalar()
 
                 if query:
-                    return dict(name=query.name, is_admin=query.is_admin, tg_nickname=query.tg_nickname)
+                    return dict(is_admin=query.is_admin, tg_nickname=query.tg_nickname)
                 return False
