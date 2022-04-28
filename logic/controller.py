@@ -46,6 +46,14 @@ class Controller:
 
         async with state.proxy() as data:
             data['query'] = message.text
+        
+        user = self.db.get_user(tg_id=message.from_user.id)
+        if user:
+            self.db.add_search_query(
+                    search_query=message.text,
+                    user_id=user['id']
+                )
+
         hints = wb.get_hints(data['query'])
         if hints:
             markup = markups.go_to_seo_markup()
@@ -68,6 +76,15 @@ class Controller:
         async with state.proxy() as data:
             data['SEO_queries'] = message.text
             text = f'Вы прислали следующие запросы:\n{data["SEO_queries"]}'
+        
+        user = self.db.get_user(tg_id=message.from_user.id)
+        if user:
+            query_for_SEO = str(message.text).replace('\n', '; ')
+            self.db.add_SEO_query(
+                    query_for_SEO=query_for_SEO,
+                    user_id=user['id']
+                )
+
         markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)
 

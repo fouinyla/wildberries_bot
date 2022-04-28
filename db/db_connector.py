@@ -28,5 +28,23 @@ class Database:
                     .scalar()
 
                 if query:
-                    return dict(is_admin=query.is_admin, tg_nickname=query.tg_nickname)
+                    return dict(id=query.id, tg_nickname=query.tg_nickname, is_admin=query.is_admin)
                 return False
+
+    def add_search_query(self, search_query, user_id):
+        with self.session() as session:
+            with session.begin():
+                query = Query(
+                    search_query=search_query,
+                    user_id=user_id
+                )
+                session.add(query)
+
+    def add_SEO_query(self, query_for_SEO, user_id):
+        with self.session() as session:
+            with session.begin():
+                query = SEOquery(
+                    query_for_SEO=query_for_SEO,
+                    user_id=user_id
+                )
+                session.add(query)

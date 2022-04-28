@@ -19,9 +19,9 @@ class Query(Base):
     search_query = Column(String)
     user_id = Column(Integer, nullable=False)
 
-# this class (table) will be changed
-class Subquery(Base):
-    __tablename__ = "subqueries"
+
+class SEOquery(Base):
+    __tablename__ = "SEO_queries"
     id = Column(Integer, primary_key=True)
-    subquery = Column(String)
-    query_id = Column(Integer, nullable=False)
+    query_for_SEO = Column(String)
+    user_id = Column(Integer, nullable=False)
