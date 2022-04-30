@@ -27,6 +27,32 @@ async def command_start_process(message: types.Message, state: FSMContext):
         reply=False
     )
 
+#Сбор данных пользователя
+@dp.message_handler(state=states.User.name)
+async def process_name(message, state):
+    response = await c.message_name_state(message=message, state=state)
+    await message.reply(
+        text=response['text'],
+        reply=False
+    )
+
+@dp.message_handler(state=states.User.email)
+async def process_email(message, state):
+    response = await c.message_email_state(message=message, state=state)
+    await message.reply(
+        text=response['text'],
+        reply=False
+    )
+
+@dp.message_handler(state=states.User.phone_number)
+async def process_phone_number(message, state):
+    response = await c.message_phone_number_state(message=message, state=state)
+    await message.reply(
+        text=response['text'],
+        reply_markup = response['markup'],
+        reply=False
+    )    
+
 # это меню "поисковой запрос"
 @dp.message_handler(Text(equals='Поисковой запрос'))
 async def search_query_process(message: types.Message, state: FSMContext):

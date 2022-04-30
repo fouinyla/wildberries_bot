@@ -20,15 +20,39 @@ class Controller:
 
     async def command_start(self, message, state):
         await state.finish()
+        result = self.db.get_user(message.from_user.id)
         name = message.from_user.first_name
+        markup = None
+        text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB. \n\nВведите ваше имя'
+        if result:
+            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+            markup = markups.start_menu_markup()
+        else:
+            await states.User.name.set()
+        return dict(text=text, markup=markup)
+
+    async def message_name_state(self, message, state):
+        text = 'Введите свой e-mail'
+        async with state.proxy() as data:
+            data['name'] = message.text
+        await states.User.email.set()
+        return dict(text=text)
+
+    async def message_email_state(self, message, state):
+        text = 'Введите свой номер телефона'
+        async with state.proxy() as data:
+            data['email'] = message.text
+        await states.User.phone_number.set()
+        return dict(text=text)
+
+    async def message_phone_number_state(self, message, state):
+        text = 'Выберите команду'
         markup = markups.start_menu_markup()
-        text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
-        user = self.db.get_user(tg_id=message.from_user.id)
-        if not user:
-            self.db.add_user(
-                tg_id=message.from_user.id,
-                tg_nickname=message.from_user.username
-            )
+        async with state.proxy() as data:
+            data['phone_number'] = message.text
+            self.db.add_user(message.from_user.id, message.from_user.first_name,
+                             data['name'], data['email'], data['phone_number'])
+        await state.finish()
         return dict(text=text, markup=markup)
 
     async def search_query(self, state):

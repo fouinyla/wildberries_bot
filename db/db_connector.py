@@ -10,12 +10,15 @@ class Database:
         engine = database.create_engine(getenv("DATABASE"))
         self.session = scoped_session(sessionmaker(bind=engine))
 
-    def add_user(self, tg_id, tg_nickname):
+    def add_user(self, tg_id, tg_nickname, name, email, phone_number):
         with self.session() as session:
             with session.begin():
                 user = User(
                     tg_id=tg_id,
-                    tg_nickname=tg_nickname
+                    tg_nickname=tg_nickname,
+                    name=name,
+                    email=email,
+                    phone_number=phone_number
                 )
                 session.add(user)
 
