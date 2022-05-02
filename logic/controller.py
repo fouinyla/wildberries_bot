@@ -28,21 +28,21 @@ class Controller:
             text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
             markup = markups.start_menu_markup()
         else:
-            await states.User.name.set()
+            await state.set_state(states.User.name)
         return dict(text=text, markup=markup)
 
     async def message_name_state(self, message, state):
         text = 'Введите свой e-mail'
         async with state.proxy() as data:
             data['name'] = message.text
-        await states.User.email.set()
+        await state.set_state(states.User.email)
         return dict(text=text)
 
     async def message_email_state(self, message, state):
         text = 'Введите свой номер телефона'
         async with state.proxy() as data:
             data['email'] = message.text
-        await states.User.phone_number.set()
+        await state.set_state(states.User.phone_number)
         return dict(text=text)
 
     async def message_phone_number_state(self, message, state):
@@ -70,13 +70,13 @@ class Controller:
 
         async with state.proxy() as data:
             data['query'] = message.text
-        
+
         user = self.db.get_user(tg_id=message.from_user.id)
         if user:
             self.db.add_search_query(
-                    search_query=message.text,
-                    user_id=user['id']
-                )
+                search_query=message.text,
+                user_id=user['id']
+            )
 
         hints = wb.get_hints(data['query'])
         if hints:
@@ -100,13 +100,14 @@ class Controller:
         async with state.proxy() as data:
             data['SEO_queries'] = message.text
             text = f'Вы прислали следующие запросы:\n{data["SEO_queries"]}'
-        
-        user = self.db.get_user(tg_id=message.from_user.id)
-        if user:
-            query_for_SEO = str(message.text).replace('\n', '; ')
-            self.db.add_SEO_query(
+
+            user = self.db.get_user(tg_id=message.from_user.id)
+            if user:
+                query_for_SEO = str(message.text).replace('\n', '; ')
+                self.db.add_SEO_query(
                     query_for_SEO=query_for_SEO,
-                    user_id=user['id']
+                    query=data['query'],
+                    user_id=user["id"]
                 )
 
         markup = markups.back_to_main_menu_markup()
