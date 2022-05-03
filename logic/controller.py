@@ -9,6 +9,8 @@ from logic.notification_service import Notification_Service
 from . import states
 from . import wildberries as wb
 from . import mpstats
+import re
+import os
 
 
 class Controller:
@@ -22,38 +24,70 @@ class Controller:
     async def command_start(self, message, state):
         await state.finish()
         result = self.db.get_user(message.from_user.id)
-        name = message.from_user.first_name
-        markup = None
-        text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB. \n\nВведите ваше имя'
         if result:
-            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+            name = message.from_user.first_name
+            text = f'Приветствую, {name}!' + \
+                    'Это наш бот для улучшения твоей карточки на WB.'
             markup = markups.start_menu_markup()
         else:
+            name = message.from_user.first_name
+            text = f'Приветствую, {name}!\n' + \
+                    'Это наш бот для улучшения твоей карточки на WB.\n' + \
+                    'Для начала мы хотим узнать немного о тебе.\n' + \
+                    'Пожалуйста, введи своё имя.'
+            markup = None
             await state.set_state(states.User.name)
         return dict(text=text, markup=markup)
 
     async def message_name_state(self, message, state):
-        text = 'Введите свой e-mail'
-        async with state.proxy() as data:
-            data['name'] = message.text
-        await state.set_state(states.User.email)
-        return dict(text=text)
+        name_pattern = r'[ёЁА-Яа-я- A-za-z]+'
+        if re.fullmatch(name_pattern, message.text):
+            async with state.proxy() as data:
+                data['name'] = message.text
+            text = 'Пожалуйста, введи свой e-mail'
+            markup = markups.back_to_name_markup()
+            await state.set_state(states.User.email)
+        else:
+            text = 'Не похоже на твоё имя. Введи что-то более корректное.'
+            markup = None
+        return dict(text=text, markup=markup)
 
     async def message_email_state(self, message, state):
-        text = 'Введите свой номер телефона'
-        async with state.proxy() as data:
-            data['email'] = message.text
-        await state.set_state(states.User.phone_number)
-        return dict(text=text)
+        email_pattern = \
+            r'([A-Za-z0-9]+[\.\-\_])*[A-Za-z0-9]+@[A-Za-z0-9]+[A-Za-z0-9-]*[A-Za-z0-9]+(\.[A-Z|a-z]{2,})+'
+        if re.fullmatch(email_pattern, message.text):
+            async with state.proxy() as data:
+                data['email'] = message.text
+            text = 'Пожалуйста, введи свой номер телефона.'
+            markup = markups.back_to_email_markup()
+            await state.set_state(states.User.phone_number)
+        elif message.text == 'Назад к вводу имени':
+            text = 'Пожалуйста, введи своё имя.'
+            markup = None
+            await state.set_state(states.User.name)
+        else:
+            text = 'Не похоже на email. Введи что-то более корректное.'
+            markup = markups.back_to_name_markup()
+        return dict(text=text, markup=markup)
 
     async def message_phone_number_state(self, message, state):
-        text = 'Выберите команду'
-        markup = markups.start_menu_markup()
-        async with state.proxy() as data:
-            data['phone_number'] = message.text
-            self.db.add_user(message.from_user.id, message.from_user.first_name,
+        phone_pattern = re.compile(
+            r'(\+7|8){1}[ \-\(]{0,1}[ \-\(]{0,1}\d{3}[ \-\)]{0,1}[ \-\)]{0,1}\d{3}[ \-]{0,1}\d{2}[ \-]{0,1}\d{2}')
+        if re.fullmatch(phone_pattern, message.text):
+            async with state.proxy() as data:
+                data['phone_number'] = message.text
+                self.db.add_user(message.from_user.id, message.from_user.first_name,
                              data['name'], data['email'], data['phone_number'])
-        await state.finish()
+            await state.finish()
+            text = 'Спасибо за информацию! Теперь можешь собрать SEO.'
+            markup = markups.start_menu_markup()
+        elif message.text == 'Назад к вводу почты':
+            text = 'Пожалуйста, введи свой e-mail'
+            markup = markups.back_to_name_markup()
+            await state.set_state(states.User.email)
+        else:
+            text = 'Не похоже на номер телефона. Введи что-то более корректное.'
+            markup = markups.back_to_email_markup()
         return dict(text=text, markup=markup)
 
     async def search_query(self, state):
@@ -104,32 +138,32 @@ class Controller:
         markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)
 
-    async def building_seo_result(self, message, state):
+    async def building_seo_result(self, message, state):    
         async with state.proxy() as data:
-            path_to_excel = mpstats.get_SEO(data['SEO_queries'], str(message.from_user.id))
-            await message.answer_document(
-                    document=open(path_to_excel, 'rb')
-                )
-            user = self.db.get_user(tg_id=message.from_user.id)
-            if user:
-                query_for_SEO = str(message.text).replace('\n', '; ')
-                self.db.add_SEO_query(
-                    query_for_SEO=query_for_SEO,
-                    tg_id=message.from_user.id
+            (path_to_excel, flag_all_empty_queries) = mpstats.get_SEO(data['SEO_queries'], str(message.from_user.id))
+            if not flag_all_empty_queries:
+                await message.answer_document(
+                        document=open(path_to_excel, 'rb')
+                        )
+                user = self.db.get_user(tg_id=message.from_user.id)
+                if user:
+                    query_for_SEO = str(message.text).replace('\n', '; ')
+                    self.db.add_SEO_query(
+                        query_for_SEO=query_for_SEO,
+                        tg_id=message.from_user.id
+                    )
+            else:
+                text = 'По данным запросам товары на WB отсутствуют.'
+                markup = markups.back_to_main_menu_markup()
+                os.remove(path_to_excel)
+                await message.reply(
+                    text=text,
+                    reply_markup=markup,
+                    reply=False
                 )
         return None
 
-    async def other_menu(self):
-        markup = markups.other_menu_markup()
-        text = 'Теперь выберите необходимую опцию.'
-        return dict(text=text, markup=markup)
-
-    async def bot_payment(self):
-        markup = markups.back_to_other_menu_markup()
-        text = 'Чтобы оплатить бота, необходимо ...'
-        return dict(text=text, markup=markup)
-
     async def FAQ_bar(self):
-        markup = markups.back_to_other_menu_markup()
+        markup = markups.back_to_main_menu_markup()
         text = 'Как пользоваться нашим ботом:\n...\n...'
         return dict(text=text, markup=markup)

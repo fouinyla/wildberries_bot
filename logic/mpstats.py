@@ -24,6 +24,7 @@ COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
 
 
 def get_SEO(queries: str, tg_id: str) -> str:
+    flag_all_empty_queries = 1  # флаг, если все запросы пользователя пустые
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()
     with httpx.Client(timeout=120) as client: #timeout?
@@ -48,6 +49,7 @@ def get_SEO(queries: str, tg_id: str) -> str:
                 tpls = soup.find('wb-search-result')
                 if tpls:
                     data = json.loads(tpls['tpls'])
+                    flag_all_empty_queries = 0
                 else:
                     continue
                 attributes = [sku for _, sku in data]
@@ -76,6 +78,6 @@ def get_SEO(queries: str, tg_id: str) -> str:
                         worksheet.write(row, 3, str(word['keys_count_sum']))
         finally:
             workbook.close()
-    return path_to_excel
+    return (path_to_excel, flag_all_empty_queries)
 
 # get_SEO('свитер\nсвитер женский\nсвитер оверсайз')

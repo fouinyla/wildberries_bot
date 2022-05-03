@@ -33,6 +33,7 @@ async def process_name(message, state):
     response = await c.message_name_state(message=message, state=state)
     await message.reply(
         text=response['text'],
+        reply_markup=response['markup'],
         reply=False
     )
 
@@ -41,6 +42,7 @@ async def process_email(message, state):
     response = await c.message_email_state(message=message, state=state)
     await message.reply(
         text=response['text'],
+        reply_markup=response['markup'],
         reply=False
     )
 
@@ -97,30 +99,6 @@ async def waiting_seo_result_process(message: types.Message, state: FSMContext):
         reply=False
     )
     await c.building_seo_result(message, state)
-
-
-# это меню "Прочее"
-@dp.message_handler(Text(equals='Прочее'))
-@dp.message_handler(Text(equals='Назад в меню прочее'))
-async def other_menu_process(message: types.Message):
-    response = await c.other_menu()
-    await message.reply(
-        text=response["text"],
-        reply_markup=response["markup"],
-        parse_mode="HTML",
-        reply=False
-    )
-
-# это меню "Оплата"
-@dp.message_handler(Text(equals='Оплата'))
-async def bot_payment_process(message: types.Message):
-    response = await c.bot_payment()
-    await message.reply(
-        text=response["text"],
-        reply_markup=response["markup"],
-        parse_mode="HTML",
-        reply=False
-    )
 
 # это меню "FAQ"
 @dp.message_handler(Text(equals='FAQ'))
