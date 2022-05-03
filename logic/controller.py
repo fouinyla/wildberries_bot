@@ -106,7 +106,7 @@ class Controller:
 
     async def building_seo_result(self, message, state):
         async with state.proxy() as data:
-            path_to_excel = mpstats.get_SEO(data['SEO_queries'])
+            path_to_excel = mpstats.get_SEO(data['SEO_queries'], str(message.from_user.id))
             await message.answer_document(
                     document=open(path_to_excel, 'rb')
                 )

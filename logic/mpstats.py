@@ -23,7 +23,7 @@ COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
               '_ga_8S8Y1X62NG=GS1.1.1651240592.1.1.1651240652.0'
 
 
-def get_SEO(queries: str) -> str:
+def get_SEO(queries: str, tg_id: str) -> str:
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()
     with httpx.Client(timeout=120) as client: #timeout?
@@ -34,7 +34,7 @@ def get_SEO(queries: str) -> str:
         headers={'cookie': cookies + COOKIES_PART}
         try:
             # создание excel-файла для записи данных
-            path_to_excel = f"results/SEO_{queries[0].replace(' ', '_')}_{today_date}.xlsx"
+            path_to_excel = f"results/SEO_{tg_id}_{today_date}.xlsx"
             workbook = xlsxwriter.Workbook(path_to_excel)
             for query in queries:
                 # запрос на получение html с SKU
