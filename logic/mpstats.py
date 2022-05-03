@@ -1,12 +1,19 @@
+from attr import attr, attrib
 import httpx
 from bs4 import BeautifulSoup
 import json
 from typing import List
+import xlsxwriter
+from . import time
+import os
+import datetime
+
 
 MAIN_PAGE_URL = 'https://mpstats.io/'
 BASE_SKU_GETTING_URL = 'https://mpstats.io/wb/bysearch?'
+BASE_SKU_GETTING_SEO = 'https://mpstats.io/api/seo/keywords/expanding'
 
-COOKIE_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
+COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
               '_ga=GA1.1.2054104203.1651240592; _ym_isad=2; ' \
               'supportOnlineTalkID=r85EpoyBIxTRA3agMH9GXs5yZQOApJun; ' \
               '_ym_hostIndex=0-3%2C1-0; _ym_visorc=w; ' \
@@ -16,21 +23,59 @@ COOKIE_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
               '_ga_8S8Y1X62NG=GS1.1.1651240592.1.1.1651240652.0'
 
 
-def get_sku_html(query: str) -> str:
-    with httpx.Client() as client:
+def get_SEO(queries: str) -> str:
+    queries = queries.split('\n')
+    today_date = time.get_moscow_datetime().date()
+    with httpx.Client(timeout=120) as client: #timeout?
+        # получение кук для отправки запроса для получения SKU
         main_page_response = client.get(MAIN_PAGE_URL)
         main_page_response.raise_for_status()
-        cookie = main_page_response.headers['set-cookie']
-        sku_response = client.get(BASE_SKU_GETTING_URL,
-                                  headers={'cookie': cookie + COOKIE_PART},
-                                  params={'query': query})
-        sku_response.raise_for_status()
-        return sku_response.text
+        cookies = main_page_response.headers['set-cookie']
+        headers={'cookie': cookies + COOKIES_PART}
+        try:
+            # создание excel-файла для записи данных
+            path_to_excel = f"results/SEO_{queries[0].replace(' ', '_')}_{today_date}.xlsx"
+            workbook = xlsxwriter.Workbook(path_to_excel)
+            for query in queries:
+                # запрос на получение html с SKU
+                sku_response = client.get(BASE_SKU_GETTING_URL,
+                                        headers=headers,
+                                        params={'query': query})
+                sku_response.raise_for_status()
+                # парсинг html ответа для получения SKU
+                html = sku_response.text
+                soup = BeautifulSoup(html, 'lxml')
+                tpls = soup.find('wb-search-result')
+                if tpls:
+                    data = json.loads(tpls['tpls'])
+                else:
+                    continue
+                attributes = [sku for _, sku in data]
+                # получение запросов по атрибутам
+                data = {"query": ','.join(map(str, attributes)),
+                        "type": "sku",
+                        "similar": "false",
+                        "stopWords": [],
+                        "searchFullWord": False,
+                        "d1": today_date - datetime.timedelta(days=30),
+                        "d2": today_date}
+                response = client.post(BASE_SKU_GETTING_SEO, headers=headers, data=data)
+                result = response.json()['result']
+                # создание страницы в excel-файле с названиями колонок
+                worksheet = workbook.add_worksheet(name = query)
+                worksheet.write(0, 0, 'Слово')
+                worksheet.write(0, 1, 'Словоформы')
+                worksheet.write(0, 2, 'Количество вхождений')
+                worksheet.write(0, 3, 'Суммарная частотность')
+                # запись данных в excel-файл
+                for row, word in enumerate(result, start=1):
+                    if word['count'] > 1:
+                        worksheet.write(row, 0, word['word'])
+                        worksheet.write(row, 1, ', '.join(word['words']))
+                        worksheet.write(row, 2, str(word['count']))
+                        worksheet.write(row, 3, str(word['keys_count_sum']))
+        finally:
+            workbook.close()
+    return path_to_excel
 
-
-def get_sku(query: str) -> List[int]:
-    html = get_sku_html(query)
-    soup = BeautifulSoup(html, 'lxml')
-    tpls = soup.find('wb-search-result')['tpls']
-    data = json.loads(tpls)
-    return [sku for i, sku in data]
+# get_SEO('свитер\nсвитер женский\nсвитер оверсайз')

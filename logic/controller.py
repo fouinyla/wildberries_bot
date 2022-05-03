@@ -8,6 +8,7 @@ from . import markups
 from logic.notification_service import Notification_Service
 from . import states
 from . import wildberries as wb
+from . import mpstats
 
 
 class Controller:
@@ -96,11 +97,19 @@ class Controller:
         await state.set_state(states.NameGroup.SEO_queries)
         return dict(text=text, markup=markup)
 
-    async def building_seo_result(self, message, state):
+    async def waiting_seo_result(self, message, state):
         async with state.proxy() as data:
             data['SEO_queries'] = message.text
-            text = f'Вы прислали следующие запросы:\n{data["SEO_queries"]}'
+        text = f'Подготавливаем excel-файл. Это может занять до 1 минуты (в зависимости от количества запросов).'
+        markup = markups.back_to_main_menu_markup()
+        return dict(text=text, markup=markup)
 
+    async def building_seo_result(self, message, state):
+        async with state.proxy() as data:
+            path_to_excel = mpstats.get_SEO(data['SEO_queries'])
+            await message.answer_document(
+                    document=open(path_to_excel, 'rb')
+                )
             user = self.db.get_user(tg_id=message.from_user.id)
             if user:
                 query_for_SEO = str(message.text).replace('\n', '; ')
@@ -108,9 +117,7 @@ class Controller:
                     query_for_SEO=query_for_SEO,
                     tg_id=message.from_user.id
                 )
-
-        markup = markups.back_to_main_menu_markup()
-        return dict(text=text, markup=markup)
+        return None
 
     async def other_menu(self):
         markup = markups.other_menu_markup()

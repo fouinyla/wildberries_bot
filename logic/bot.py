@@ -86,16 +86,18 @@ async def building_seo_core_process(message: types.Message, state: FSMContext):
         reply=False
     )
 
-# это ответ после передачи запросов для SEO
+# это ответ (ожидание) после передачи запросов для SEO
 @dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.SEO_queries)
-async def building_seo_result_process(message: types.Message, state: FSMContext):
-    response = await c.building_seo_result(message, state)
+async def waiting_seo_result_process(message: types.Message, state: FSMContext):
+    response = await c.waiting_seo_result(message, state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
         parse_mode="HTML",
         reply=False
     )
+    await c.building_seo_result(message, state)
+
 
 # это меню "Прочее"
 @dp.message_handler(Text(equals='Прочее'))
