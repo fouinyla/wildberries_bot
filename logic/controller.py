@@ -106,8 +106,7 @@ class Controller:
                 query_for_SEO = str(message.text).replace('\n', '; ')
                 self.db.add_SEO_query(
                     query_for_SEO=query_for_SEO,
-                    query=data['query'],
-                    user_id=user["id"]
+                    tg_id=message.from_user.id
                 )
 
         markup = markups.back_to_main_menu_markup()

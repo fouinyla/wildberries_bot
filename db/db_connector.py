@@ -43,17 +43,16 @@ class Database:
                 )
                 session.add(query)
 
-    def add_SEO_query(self, query_for_SEO, query, user_id):
+    def add_SEO_query(self, query_for_SEO, tg_id):
         with self.session() as session:
             with session.begin():
-                query_id = session\
-                    .query(Query.id)\
-                    .filter(Query.user_id.__eq__(user_id))\
-                    .filter(Query.search_query.__eq__(query))\
+                user_id = session\
+                    .query(User.id)\
+                    .filter(User.tg_id.__eq__(tg_id))\
                     .scalar()
 
                 query = SEOquery(
                     query_for_SEO=query_for_SEO,
-                    query_id=query_id
+                    user_id=user_id
                 )
                 session.add(query)

@@ -27,4 +27,4 @@ class SEOquery(Base):
     __tablename__ = "SEO_queries"
     id = Column(Integer, primary_key=True)
     query_for_SEO = Column(String)
-    query_id = Column(Integer, ForeignKey("queries.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
