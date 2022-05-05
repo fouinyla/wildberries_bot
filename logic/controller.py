@@ -72,11 +72,12 @@ class Controller:
 
     async def message_phone_number_state(self, message, state):
         phone_pattern = re.compile(
-            r'(\+7|8){1}[ \-\(]{0,1}[ \-\(]{0,1}\d{3}[ \-\)]{0,1}[ \-\)]{0,1}\d{3}[ \-]{0,1}\d{2}[ \-]{0,1}\d{2}')
+            r'[0-9 \+\-\(\)]{7,}')
+            #r'(\+7|8){1}[ \-\(]{0,1}[ \-\(]{0,1}\d{3}[ \-\)]{0,1}[ \-\)]{0,1}\d{3}[ \-]{0,1}\d{2}[ \-]{0,1}\d{2}')
         if re.fullmatch(phone_pattern, message.text):
             async with state.proxy() as data:
                 data['phone_number'] = message.text
-                self.db.add_user(message.from_user.id, message.from_user.first_name,
+                self.db.add_user(message.from_user.id, message.from_user.username,
                              data['name'], data['email'], data['phone_number'])
             await state.finish()
             text = 'Спасибо за информацию! Теперь можешь собрать SEO.'
@@ -99,7 +100,7 @@ class Controller:
     async def giving_hints(self, message, state):
         if message.text == 'Сбор SEO ядра':
             markup = markups.back_to_main_menu_markup()
-            text = 'Супер! Теперь отправьте мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
+            text = 'Отправьте мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
             await state.set_state(states.NameGroup.SEO_queries)
             return dict(text=text, markup=markup)
 
@@ -115,19 +116,18 @@ class Controller:
 
         hints = wb.get_hints(data['query'])
         if hints:
-            markup = markups.go_to_seo_markup()
             text = '\n'.join(hints)
         elif hints == [] or (hints is None and wb.product_exists(data['query'])):
-            markup = markups.go_to_seo_markup()
             text = 'Вы ввели конечный поисковый запрос.'
         else:
-            markup = markups.back_to_main_menu_markup()
             text = 'По вашему запросу продолжений на Wildberries не найдено. Попробуйте другой запрос.'
+        markup = markups.another_search_query_markup()
+        await state.finish()
         return dict(text=text, markup=markup)
 
     async def building_seo_core(self, state):
         markup = markups.back_to_main_menu_markup()
-        text = 'Супер! Теперь отправьте мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
+        text = 'Отправьте мне все поисковые запросы, с которых я соберу все SEO у лучших 100 карточек.\n(Каждый запрос с новой строки).'
         await state.set_state(states.NameGroup.SEO_queries)
         return dict(text=text, markup=markup)
 
@@ -138,7 +138,7 @@ class Controller:
         markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)
 
-    async def building_seo_result(self, message, state):    
+    async def building_seo_result(self, message, state):   
         async with state.proxy() as data:
             (path_to_excel, flag_all_empty_queries) = mpstats.get_SEO(data['SEO_queries'], str(message.from_user.id))
             if not flag_all_empty_queries:
@@ -152,16 +152,13 @@ class Controller:
                         query_for_SEO=query_for_SEO,
                         tg_id=message.from_user.id
                     )
+                text = 'SEO подготовлено!'
             else:
                 text = 'По данным запросам товары на WB отсутствуют.'
-                markup = markups.back_to_main_menu_markup()
                 os.remove(path_to_excel)
-                await message.reply(
-                    text=text,
-                    reply_markup=markup,
-                    reply=False
-                )
-        return None
+            await state.finish()
+            markup = markups.another_seo_building_markup() 
+        return dict(text=text, markup=markup)
 
     async def FAQ_bar(self):
         markup = markups.back_to_main_menu_markup()

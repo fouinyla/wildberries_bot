@@ -56,7 +56,8 @@ async def process_phone_number(message, state):
     )    
 
 # это меню "поисковой запрос"
-@dp.message_handler(Text(equals='Поисковой запрос'))
+@dp.message_handler(Text(equals='Поисковой запрос'), state='*')
+@dp.message_handler(Text(equals='Ввести поисковой запрос повторно'), state='*')
 async def search_query_process(message: types.Message, state: FSMContext):
     response = await c.search_query(state)
     await message.reply(
@@ -79,6 +80,7 @@ async def giving_hints_process(message: types.Message, state: FSMContext):
 
 # это меню "Сбор SEO ядра"
 @dp.message_handler(Text(equals='Сбор SEO ядра'), state='*')
+@dp.message_handler(Text(equals='Собрать SEO повторно'), state='*')
 async def building_seo_core_process(message: types.Message, state: FSMContext):
     response = await c.building_seo_core(state)
     await message.reply(
@@ -98,7 +100,13 @@ async def waiting_seo_result_process(message: types.Message, state: FSMContext):
         parse_mode="HTML",
         reply=False
     )
-    await c.building_seo_result(message, state)
+    response = await c.building_seo_result(message, state)
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    ) 
 
 # это меню "FAQ"
 @dp.message_handler(Text(equals='FAQ'))

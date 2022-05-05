@@ -1,3 +1,4 @@
+from re import S
 from attr import attr, attrib
 import httpx
 from bs4 import BeautifulSoup
@@ -7,6 +8,7 @@ import xlsxwriter
 from . import time
 import os
 import datetime
+import string
 
 
 MAIN_PAGE_URL = 'https://mpstats.io/'
@@ -35,7 +37,11 @@ def get_SEO(queries: str, tg_id: str) -> str:
         headers={'cookie': cookies + COOKIES_PART}
         try:
             # создание excel-файла для записи данных
-            path_to_excel = f"results/SEO_{tg_id}_{today_date}.xlsx"
+            what_to_delete = queries[0].maketrans('', '', string.punctuation)
+            query_for_tablename = queries[0].translate(what_to_delete)
+            if not query_for_tablename:
+                query_for_tablename = 'символьный_запрос'
+            path_to_excel = f"results/SEO_{query_for_tablename}_{today_date}.xlsx"
             workbook = xlsxwriter.Workbook(path_to_excel)
             for query in queries:
                 # запрос на получение html с SKU
@@ -64,7 +70,11 @@ def get_SEO(queries: str, tg_id: str) -> str:
                 response = client.post(BASE_SKU_GETTING_SEO, headers=headers, data=data)
                 result = response.json()['result']
                 # создание страницы в excel-файле с названиями колонок
-                worksheet = workbook.add_worksheet(name = query)
+                what_to_delete = query.maketrans('', '', string.punctuation)
+                query = query.translate(what_to_delete)
+                if not query:
+                    query = 'Символьный запрос'
+                worksheet = workbook.add_worksheet(name=query)
                 worksheet.write(0, 0, 'Слово')
                 worksheet.write(0, 1, 'Словоформы')
                 worksheet.write(0, 2, 'Количество вхождений')
@@ -79,5 +89,3 @@ def get_SEO(queries: str, tg_id: str) -> str:
         finally:
             workbook.close()
     return (path_to_excel, flag_all_empty_queries)
-
-# get_SEO('свитер\nсвитер женский\nсвитер оверсайз')
