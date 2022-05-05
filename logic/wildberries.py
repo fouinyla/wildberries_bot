@@ -1,8 +1,6 @@
 import httpx
 from typing import Union, List
-
-BASE_WB_HINTS_API_URL = 'https://suggestions.wildberries.ru/api/v2/hint?'
-BASE_WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common?'
+from const.const import *
 
 
 def get_hints(query: str, gender: str = 'common', locale: str = 'ru',

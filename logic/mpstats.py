@@ -16,27 +16,32 @@ BASE_SKU_GETTING_URL = 'https://mpstats.io/wb/bysearch?'
 BASE_SKU_GETTING_SEO = 'https://mpstats.io/api/seo/keywords/expanding'
 
 COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
-              '_ga=GA1.1.2054104203.1651240592; _ym_isad=2; ' \
-              'supportOnlineTalkID=r85EpoyBIxTRA3agMH9GXs5yZQOApJun; ' \
-              '_ym_hostIndex=0-3%2C1-0; _ym_visorc=w; ' \
-              'userlogin=a%3A2%3A%7Bs%3A3%3A%22lgn%22%3Bs%3A29%3A%22ip.' \
-              'evgeniy.bogdanov%40gmail.com%22%3Bs%3A3%3A%22pwd%22%3Bs%' \
-              '3A32%3A%2299fa197de27558f79782ea8373471beb%22%3B%7D; ' \
-              '_ga_8S8Y1X62NG=GS1.1.1651240592.1.1.1651240652.0'
+    '_ga=GA1.1.2054104203.1651240592; _ym_isad=2; ' \
+    'supportOnlineTalkID=r85EpoyBIxTRA3agMH9GXs5yZQOApJun; ' \
+    '_ym_hostIndex=0-3%2C1-0; _ym_visorc=w; ' \
+    'userlogin=a%3A2%3A%7Bs%3A3%3A%22lgn%22%3Bs%3A29%3A%22ip.' \
+    'evgeniy.bogdanov%40gmail.com%22%3Bs%3A3%3A%22pwd%22%3Bs%' \
+    '3A32%3A%2299fa197de27558f79782ea8373471beb%22%3B%7D; ' \
+    '_ga_8S8Y1X62NG=GS1.1.1651240592.1.1.1651240652.0'
 
 
 def get_SEO(queries: str, tg_id: str) -> str:
     flag_all_empty_queries = 1  # флаг, если все запросы пользователя пустые
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()
-    with httpx.Client(timeout=120) as client: #timeout?
+    with httpx.Client(timeout=120) as client:  # timeout?
         # получение кук для отправки запроса для получения SKU
         main_page_response = client.get(MAIN_PAGE_URL)
         main_page_response.raise_for_status()
         cookies = main_page_response.headers['set-cookie']
-        headers={'cookie': cookies + COOKIES_PART}
+        headers = {'cookie': cookies + COOKIES_PART}
         try:
-            # создание excel-файла для записи данных
+            # создание директории и excel-файла для записи данных
+            path_to_dir = os.path.join(os.getcwd(), "results")
+            is_dir_exist = os.path.exists(path_to_dir)
+            if not is_dir_exist:
+                os.makedirs(path_to_dir)
+
             what_to_delete = queries[0].maketrans('', '', string.punctuation)
             query_for_tablename = queries[0].translate(what_to_delete)
             if not query_for_tablename:
@@ -46,8 +51,8 @@ def get_SEO(queries: str, tg_id: str) -> str:
             for query in queries:
                 # запрос на получение html с SKU
                 sku_response = client.get(BASE_SKU_GETTING_URL,
-                                        headers=headers,
-                                        params={'query': query})
+                                          headers=headers,
+                                          params={'query': query})
                 sku_response.raise_for_status()
                 # парсинг html ответа для получения SKU
                 html = sku_response.text
