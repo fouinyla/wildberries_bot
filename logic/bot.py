@@ -16,7 +16,7 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 c = Controller(bot=bot)
 
 # это меню старт
-@dp.message_handler(commands='start')
+@dp.message_handler(commands='start', state='*')
 @dp.message_handler(Text(equals='Назад в главное меню'), state='*')
 async def command_start_process(message: types.Message, state: FSMContext):
     response = await c.command_start(message=message, state=state)
