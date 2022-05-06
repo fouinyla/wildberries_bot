@@ -46,9 +46,9 @@ def get_SEO(queries: str, tg_id: str) -> str:
             query_for_tablename = queries[0].translate(what_to_delete)
             if not query_for_tablename:
                 query_for_tablename = 'символьный_запрос'
-            path_to_excel = f"results/SEO_{query_for_tablename}_{today_date}.xlsx"
+            path_to_excel = f"results/SEO_{query_for_tablename[0:30]}_{today_date}.xlsx"
             workbook = xlsxwriter.Workbook(path_to_excel)
-            for query in queries:
+            for num, query in enumerate(queries, start=1):
                 # запрос на получение html с SKU
                 sku_response = client.get(BASE_SKU_GETTING_URL,
                                           headers=headers,
@@ -76,10 +76,11 @@ def get_SEO(queries: str, tg_id: str) -> str:
                 result = response.json()['result']
                 # создание страницы в excel-файле с названиями колонок
                 what_to_delete = query.maketrans('', '', string.punctuation)
-                query = query.translate(what_to_delete)
-                if not query:
-                    query = 'Символьный запрос'
-                worksheet = workbook.add_worksheet(name=query)
+                query_for_worksheet = query.translate(what_to_delete)
+                query_for_worksheet = query_for_worksheet[0:28] + str(num)
+                if not query_for_worksheet:
+                    query_for_worksheet = 'Символьный запрос'
+                worksheet = workbook.add_worksheet(name=query_for_worksheet)
                 worksheet.write(0, 0, 'Слово')
                 worksheet.write(0, 1, 'Словоформы')
                 worksheet.write(0, 2, 'Количество вхождений')
