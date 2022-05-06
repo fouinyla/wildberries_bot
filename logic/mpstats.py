@@ -1,3 +1,4 @@
+from re import S
 from attr import attr, attrib
 import httpx
 from bs4 import BeautifulSoup
@@ -7,6 +8,7 @@ import xlsxwriter
 from . import time
 import os
 import datetime
+import string
 
 
 MAIN_PAGE_URL = 'https://mpstats.io/'
@@ -34,14 +36,19 @@ def get_SEO(queries: str, tg_id: str) -> str:
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
         try:
-            # создание excel-файла для записи данных + create dir
+            # создание директории и excel-файла для записи данных
             path_to_dir = os.path.join(os.getcwd(), "results")
             is_dir_exist = os.path.exists(path_to_dir)
             if not is_dir_exist:
                 os.makedirs(path_to_dir)
-            path_to_excel = f"results/SEO_{tg_id}_{today_date}.xlsx"
+
+            what_to_delete = queries[0].maketrans('', '', string.punctuation)
+            query_for_tablename = queries[0].translate(what_to_delete)
+            if not query_for_tablename:
+                query_for_tablename = 'символьный_запрос'
+            path_to_excel = f"results/SEO_{query_for_tablename[0:30]}_{today_date}.xlsx"
             workbook = xlsxwriter.Workbook(path_to_excel)
-            for query in queries:
+            for num, query in enumerate(queries, start=1):
                 # запрос на получение html с SKU
                 sku_response = client.get(BASE_SKU_GETTING_URL,
                                           headers=headers,
@@ -68,7 +75,12 @@ def get_SEO(queries: str, tg_id: str) -> str:
                 response = client.post(BASE_SKU_GETTING_SEO, headers=headers, data=data)
                 result = response.json()['result']
                 # создание страницы в excel-файле с названиями колонок
-                worksheet = workbook.add_worksheet(name=query)
+                what_to_delete = query.maketrans('', '', string.punctuation)
+                query_for_worksheet = query.translate(what_to_delete)
+                query_for_worksheet = query_for_worksheet[0:28] + str(num)
+                if not query_for_worksheet:
+                    query_for_worksheet = 'Символьный запрос'
+                worksheet = workbook.add_worksheet(name=query_for_worksheet)
                 worksheet.write(0, 0, 'Слово')
                 worksheet.write(0, 1, 'Словоформы')
                 worksheet.write(0, 2, 'Количество вхождений')
@@ -83,5 +95,3 @@ def get_SEO(queries: str, tg_id: str) -> str:
         finally:
             workbook.close()
     return (path_to_excel, flag_all_empty_queries)
-
-# get_SEO('свитер\nсвитер женский\nсвитер оверсайз')

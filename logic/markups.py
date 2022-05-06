@@ -34,6 +34,19 @@ def go_to_seo_markup():
     markup.insert(types.KeyboardButton("Назад в главное меню"))
     return markup
 
+def another_search_query_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(types.KeyboardButton("Ввести поисковой запрос повторно"))
+    markup.insert(types.KeyboardButton("Сбор SEO ядра"))
+    markup.insert(types.KeyboardButton("Назад в главное меню"))
+    return markup
+
+def another_seo_building_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.add(types.KeyboardButton("Собрать SEO повторно"))
+    markup.insert(types.KeyboardButton("Назад в главное меню"))
+    return markup
+
 
 """def giving_hints_markup():
     markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
