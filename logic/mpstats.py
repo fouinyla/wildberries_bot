@@ -1,3 +1,4 @@
+from tokenize import Triple
 import httpx
 from bs4 import BeautifulSoup
 import json
@@ -52,7 +53,7 @@ def get_SEO(queries: str) -> Tuple[str, bool]:
                 # запрос на получение html с SKU
                 sku_response = client.get(BASE_SKU_GETTING_URL,
                                           headers=headers,
-                                          params={'query': query})
+                                          params={'query': query}, follow_redirects=True)
                 sku_response.raise_for_status()
                 # парсинг html ответа для получения SKU
                 html = sku_response.text

@@ -146,7 +146,7 @@ class Controller:
                 text = 'SEO подготовлено!'
             else:
                 text = 'По данным запросам товары на WB отсутствуют.'
-                os.remove(path_to_excel)
+            os.remove(path_to_excel)
             await state.finish()
             markup = markups.another_seo_building_markup() 
         return dict(text=text, markup=markup)
