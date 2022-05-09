@@ -6,6 +6,7 @@ from . import time
 import os
 import datetime
 import string
+from typing import Tuple
 
 
 MAIN_PAGE_URL = 'https://mpstats.io/'
@@ -27,7 +28,7 @@ if not os.path.exists(path_to_results):
     os.makedirs(path_to_results)
 
 
-def get_SEO(queries: str) -> tuple[str, bool]:
+def get_SEO(queries: str) -> Tuple[str, bool]:
     flag_all_queries_are_empty = True  # флаг, если все запросы пользователя пустые
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()

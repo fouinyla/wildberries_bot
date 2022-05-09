@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, DateTime, Boolean
+from numpy import unsignedinteger
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, DateTime, Boolean, BigInteger
 from sqlalchemy.orm import declarative_base, relationship
 
 
@@ -11,7 +12,7 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, nullable=False)
     phone_number = Column(String, nullable=False)
-    tg_id = Column(Integer, nullable=False)
+    tg_id = Column(BigInteger, nullable=False)
     tg_nickname = Column(String, nullable=False)
     is_admin = Column(Boolean, nullable=False, default=False)
 
