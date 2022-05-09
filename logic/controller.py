@@ -4,8 +4,10 @@ from logic.notification_service import Notification_Service
 from . import states
 from . import wildberries as wb
 from . import mpstats
+from const.phrases import FAQ
 import re
 import os
+from aiogram.utils.markdown import hlink
 
 
 class Controller:
@@ -63,7 +65,7 @@ class Controller:
 
     async def message_phone_number_state(self, message, state):
         phone_pattern = re.compile(r'[0-9 \+\-\(\)]{7,}')
-            #r'(\+7|8){1}[ \-\(]{0,1}[ \-\(]{0,1}\d{3}[ \-\)]{0,1}[ \-\)]{0,1}\d{3}[ \-]{0,1}\d{2}[ \-]{0,1}\d{2}')
+        # r'(\+7|8){1}[ \-\(]{0,1}[ \-\(]{0,1}\d{3}[ \-\)]{0,1}[ \-\)]{0,1}\d{3}[ \-]{0,1}\d{2}[ \-]{0,1}\d{2}')
         if re.fullmatch(phone_pattern, message.text):
             async with state.proxy() as data:
                 data['phone_number'] = message.text
@@ -127,7 +129,7 @@ class Controller:
     async def waiting_seo_result(self, message, state):
         async with state.proxy() as data:
             data['SEO_queries'] = message.text
-        text = f'Подготавливаем excel-файл. Это может занять до 1 минуты (в зависимости от количества запросов).'
+        text = 'Подготавливаем excel-файл. Это может занять до 1 минуты (в зависимости от количества запросов).'
         markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)
 
@@ -151,5 +153,5 @@ class Controller:
 
     async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()
-        text = '''<b>ИНСТРУКЦИЯ:</b>\n\n1. Выберите команду «Поисковой запрос» и введите название товара, по которому хотите собрать SEO-ядро. Robot подтянет с Wildberries все самые популярные запросы на данный момент и напишет их в чат.\n<b>Например, на запрос «Футболка»</b>, Robot выведет следующие популярные запросы на WB:\nфутболка женская\nфутболка мужская\nфутболка женская оверсайз\nфутболка оверсайз\nфутболка для девочки одежда\nфутболка мужская хлопок\n\n<b>Далее, вы можете выбрать подходящие для вашего товара запросы из предложенных и воспользоваться ещё раз функцией «поисковой запрос»\n\nНапример, на запрос «футболка оверсайз»</b> Robot предложит следующие популярные запросы на WB:\nфутболка оверсайз с принтом\nфутболка оверсайз подросток\nфутболка оверсайз женская большой размер\n футболка оверсайз длинная\nфутболка оверсайз для девочек с рисунком\nфутболка оверсайз домашняя\n\n2. Получив все популярные запросы, вы можете выбрать подходящие и перейти к следующему шагу - «Сбор SEO ядра». Введите выбранные запросы из предыдущего шага\n\n<b>Готово</b> ✅\nОптимизируйте свою карточку, исходя из данных, предоставленных Robotom\n\n<b>Желаем хороших продаж, с уважением, команда</b> {}'''.format(hlink('OPTSHOP', 'https://t.me/opt_tyrke'))
+        text = f"{FAQ} {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
         return dict(text=text, markup=markup)
