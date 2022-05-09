@@ -6,14 +6,15 @@ from aiogram.dispatcher.filters import Text
 from os import getenv
 from . import states
 
-#! temp
+# temp
 from dotenv import load_dotenv
 load_dotenv()
 
-bot = Bot(token=getenv("BOT_TOKEN"))
+bot = Bot(token=getenv('BOT_TOKEN'))
 Bot.set_current(bot)
 dp = Dispatcher(bot, storage=MemoryStorage())
 c = Controller(bot=bot)
+
 
 # это меню старт
 @dp.message_handler(commands='start', state='*')
@@ -27,7 +28,8 @@ async def command_start_process(message: types.Message, state: FSMContext):
         reply=False
     )
 
-#Сбор данных пользователя
+
+# Сбор данных пользователя
 @dp.message_handler(state=states.User.name)
 async def process_name(message, state):
     response = await c.message_name_state(message=message, state=state)
@@ -36,6 +38,7 @@ async def process_name(message, state):
         reply_markup=response['markup'],
         reply=False
     )
+
 
 @dp.message_handler(state=states.User.email)
 async def process_email(message, state):
@@ -46,14 +49,16 @@ async def process_email(message, state):
         reply=False
     )
 
+
 @dp.message_handler(state=states.User.phone_number)
 async def process_phone_number(message, state):
     response = await c.message_phone_number_state(message=message, state=state)
     await message.reply(
         text=response['text'],
-        reply_markup = response['markup'],
+        reply_markup=response['markup'],
         reply=False
     )    
+
 
 # это меню "поисковой запрос"
 @dp.message_handler(Text(equals='Поисковой запрос'), state='*')
@@ -67,6 +72,7 @@ async def search_query_process(message: types.Message, state: FSMContext):
         reply=False
     )
 
+
 # это меню получение поискового запроса
 @dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.query)
 async def giving_hints_process(message: types.Message, state: FSMContext):
@@ -77,6 +83,7 @@ async def giving_hints_process(message: types.Message, state: FSMContext):
         parse_mode="HTML",
         reply=False
     )
+
 
 # это меню "Сбор SEO ядра"
 @dp.message_handler(Text(equals='Сбор SEO ядра'), state='*')
@@ -89,6 +96,7 @@ async def building_seo_core_process(message: types.Message, state: FSMContext):
         parse_mode="HTML",
         reply=False
     )
+
 
 # это ответ (ожидание) после передачи запросов для SEO
 @dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.SEO_queries)
@@ -108,10 +116,11 @@ async def waiting_seo_result_process(message: types.Message, state: FSMContext):
         reply=False
     ) 
 
+
 # это меню "FAQ"
 @dp.message_handler(Text(equals='FAQ'))
-async def FAQ_bar_process(message: types.Message):
-    response = await c.FAQ_bar()
+async def instruction_bar_process(message: types.Message):
+    response = await c.instruction_bar()
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],

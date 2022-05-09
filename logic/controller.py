@@ -1,33 +1,27 @@
-from datetime import datetime
-from email import message
-from aiogram import types
 from db.db_connector import Database
-import const.phrases as phrases
-from const.const import *
 from . import markups
 from logic.notification_service import Notification_Service
 from . import states
 from . import wildberries as wb
 from . import mpstats
+from const.phrases import FAQ
 import re
 import os
+from aiogram.utils.markdown import hlink
 
 
 class Controller:
     def __init__(self, bot):
         self.bot = bot
         self.db = Database()
-        self.notification = Notification_Service(
-            bot=self.bot,
-        )
+        self.notification = Notification_Service(bot=self.bot)
 
     async def command_start(self, message, state):
         await state.finish()
         result = self.db.get_user(message.from_user.id)
         if result:
             name = message.from_user.first_name
-            text = f'Приветствую, {name}!' + \
-                    'Это наш бот для улучшения твоей карточки на WB.'
+            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
             markup = markups.start_menu_markup()
         else:
             name = message.from_user.first_name
@@ -53,8 +47,7 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def message_email_state(self, message, state):
-        email_pattern = \
-            r'([A-Za-z0-9]+[\.\-\_])*[A-Za-z0-9]+@[A-Za-z0-9]+[A-Za-z0-9-]*[A-Za-z0-9]+(\.[A-Z|a-z]{2,})+'
+        email_pattern = r'([A-Za-z0-9]+[\.\-\_])*[A-Za-z0-9]+@[A-Za-z0-9]+[A-Za-z0-9-]*[A-Za-z0-9]+(\.[A-Z|a-z]{2,})+'
         if re.fullmatch(email_pattern, message.text):
             async with state.proxy() as data:
                 data['email'] = message.text
@@ -71,14 +64,16 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def message_phone_number_state(self, message, state):
-        phone_pattern = re.compile(
-            r'[0-9 \+\-\(\)]{7,}')
-            #r'(\+7|8){1}[ \-\(]{0,1}[ \-\(]{0,1}\d{3}[ \-\)]{0,1}[ \-\)]{0,1}\d{3}[ \-]{0,1}\d{2}[ \-]{0,1}\d{2}')
+        phone_pattern = re.compile(r'[0-9 \+\-\(\)]{7,}')
+        # r'(\+7|8){1}[ \-\(]{0,1}[ \-\(]{0,1}\d{3}[ \-\)]{0,1}[ \-\)]{0,1}\d{3}[ \-]{0,1}\d{2}[ \-]{0,1}\d{2}')
         if re.fullmatch(phone_pattern, message.text):
             async with state.proxy() as data:
                 data['phone_number'] = message.text
-                self.db.add_user(message.from_user.id, message.from_user.username,
-                             data['name'], data['email'], data['phone_number'])
+                self.db.add_user(message.from_user.id,
+                                 message.from_user.username,
+                                 data['name'],
+                                 data['email'],
+                                 data['phone_number'])
             await state.finish()
             text = 'Спасибо за информацию! Теперь можешь собрать SEO.'
             markup = markups.start_menu_markup()
@@ -87,7 +82,7 @@ class Controller:
             markup = markups.back_to_name_markup()
             await state.set_state(states.User.email)
         else:
-            text = 'Не похоже на номер телефона. Введи что-то более корректное.'
+            text = 'Не похоже на номер телефона. Введите что-то более корректное.'
             markup = markups.back_to_email_markup()
         return dict(text=text, markup=markup)
 
@@ -134,24 +129,20 @@ class Controller:
     async def waiting_seo_result(self, message, state):
         async with state.proxy() as data:
             data['SEO_queries'] = message.text
-        text = f'Подготавливаем excel-файл. Это может занять до 1 минуты (в зависимости от количества запросов).'
+        text = 'Подготавливаем excel-файл. Это может занять до 1 минуты (в зависимости от количества запросов).'
         markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)
 
     async def building_seo_result(self, message, state):   
         async with state.proxy() as data:
-            (path_to_excel, flag_all_empty_queries) = mpstats.get_SEO(data['SEO_queries'], str(message.from_user.id))
+            path_to_excel, flag_all_empty_queries = mpstats.get_SEO(data['SEO_queries'])
             if not flag_all_empty_queries:
-                await message.answer_document(
-                        document=open(path_to_excel, 'rb')
-                        )
+                await message.answer_document(document=open(path_to_excel, 'rb'))
                 user = self.db.get_user(tg_id=message.from_user.id)
                 if user:
                     query_for_SEO = str(message.text).replace('\n', '; ')
-                    self.db.add_SEO_query(
-                        query_for_SEO=query_for_SEO,
-                        tg_id=message.from_user.id
-                    )
+                    self.db.add_SEO_query(query_for_SEO=query_for_SEO,
+                                          tg_id=message.from_user.id)
                 text = 'SEO подготовлено!'
             else:
                 text = 'По данным запросам товары на WB отсутствуют.'
@@ -160,7 +151,7 @@ class Controller:
             markup = markups.another_seo_building_markup() 
         return dict(text=text, markup=markup)
 
-    async def FAQ_bar(self):
+    async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()
-        text = 'Как пользоваться нашим ботом:\n...\n...'
+        text = f"{FAQ} {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
         return dict(text=text, markup=markup)
