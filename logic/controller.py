@@ -8,6 +8,7 @@ from const.phrases import FAQ
 import re
 import os
 from aiogram.utils.markdown import hlink
+from aiogram import types
 
 
 class Controller:
@@ -26,9 +27,9 @@ class Controller:
         else:
             name = message.from_user.first_name
             text = f'Приветствую, {name}!\n' + \
-                    'Это наш бот для улучшения твоей карточки на WB.\n' + \
-                    'Для начала мы хотим узнать немного о тебе.\n' + \
-                    'Пожалуйста, введи своё имя.'
+                'Это наш бот для улучшения твоей карточки на WB.\n' + \
+                'Для начала мы хотим узнать немного о тебе.\n' + \
+                'Пожалуйста, введи своё имя.'
             markup = None
             await state.set_state(states.User.name)
         return dict(text=text, markup=markup)
@@ -133,11 +134,11 @@ class Controller:
         markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)
 
-    async def building_seo_result(self, message, state):   
+    async def building_seo_result(self, message, state):
         async with state.proxy() as data:
             path_to_excel, flag_all_empty_queries = mpstats.get_SEO(data['SEO_queries'])
             if not flag_all_empty_queries:
-                await message.answer_document(document=open(path_to_excel, 'rb'))
+                await message.answer_document(document=types.InputFile(path_to_excel))
                 user = self.db.get_user(tg_id=message.from_user.id)
                 if user:
                     query_for_SEO = str(message.text).replace('\n', '; ')
@@ -148,7 +149,7 @@ class Controller:
                 text = 'По данным запросам товары на WB отсутствуют.'
             os.remove(path_to_excel)
             await state.finish()
-            markup = markups.another_seo_building_markup() 
+            markup = markups.another_seo_building_markup()
         return dict(text=text, markup=markup)
 
     async def instruction_bar(self):
