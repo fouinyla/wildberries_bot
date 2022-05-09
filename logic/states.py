@@ -5,6 +5,7 @@ class NameGroup(StatesGroup):
     query = State()
     SEO_queries = State()
 
+
 class User(StatesGroup):
     name = State()
     email = State()
