@@ -1,9 +1,6 @@
-from re import S
-from attr import attr, attrib
 import httpx
 from bs4 import BeautifulSoup
 import json
-from typing import List
 import xlsxwriter
 from . import time
 import os
@@ -24,29 +21,31 @@ COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
     '3A32%3A%2299fa197de27558f79782ea8373471beb%22%3B%7D; ' \
     '_ga_8S8Y1X62NG=GS1.1.1651240592.1.1.1651240652.0'
 
+# создание директории для записи данных
+path_to_results = os.path.join(os.getcwd(), 'results')
+if not os.path.exists(path_to_results):
+    os.makedirs(path_to_results)
 
-def get_SEO(queries: str, tg_id: str) -> str:
-    flag_all_empty_queries = 1  # флаг, если все запросы пользователя пустые
+
+def get_SEO(queries: str) -> tuple[str, bool]:
+    flag_all_queries_are_empty = True  # флаг, если все запросы пользователя пустые
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()
-    with httpx.Client(timeout=120) as client:  # timeout?
+    with httpx.Client(timeout=120) as client:  # TODO timeouts
         # получение кук для отправки запроса для получения SKU
         main_page_response = client.get(MAIN_PAGE_URL)
         main_page_response.raise_for_status()
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
-        try:
-            # создание директории и excel-файла для записи данных
-            path_to_dir = os.path.join(os.getcwd(), "results")
-            is_dir_exist = os.path.exists(path_to_dir)
-            if not is_dir_exist:
-                os.makedirs(path_to_dir)
+        # создание директории и excel-файла для записи данных
 
-            what_to_delete = queries[0].maketrans('', '', string.punctuation)
-            query_for_tablename = queries[0].translate(what_to_delete)
-            if not query_for_tablename:
-                query_for_tablename = 'символьный_запрос'
-            path_to_excel = f"results/SEO_{query_for_tablename[0:30]}_{today_date}.xlsx"
+        what_to_delete = queries[0].maketrans('', '', string.punctuation)
+        query_for_tablename = queries[0].translate(what_to_delete)
+        if not query_for_tablename:
+            query_for_tablename = 'символьный_запрос'
+        path_to_excel = f'results/SEO_{query_for_tablename[0:30]}_{today_date}.xlsx'
+
+        try:
             workbook = xlsxwriter.Workbook(path_to_excel)
             for num, query in enumerate(queries, start=1):
                 # запрос на получение html с SKU
@@ -58,21 +57,23 @@ def get_SEO(queries: str, tg_id: str) -> str:
                 html = sku_response.text
                 soup = BeautifulSoup(html, 'lxml')
                 tpls = soup.find('wb-search-result')
-                if tpls:
-                    data = json.loads(tpls['tpls'])
-                    flag_all_empty_queries = 0
-                else:
+                if not tpls:
                     continue
+                data = json.loads(tpls['tpls'])
+                flag_all_queries_are_empty = False
                 attributes = [sku for _, sku in data]
                 # получение запросов по атрибутам
-                data = {"query": ','.join(map(str, attributes)),
-                        "type": "sku",
-                        "similar": "false",
-                        "stopWords": [],
-                        "searchFullWord": False,
-                        "d1": today_date - datetime.timedelta(days=30),
-                        "d2": today_date}
-                response = client.post(BASE_SKU_GETTING_SEO, headers=headers, data=data)
+                data = {'query': ','.join(map(str, attributes)),
+                        'type': 'sku',
+                        'similar': 'false',
+                        'stopWords': [],
+                        'searchFullWord': False,
+                        'd1': today_date - datetime.timedelta(days=30),
+                        'd2': today_date}
+                response = client.post(BASE_SKU_GETTING_SEO,
+                                       headers=headers,
+                                       data=data)
+                response.raise_for_status()
                 result = response.json()['result']
                 # создание страницы в excel-файле с названиями колонок
                 what_to_delete = query.maketrans('', '', string.punctuation)
@@ -94,4 +95,4 @@ def get_SEO(queries: str, tg_id: str) -> str:
                         worksheet.write(row, 3, str(word['keys_count_sum']))
         finally:
             workbook.close()
-    return (path_to_excel, flag_all_empty_queries)
+    return path_to_excel, flag_all_queries_are_empty
