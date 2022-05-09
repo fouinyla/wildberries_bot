@@ -5,7 +5,7 @@ def start_menu_markup():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.insert(types.KeyboardButton("Поисковой запрос"))
     markup.insert(types.KeyboardButton("Сбор SEO ядра"))
-    markup.add(types.KeyboardButton("FAQ"))
+    markup.add(types.KeyboardButton("Как пользоваться ботом"))
     return markup
 
 def back_to_name_markup():

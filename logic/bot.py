@@ -108,10 +108,10 @@ async def waiting_seo_result_process(message: types.Message, state: FSMContext):
         reply=False
     ) 
 
-# это меню "FAQ"
-@dp.message_handler(Text(equals='FAQ'))
-async def FAQ_bar_process(message: types.Message):
-    response = await c.FAQ_bar()
+# это меню "Как пользоваться ботом"
+@dp.message_handler(Text(equals='Как пользоваться ботом'))
+async def instruction_bar_process(message: types.Message):
+    response = await c.instruction_bar()
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
