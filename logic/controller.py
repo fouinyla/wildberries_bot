@@ -126,7 +126,7 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def message_email_state(self, message, state):
-        email_pattern = r'([A-Za-z0-9]+[\.\-\_])*[A-Za-z0-9]+@[A-Za-z0-9]+[A-Za-z0-9-]*[A-Za-z0-9]+(\.[A-Z|a-z]{2,})+'
+        email_pattern = r'([A-Za-z0-9]+[\.\-\_])*[A-Za-z0-9]+@[A-Za-z0-9]+[A-Za-z0-9-\+]*[A-Za-z0-9]+(\.[A-Z|a-z]{2,})+'
         if re.fullmatch(email_pattern, message.text):
             async with state.proxy() as data:
                 data['email'] = message.text
@@ -155,7 +155,7 @@ class Controller:
                                  data['phone_number'])
             await state.finish()
             text = 'Спасибо за информацию! Теперь можешь собрать SEO.'
-            is_admin = self.db.check_for_admin()
+            is_admin = self.db.check_for_admin(message.from_user.id)
             if is_admin:
                 markup = markups.admin_start_menu_markup()
             else:

@@ -45,7 +45,10 @@ class Database:
                     .query(User.is_admin)\
                     .filter(User.tg_id.__eq__(tg_id))\
                     .scalar()
-        return int(query)
+        if query:
+            return int(query)
+        else:
+            return False
 
     def add_admin_to_user(self, tg_id):
         with self.session() as session:
