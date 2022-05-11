@@ -5,6 +5,8 @@ def admin_start_menu_markup():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.insert(types.KeyboardButton('Количество пользователей в БД'))
     markup.insert(types.KeyboardButton('Полная выгрузка из БД')) 
+    markup.insert(types.KeyboardButton('Добавить админа'))
+    markup.insert(types.KeyboardButton('Удалить админа')) 
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
     markup.add(types.KeyboardButton('Как пользоваться ботом'))

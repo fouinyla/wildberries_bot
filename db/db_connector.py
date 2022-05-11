@@ -1,7 +1,7 @@
 import sqlalchemy as database
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.sql.elements import and_, or_
-from sqlalchemy import func, inspect, text
+from sqlalchemy import func, inspect, text, update
 from .models import *
 from os import getenv
 import xlsxwriter 
@@ -37,6 +37,29 @@ class Database:
                     return dict(id=query.id, tg_nickname=query.tg_nickname, is_admin=query.is_admin)
                 else:
                     return False
+
+    def check_for_admin(self, tg_id):
+        with self.session() as session:
+            with session.begin():
+                query = session\
+                    .query(User.is_admin)\
+                    .filter(User.tg_id.__eq__(tg_id))\
+                    .scalar()
+        return int(query)
+
+    def add_admin_to_user(self, tg_id):
+        with self.session() as session:
+            with session.begin():
+                session.query(User)\
+                    .where(User.tg_id == tg_id)\
+                    .update({User.is_admin: 1})
+
+    def delete_admin_to_user(self, tg_id):
+        with self.session() as session:
+            with session.begin():
+                session.query(User)\
+                    .where(User.tg_id == tg_id)\
+                    .update({User.is_admin: 0})
 
     def add_search_query(self, search_query, user_id):
         with self.session() as session:

@@ -10,3 +10,7 @@ class User(StatesGroup):
     name = State()
     email = State()
     phone_number = State()
+
+class Admin(StatesGroup):
+    tg_id_to_add = State()
+    tg_id_to_delete = State()

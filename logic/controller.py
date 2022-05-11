@@ -24,9 +24,9 @@ class Controller:
         result = self.db.get_user(message.from_user.id)
         if result:
             name = message.from_user.first_name
-            tg_id = int(message.from_user.id)
+            is_admin = self.db.check_for_admin(message.from_user.id)
             text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
-            if tg_id in memory.admins:  # check for existing in db?
+            if is_admin:  # check for existing in db?
                 markup = markups.admin_start_menu_markup()
             else:
                 markup = markups.start_menu_markup()
@@ -53,6 +53,62 @@ class Controller:
         await message.answer_document(document=types.InputFile(file_name))
         os.remove(file_name)
         text = 'Это актуальная выгрузка из БД.'
+        return dict(text=text, markup=markup)
+
+    async def pre_step_for_add_admin(self, state):
+        text = 'Введите tg_id пользователя, которому вы хотите дать права админа.\n' + \
+                'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot. ' + \
+                'Достаточно лишь начать с ним общение.'
+        markup = markups.back_to_main_menu_markup()
+        await state.set_state(states.Admin.tg_id_to_add)
+        return dict(text=text, markup=markup)
+
+    async def add_admin(self, message, state):
+        if message.text == 'Назад в главное меню':
+            await state.finish()
+            name = message.from_user.first_name
+            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+        else:
+            if message.text.isdigit():
+                new_admin_tg_id = int(message.text)
+                new_admin = self.db.get_user(new_admin_tg_id)
+                if new_admin:
+                    self.db.add_admin_to_user(new_admin_tg_id)
+                    text = f"Пользователю {new_admin['tg_nickname']} добавлены права админа."
+                else:
+                    text = f'Такого пользователя нет в БД.\nСначала ему необходимо зарегистрироваться в боте.'
+            else:
+                text = 'Пожалуйста, введите id в числовом формате.'
+        markup = markups.admin_start_menu_markup()
+        await state.finish()
+        return dict(text=text, markup=markup)
+    
+    async def pre_step_for_delete_admin(self, state):
+        text = 'Введите tg_id пользователя, которому вы хотите дать права админа.\n' + \
+                'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot. ' + \
+                'Достаточно лишь начать с ним общение.'
+        markup = markups.back_to_main_menu_markup()
+        await state.set_state(states.Admin.tg_id_to_delete)
+        return dict(text=text, markup=markup)
+
+    async def delete_admin(self, message, state):
+        if message.text == 'Назад в главное меню':
+            await state.finish()
+            name = message.from_user.first_name
+            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+        else:
+            if message.text.isdigit():
+                del_admin_tg_id = int(message.text)
+                del_admin = self.db.get_user(del_admin_tg_id)
+                if del_admin:
+                    self.db.delete_admin_to_user(del_admin_tg_id)
+                    text = f"У пользователя {del_admin['tg_nickname']} удалены права админа."
+                else:
+                    text = f'Такого пользователя нет в БД.\nА значит и админки у него нет.'
+            else:
+                text = 'Пожалуйста, введите id в числовом формате.'
+        markup = markups.admin_start_menu_markup()
+        await state.finish()
         return dict(text=text, markup=markup)
     # ____________________end_of_admin_part____________________________
 
@@ -99,8 +155,8 @@ class Controller:
                                  data['phone_number'])
             await state.finish()
             text = 'Спасибо за информацию! Теперь можешь собрать SEO.'
-            tg_id = int(message.from_user.id)
-            if tg_id in memory.admins:
+            is_admin = self.db.check_for_admin()
+            if is_admin:
                 markup = markups.admin_start_menu_markup()
             else:
                 markup = markups.start_menu_markup()
