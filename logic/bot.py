@@ -5,6 +5,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from os import getenv
 from . import states
+from . import memory
+
 
 # temp
 from dotenv import load_dotenv
@@ -21,6 +23,32 @@ c = Controller(bot=bot)
 @dp.message_handler(Text(equals='Назад в главное меню'), state='*')
 async def command_start_process(message: types.Message, state: FSMContext):
     response = await c.command_start(message=message, state=state)
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+
+# это получение количества пользователей в БД для админа
+@dp.message_handler(lambda message: int(message.from_user.id) in memory.admins, \
+                    Text(equals='Количество пользователей в БД'), state='*')
+async def get_number_of_users_process(message: types.Message):
+    response = await c.get_number_of_users()
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+
+# это выгрузка из БД для админа
+@dp.message_handler(lambda message: int(message.from_user.id) in memory.admins, \
+                    Text(equals='Полная выгрузка из БД'), state='*')
+async def get_data_from_db_process(message: types.Message):
+    response = await c.get_data_from_db(message=message)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],

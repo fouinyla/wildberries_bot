@@ -1,14 +1,17 @@
 import sqlalchemy as database
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.sql.elements import and_, or_
+from sqlalchemy import func, inspect, text
 from .models import *
 from os import getenv
+import xlsxwriter 
+from datetime import date
 
 
 class Database:
     def __init__(self):
-        engine = database.create_engine(getenv("DATABASE"))
-        self.session = scoped_session(sessionmaker(bind=engine))
+        self.engine = database.create_engine(getenv("DATABASE"))
+        self.session = scoped_session(sessionmaker(bind=self.engine))
 
     def add_user(self, tg_id, tg_nickname, name, email, phone_number):
         with self.session() as session:
@@ -28,11 +31,12 @@ class Database:
                 query = session\
                     .query(User)\
                     .filter(User.tg_id.__eq__(tg_id))\
-                    .scalar()
+                    .scalar()  # scalar?
 
                 if query:
                     return dict(id=query.id, tg_nickname=query.tg_nickname, is_admin=query.is_admin)
-                return False
+                else:
+                    return False
 
     def add_search_query(self, search_query, user_id):
         with self.session() as session:
@@ -56,3 +60,29 @@ class Database:
                     user_id=user_id
                 )
                 session.add(query)
+
+    def get_number_of_users(self):
+        with self.session() as session:
+            with session.begin():
+                number_of_users = session\
+                                .query(func.count(User.id))\
+                                .scalar()
+                return number_of_users
+
+    def get_data_from_db(self):
+        today_date = date.today()
+        file_name = f'db_damp_{today_date}.xlsx'
+        try:
+            workbook = xlsxwriter.Workbook(file_name)
+            inspector = inspect(self.engine)
+            with self.engine.connect() as connection:
+                for table_name in inspector.get_table_names()[-1::-1]:
+                    worksheet = workbook.add_worksheet(name=table_name)
+                    for column_index, column in enumerate(inspector.get_columns(table_name)):
+                        worksheet.write(0, column_index, column['name'])
+                    result = connection.execute(text(f'select * from {table_name}'))
+                    for row_index, data in enumerate(result, start=1):
+                        worksheet.write_row(row_index, 0, data)
+        finally:
+            workbook.close()
+        return file_name

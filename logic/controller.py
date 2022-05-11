@@ -1,9 +1,11 @@
+from numpy import number
 from db.db_connector import Database
 from . import markups
 from logic.notification_service import Notification_Service
 from . import states
 from . import wildberries as wb
 from . import mpstats
+from . import memory
 from const.phrases import FAQ
 import re
 import os
@@ -22,8 +24,12 @@ class Controller:
         result = self.db.get_user(message.from_user.id)
         if result:
             name = message.from_user.first_name
+            tg_id = int(message.from_user.id)
             text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
-            markup = markups.start_menu_markup()
+            if tg_id in memory.admins:  # check for existing in db?
+                markup = markups.admin_start_menu_markup()
+            else:
+                markup = markups.start_menu_markup()
         else:
             name = message.from_user.first_name
             text = f'Приветствую, {name}!\n' + \
@@ -33,6 +39,22 @@ class Controller:
             markup = None
             await state.set_state(states.User.name)
         return dict(text=text, markup=markup)
+
+    # ________________________admin_part_______________________________
+    async def get_number_of_users(self):
+        markup = markups.admin_start_menu_markup()
+        number_of_users = self.db.get_number_of_users()
+        text = f'Сейчас в БД {number_of_users} user.'
+        return dict(text=text, markup=markup)
+
+    async def get_data_from_db(self, message):
+        markup = markups.admin_start_menu_markup()
+        file_name = self.db.get_data_from_db()
+        await message.answer_document(document=types.InputFile(file_name))
+        os.remove(file_name)
+        text = 'Это актуальная выгрузка из БД.'
+        return dict(text=text, markup=markup)
+    # ____________________end_of_admin_part____________________________
 
     async def message_name_state(self, message, state):
         name_pattern = r'[ёЁА-Яа-я- A-za-z]+'
@@ -77,7 +99,11 @@ class Controller:
                                  data['phone_number'])
             await state.finish()
             text = 'Спасибо за информацию! Теперь можешь собрать SEO.'
-            markup = markups.start_menu_markup()
+            tg_id = int(message.from_user.id)
+            if tg_id in memory.admins:
+                markup = markups.admin_start_menu_markup()
+            else:
+                markup = markups.start_menu_markup()
         elif message.text == 'Назад к вводу почты':
             text = 'Пожалуйста, введи свой e-mail'
             markup = markups.back_to_name_markup()
