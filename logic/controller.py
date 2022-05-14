@@ -1,16 +1,15 @@
-from numpy import number
 from db.db_connector import Database
 from . import markups
 from logic.notification_service import Notification_Service
 from . import states
 from . import wildberries as wb
 from . import mpstats
-from . import memory
 from const.phrases import FAQ
 import re
 import os
 from aiogram.utils.markdown import hlink
 from aiogram import types
+from .telegram import subscribed
 
 
 class Controller:
@@ -21,8 +20,14 @@ class Controller:
 
     async def command_start(self, message, state):
         await state.finish()
-        result = self.db.get_user(message.from_user.id)
-        if result:
+
+        if not await subscribed(self.bot, message.from_user.id):
+            text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/test_wb')}"
+            markup = None
+            return dict(text=text, markup=markup)
+
+        user = self.db.get_user(message.from_user.id)
+        if user:
             name = message.from_user.first_name
             is_admin = self.db.check_for_admin(message.from_user.id)
             text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
@@ -82,7 +87,7 @@ class Controller:
         markup = markups.admin_start_menu_markup()
         await state.finish()
         return dict(text=text, markup=markup)
-    
+
     async def pre_step_for_delete_admin(self, state):
         text = 'Введите tg_id пользователя, которому вы хотите дать права админа.\n' + \
                 'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot. ' + \

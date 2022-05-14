@@ -1,4 +1,3 @@
-from h11 import Data
 from .controller import Controller
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -34,7 +33,7 @@ async def command_start_process(message: types.Message, state: FSMContext):
 
 
 # это получение количества пользователей в БД для админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id), \
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Количество пользователей в БД'), state='*')
 async def get_number_of_users_process(message: types.Message):
     response = await c.get_number_of_users()
@@ -47,7 +46,7 @@ async def get_number_of_users_process(message: types.Message):
 
 
 # это выгрузка из БД для админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id), \
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Полная выгрузка из БД'), state='*')
 async def get_data_from_db_process(message: types.Message):
     response = await c.get_data_from_db(message=message)
@@ -59,7 +58,7 @@ async def get_data_from_db_process(message: types.Message):
     )
 
 # это запрос tg_id для добавления нового админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id), \
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Добавить админа'), state='*')
 async def pre_step_for_add_admin_process(message: types.Message, state: FSMContext):
     response = await c.pre_step_for_add_admin(state=state)
@@ -71,7 +70,7 @@ async def pre_step_for_add_admin_process(message: types.Message, state: FSMConte
     )
 
 # это добавление нового админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id), \
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     state=states.Admin.tg_id_to_add)
 async def add_admin_process(message: types.Message, state: FSMContext):
     response = await c.add_admin(message=message, state=state)
@@ -83,7 +82,7 @@ async def add_admin_process(message: types.Message, state: FSMContext):
     )
 
 # это запрос tg_id для удаления старого админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id), \
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Удалить админа'), state='*')
 async def pre_step_for_delete_admin_process(message: types.Message, state: FSMContext):
     response = await c.pre_step_for_delete_admin(state=state)
@@ -95,7 +94,7 @@ async def pre_step_for_delete_admin_process(message: types.Message, state: FSMCo
     )
 
 # это удаление старого админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id), \
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     state=states.Admin.tg_id_to_delete)
 async def delete_admin_process(message: types.Message, state: FSMContext):
     response = await c.delete_admin(message=message, state=state)
@@ -194,7 +193,7 @@ async def waiting_seo_result_process(message: types.Message, state: FSMContext):
     ) 
 
 
-# это меню "FAQ"
+# это меню 'Как пользоваться ботом'
 @dp.message_handler(Text(equals='Как пользоваться ботом'))
 async def instruction_bar_process(message: types.Message):
     response = await c.instruction_bar()

@@ -1,6 +1,5 @@
-from numpy import unsignedinteger
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, DateTime, Boolean, BigInteger
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, BigInteger
+from sqlalchemy.orm import declarative_base
 
 
 Base = declarative_base()

@@ -1,7 +1,6 @@
 import sqlalchemy as database
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.sql.elements import and_, or_
-from sqlalchemy import func, inspect, text, update
+from sqlalchemy import func, inspect, text
 from .models import *
 from os import getenv
 import xlsxwriter 
@@ -10,7 +9,7 @@ from datetime import date
 
 class Database:
     def __init__(self):
-        self.engine = database.create_engine(getenv("DATABASE"))
+        self.engine = database.create_engine(getenv('DATABASE'))
         self.session = scoped_session(sessionmaker(bind=self.engine))
 
     def add_user(self, tg_id, tg_nickname, name, email, phone_number):
@@ -35,8 +34,7 @@ class Database:
 
                 if query:
                     return dict(id=query.id, tg_nickname=query.tg_nickname, is_admin=query.is_admin)
-                else:
-                    return False
+                return False
 
     def check_for_admin(self, tg_id):
         with self.session() as session:
@@ -47,8 +45,7 @@ class Database:
                     .scalar()
         if query:
             return int(query)
-        else:
-            return False
+        return False
 
     def add_admin_to_user(self, tg_id):
         with self.session() as session:

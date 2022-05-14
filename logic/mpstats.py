@@ -33,13 +33,13 @@ def get_SEO(queries: str) -> Tuple[str, bool]:
     flag_all_queries_are_empty = True  # флаг, если все запросы пользователя пустые
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()
-    with httpx.Client(timeout=120) as client:  # TO DO timeouts
+    with httpx.Client(timeout=120) as client:
         # получение кук для отправки запроса для получения SKU
         main_page_response = client.get(MAIN_PAGE_URL)
         main_page_response.raise_for_status()
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
-        # создание директории и excel-файла для записи данных
+        # создание excel-файла для записи данных
         what_to_delete = queries[0].maketrans('', '', string.punctuation)
         query_for_tablename = queries[0].translate(what_to_delete)
         if not query_for_tablename:
