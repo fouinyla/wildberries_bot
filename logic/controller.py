@@ -31,7 +31,7 @@ class Controller:
 
         if not await self.subscribed(message.from_user.id):
             text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-            markup = None
+            markup = types.ReplyKeyboardRemove()
             return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
