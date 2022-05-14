@@ -1,7 +1,6 @@
 import aiogram
 
-CUSTOMER_CHANNEL_ID = '@test_wb'
-# CUSTOMER_CHANNEL_ID = '@opt_tyrke'
+CUSTOMER_CHANNEL_ID = '@opt_tyrke'
 
 
 async def subscribed(bot: aiogram.Bot, user_id: int) -> bool:
