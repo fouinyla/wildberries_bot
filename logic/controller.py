@@ -22,7 +22,7 @@ class Controller:
         await state.finish()
 
         if not await subscribed(self.bot, message.from_user.id):
-            text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/test_wb')}"
+            text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('Test channel', 'https://t.me/test_wb')}"
             markup = None
             return dict(text=text, markup=markup)
 
