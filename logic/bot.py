@@ -22,6 +22,7 @@ database = Database()
 # это меню старт
 @dp.message_handler(commands='start', state='*')
 @dp.message_handler(Text(equals='Назад в главное меню'), state='*')
+@dp.message_handler(Text(equals='Я подписался(-лась)'), state='*')
 async def command_start_process(message: types.Message, state: FSMContext):
     response = await c.command_start(message=message, state=state)
     await message.reply(
@@ -58,6 +59,8 @@ async def get_data_from_db_process(message: types.Message):
     )
 
 # это запрос tg_id для добавления нового админа
+
+
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Добавить админа'), state='*')
 async def pre_step_for_add_admin_process(message: types.Message, state: FSMContext):
@@ -70,6 +73,8 @@ async def pre_step_for_add_admin_process(message: types.Message, state: FSMConte
     )
 
 # это добавление нового админа
+
+
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     state=states.Admin.tg_id_to_add)
 async def add_admin_process(message: types.Message, state: FSMContext):
@@ -82,6 +87,8 @@ async def add_admin_process(message: types.Message, state: FSMContext):
     )
 
 # это запрос tg_id для удаления старого админа
+
+
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Удалить админа'), state='*')
 async def pre_step_for_delete_admin_process(message: types.Message, state: FSMContext):
@@ -94,6 +101,8 @@ async def pre_step_for_delete_admin_process(message: types.Message, state: FSMCo
     )
 
 # это удаление старого админа
+
+
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     state=states.Admin.tg_id_to_delete)
 async def delete_admin_process(message: types.Message, state: FSMContext):
@@ -106,6 +115,8 @@ async def delete_admin_process(message: types.Message, state: FSMContext):
     )
 
 # Сбор данных пользователя
+
+
 @dp.message_handler(state=states.User.name)
 async def process_name(message: types.Message, state: FSMContext):
     response = await c.message_name_state(message=message, state=state)
@@ -133,7 +144,7 @@ async def process_phone_number(message: types.Message, state: FSMContext):
         text=response['text'],
         reply_markup=response['markup'],
         reply=False
-    )    
+    )
 
 
 # это меню "поисковой запрос"
@@ -190,7 +201,7 @@ async def waiting_seo_result_process(message: types.Message, state: FSMContext):
         reply_markup=response["markup"],
         parse_mode="HTML",
         reply=False
-    ) 
+    )
 
 
 # это меню 'Как пользоваться ботом'
