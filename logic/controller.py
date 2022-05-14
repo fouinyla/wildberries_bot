@@ -5,11 +5,11 @@ from . import states
 from . import wildberries as wb
 from . import mpstats
 from const.phrases import FAQ
+from const.const import *
 import re
 import os
 from aiogram.utils.markdown import hlink
 from aiogram import types
-from .telegram import subscribed
 
 
 class Controller:
@@ -18,10 +18,18 @@ class Controller:
         self.db = Database()
         self.notification = Notification_Service(bot=self.bot)
 
+    async def subscribed(self, user_id: int) -> bool:
+        """
+        Checks if user is subscribed to the customer's channel.
+        """
+        status = await self.bot.get_chat_member(chat_id=CUSTOMER_CHANNEL_ID,
+                                                user_id=user_id)
+        return status['status'] != 'left'
+
     async def command_start(self, message, state):
         await state.finish()
 
-        if not await subscribed(self.bot, message.from_user.id):
+        if not await self.subscribed(message.from_user.id):
             text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
             markup = None
             return dict(text=text, markup=markup)
@@ -62,8 +70,8 @@ class Controller:
 
     async def pre_step_for_add_admin(self, state):
         text = 'Введите tg_id пользователя, которому вы хотите дать права админа.\n' + \
-                'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot. ' + \
-                'Достаточно лишь начать с ним общение.'
+            'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot. ' + \
+            'Достаточно лишь начать с ним общение.'
         markup = markups.back_to_main_menu_markup()
         await state.set_state(states.Admin.tg_id_to_add)
         return dict(text=text, markup=markup)
@@ -90,8 +98,8 @@ class Controller:
 
     async def pre_step_for_delete_admin(self, state):
         text = 'Введите tg_id пользователя, которому вы хотите дать права админа.\n' + \
-                'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot. ' + \
-                'Достаточно лишь начать с ним общение.'
+            'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot. ' + \
+            'Достаточно лишь начать с ним общение.'
         markup = markups.back_to_main_menu_markup()
         await state.set_state(states.Admin.tg_id_to_delete)
         return dict(text=text, markup=markup)
