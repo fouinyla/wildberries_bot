@@ -59,8 +59,6 @@ async def get_data_from_db_process(message: types.Message):
     )
 
 # это запрос tg_id для добавления нового админа
-
-
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Добавить админа'), state='*')
 async def pre_step_for_add_admin_process(message: types.Message, state: FSMContext):
@@ -73,8 +71,6 @@ async def pre_step_for_add_admin_process(message: types.Message, state: FSMConte
     )
 
 # это добавление нового админа
-
-
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     state=states.Admin.tg_id_to_add)
 async def add_admin_process(message: types.Message, state: FSMContext):
@@ -87,8 +83,6 @@ async def add_admin_process(message: types.Message, state: FSMContext):
     )
 
 # это запрос tg_id для удаления старого админа
-
-
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Удалить админа'), state='*')
 async def pre_step_for_delete_admin_process(message: types.Message, state: FSMContext):
@@ -101,8 +95,6 @@ async def pre_step_for_delete_admin_process(message: types.Message, state: FSMCo
     )
 
 # это удаление старого админа
-
-
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     state=states.Admin.tg_id_to_delete)
 async def delete_admin_process(message: types.Message, state: FSMContext):
@@ -115,8 +107,6 @@ async def delete_admin_process(message: types.Message, state: FSMContext):
     )
 
 # Сбор данных пользователя
-
-
 @dp.message_handler(state=states.User.name)
 async def process_name(message: types.Message, state: FSMContext):
     response = await c.message_name_state(message=message, state=state)
@@ -151,7 +141,7 @@ async def process_phone_number(message: types.Message, state: FSMContext):
 @dp.message_handler(Text(equals='Поисковой запрос'), state='*')
 @dp.message_handler(Text(equals='Ввести поисковой запрос повторно'), state='*')
 async def search_query_process(message: types.Message, state: FSMContext):
-    response = await c.search_query(state)
+    response = await c.search_query(state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
@@ -163,7 +153,7 @@ async def search_query_process(message: types.Message, state: FSMContext):
 # это меню получение поискового запроса
 @dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.query)
 async def giving_hints_process(message: types.Message, state: FSMContext):
-    response = await c.giving_hints(message, state)
+    response = await c.giving_hints(message=message, state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
@@ -176,7 +166,7 @@ async def giving_hints_process(message: types.Message, state: FSMContext):
 @dp.message_handler(Text(equals='Сбор SEO ядра'), state='*')
 @dp.message_handler(Text(equals='Собрать SEO повторно'), state='*')
 async def building_seo_core_process(message: types.Message, state: FSMContext):
-    response = await c.building_seo_core(state)
+    response = await c.building_seo_core(state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
@@ -188,14 +178,14 @@ async def building_seo_core_process(message: types.Message, state: FSMContext):
 # это ответ (ожидание) после передачи запросов для SEO
 @dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.SEO_queries)
 async def waiting_seo_result_process(message: types.Message, state: FSMContext):
-    response = await c.waiting_seo_result(message, state)
+    response = await c.waiting_seo_result(message=message, state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
         parse_mode="HTML",
         reply=False
     )
-    response = await c.building_seo_result(message, state)
+    response = await c.building_seo_result(message=message, state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
@@ -203,6 +193,28 @@ async def waiting_seo_result_process(message: types.Message, state: FSMContext):
         reply=False
     )
 
+# это меню "ценовая сегментация"
+@dp.message_handler(Text(equals='Ценовая сегментация'), state='*')
+@dp.message_handler(Text(equals='Узнать ценовую сегментацию повторно'), state='*')
+async def category_for_price_segmentation_process(message: types.Message, state: FSMContext):
+    response = await c.category_for_price_segmentation(state=state)
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+# это выдача результатов "ценовая сегментация"
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.price_category)
+async def price_segmentation_process(message: types.Message, state: FSMContext):
+    response = await c.price_segmentation(message=message, state=state)
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
 
 # это меню поиска позиции
 @dp.message_handler(Text(equals='Поиск по ранжированию'), state='*')

@@ -274,6 +274,33 @@ class Controller:
                 text = 'Товар не найден, проверьте корректность введенного артикула.'
         markup = markups.another_card_position_search_markup()
         await state.finish()
+    
+    async def category_for_price_segmentation(self, state):
+        markup = markups.back_to_main_menu_markup()
+        text = 'По какой категории определяем ценовую сегментацию?'
+        await state.set_state(states.NameGroup.price_category)
+        return dict(text=text, markup=markup)
+
+    async def price_segmentation(self, message, state):
+        if message.text == 'Назад в главное меню':
+            name = message.from_user.first_name
+            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+            is_admin = self.db.check_for_admin(message.from_user.id)
+            if is_admin:
+                markup = markups.admin_start_menu_markup()
+            else:
+                markup = markups.start_menu_markup()
+        else:
+            path_to_excel = \
+                mpstats.get_price_segmentation(query=message.text)
+            if path_to_excel:
+                text = 'Пожалуйста, ценовая сегментация для данной категории в таблице.'
+                await message.answer_document(document=types.InputFile(path_to_excel))
+                os.remove(path_to_excel)
+                await state.finish()
+            else:
+                text = 'Вы ввели невалидную категорию.'
+            markup = markups.another_price_segmentation_markup()
         return dict(text=text, markup=markup)
 
     async def instruction_bar(self):
