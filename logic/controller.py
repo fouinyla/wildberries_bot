@@ -247,6 +247,35 @@ class Controller:
             markup = markups.another_seo_building_markup()
         return dict(text=text, markup=markup)
 
+    async def position_search(self, state):
+        markup = markups.back_to_main_menu_markup()
+        text = CARD_POSITION_TEXT
+        await state.set_state(states.NameGroup.range_search)
+        return dict(text=text, markup=markup)
+
+    async def waiting_for_article_search(self, message, state):
+        async with state.proxy() as data:
+            data['range_search'] = message.text.replace(' ', '$', 1).split('$')
+        text = '🔎<b>Поиск запущен..</b> Результат скоро появится.'
+        markup = markups.back_to_main_menu_markup()
+        return dict(text=text, markup=markup)
+
+    async def article_search(self, message, state):
+        async with state.proxy() as data:
+            if data['range_search'][0].isdigit() and len(data['range_search'][0]) == 8:
+                position = wb.search_for_article(int(data['range_search'][0]), data['range_search'][1]) 
+                if position:
+                    text = f"Артикул {data['range_search'][0]} по запросу " \
+                        f"{data['range_search'][1]} найден:\n\n" \
+                        f"Страница {position[0]}\nПозиция {position[1]}"
+                else:
+                    text = 'Товара по данному запросу не обнаружено.'
+            else:
+                text = 'Товар не найден, проверьте корректность введенного артикула.'
+        markup = markups.another_card_position_search_markup()
+        await state.finish()
+        return dict(text=text, markup=markup)
+
     async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()
         text = f"{FAQ} {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"

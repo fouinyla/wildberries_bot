@@ -9,6 +9,7 @@ def admin_start_menu_markup():
     markup.insert(types.KeyboardButton('Удалить админа'))
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
+    markup.insert(types.KeyboardButton('Поиск по ранжированию'))
     markup.add(types.KeyboardButton('Как пользоваться ботом'))
     return markup
 
@@ -17,6 +18,7 @@ def start_menu_markup():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
+    markup.insert(types.KeyboardButton('Поиск по ранжированию'))
     markup.add(types.KeyboardButton('Как пользоваться ботом'))
     return markup
 
@@ -69,5 +71,11 @@ def another_search_query_markup():
 def another_seo_building_markup():
     markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     markup.add(types.KeyboardButton('Собрать SEO повторно'))
+    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    return markup
+
+def another_card_position_search_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(types.KeyboardButton('Ввести запрос повторно'))
     markup.insert(types.KeyboardButton('Назад в главное меню'))
     return markup

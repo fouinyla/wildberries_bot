@@ -204,6 +204,38 @@ async def waiting_seo_result_process(message: types.Message, state: FSMContext):
     )
 
 
+# это меню поиска позиции
+@dp.message_handler(Text(equals='Поиск по ранжированию'), state='*')
+@dp.message_handler(Text(equals='Ввести запрос повторно'), state='*')
+async def card_position_search(message: types.Message, state: FSMContext):
+    response = await c.position_search(state)
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+
+# это меню ожидания и выдачи позиции товара 
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.range_search)
+async def card_article_search(message: types.Message, state: FSMContext):
+    response = await c.waiting_for_article_search(message, state)
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+    response = await c.article_search(message, state)
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+
 # это меню 'Как пользоваться ботом'
 @dp.message_handler(Text(equals='Как пользоваться ботом'))
 async def instruction_bar_process(message: types.Message):
