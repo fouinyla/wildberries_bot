@@ -43,7 +43,7 @@ def get_page_url(query):
 def search_for_article(article, query):
     page_counter = 0
     for url in get_page_url(query):
-        resp = requests.get(url=url)
+        resp = httpx.get(url=url)
         exist_card = resp.json()
         page_counter += 1
         if exist_card:
