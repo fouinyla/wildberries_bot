@@ -1,7 +1,7 @@
 import httpx
 from typing import Union, List
 from const.const import *
-import requests
+
 
 def get_hints(query: str, gender: str = 'common', locale: str = 'ru',
               lang: str = 'ru') -> Union[List[str], None]:

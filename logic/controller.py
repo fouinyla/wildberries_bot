@@ -274,6 +274,7 @@ class Controller:
                 text = 'Товар не найден, проверьте корректность введенного артикула.'
         markup = markups.another_card_position_search_markup()
         await state.finish()
+        return dict(text=text, markup=markup)
     
     async def category_for_price_segmentation(self, state):
         markup = markups.back_to_main_menu_markup()
