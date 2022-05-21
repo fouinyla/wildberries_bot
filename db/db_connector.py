@@ -84,6 +84,20 @@ class Database:
                 )
                 session.add(query)
 
+    def add_price_query(self, query_for_price, tg_id):
+        with self.session() as session:
+            with session.begin():
+                user_id = session\
+                    .query(User.id)\
+                    .filter(User.tg_id.__eq__(tg_id))\
+                    .scalar()
+
+                query = PriceSegmentation(
+                    query_for_price=query_for_price,
+                    user_id=user_id
+                )
+                session.add(query)
+
     def get_number_of_users(self):
         with self.session() as session:
             with session.begin():

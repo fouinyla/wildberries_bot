@@ -1,4 +1,3 @@
-from tokenize import Triple
 import httpx
 from bs4 import BeautifulSoup
 import json
@@ -123,6 +122,7 @@ def get_price_segmentation(query: str):
                               params=params,
                               headers=headers,
                               follow_redirects=True)
+        print(response)
         data = response.json()
         if not data:
             return False

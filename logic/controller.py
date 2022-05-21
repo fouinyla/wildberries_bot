@@ -295,6 +295,10 @@ class Controller:
             path_to_excel = \
                 mpstats.get_price_segmentation(query=message.text)
             if path_to_excel:
+                user = self.db.get_user(tg_id=message.from_user.id)
+                if user:
+                    self.db.add_price_query(query_for_price=message.text,
+                                            tg_id=message.from_user.id)
                 text = 'Пожалуйста, ценовая сегментация для данной категории в таблице.'
                 await message.answer_document(document=types.InputFile(path_to_excel))
                 os.remove(path_to_excel)
