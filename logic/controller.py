@@ -268,6 +268,12 @@ class Controller:
                     text = f"Артикул {data['range_search'][0]} по запросу " \
                         f"{data['range_search'][1]} найден:\n\n" \
                         f"Страница {position[0]}\nПозиция {position[1]}"
+                    user = self.db.get_user(tg_id=message.from_user.id)
+                    if user:
+                        self.db.add_search_position_query(
+                            search_position_query=message.text,
+                            tg_id=message.from_user.id
+                        )
                 else:
                     text = 'Товара по данному запросу не обнаружено.'
             else:
