@@ -10,7 +10,10 @@ import re
 import os
 from aiogram.utils.markdown import hlink
 from aiogram import types
-from .inline_keyboard.inline_buttons_process_callback import InlineCallback
+from .inline_buttons_process_callback import InlineCallback
+import json
+from math import ceil
+from const import phrases
 
 
 class Controller:
@@ -19,10 +22,7 @@ class Controller:
         self.db = Database()
         self.notification = Notification_Service(bot=self.bot)
         self.inline_buttons_callback = InlineCallback(
-            notification_service=self.notification,
             bot=self.bot,
-            db=self.db,
-            scheduler=self.scheduler
         )
 
     async def subscribed(self, user_id: int) -> bool:
@@ -36,10 +36,10 @@ class Controller:
     async def command_start(self, message, state):
         await state.finish()
 
-        if not await self.subscribed(message.from_user.id):
-            text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-            markup = markups.not_subscribed_markup()
-            return dict(text=text, markup=markup)
+        # if not await self.subscribed(message.from_user.id):
+        #     text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+        #     markup = markups.not_subscribed_markup()
+        #     return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
@@ -270,7 +270,7 @@ class Controller:
     async def article_search(self, message, state):
         async with state.proxy() as data:
             if data['range_search'][0].isdigit() and len(data['range_search'][0]) == 8:
-                position = wb.search_for_article(int(data['range_search'][0]), data['range_search'][1]) 
+                position = wb.search_for_article(int(data['range_search'][0]), data['range_search'][1])
                 if position:
                     text = f"Артикул {data['range_search'][0]} по запросу " \
                         f"{data['range_search'][1]} найден:\n\n" \
@@ -282,11 +282,24 @@ class Controller:
         markup = markups.another_card_position_search_markup()
         await state.finish()
         return dict(text=text, markup=markup)
-    
+
     async def category_for_price_segmentation(self, state):
-        markup = markups.back_to_main_menu_markup()
-        text = 'По какой категории определяем ценовую сегментацию?'
-        await state.set_state(states.NameGroup.price_category)
+        parent = "0"
+        categories = json.load(open("static/cats/" + parent + ".json"))
+        text = phrases.phrase_for_categories_inline_keyboard(
+            data=dict(
+                category="",
+                current_page=1,
+                total_page=ceil(len(categories)/10)
+            )
+        )
+        markup = markups.inline_categories_markup(
+            categories=[dict(id=key, name=value.split('/')[-1]) for key, value in categories.items()][:10],
+            cat_id=parent,
+            next_page=2,
+            back_to=False,
+            select=False
+        )
         return dict(text=text, markup=markup)
 
     async def price_segmentation(self, message, state):
@@ -319,3 +332,6 @@ class Controller:
         markup = markups.back_to_main_menu_markup()
         text = f"{FAQ} {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
         return dict(text=text, markup=markup)
+
+    async def query_handler(self, query):
+        await self.inline_buttons_callback.process_callback(query)

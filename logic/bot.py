@@ -59,6 +59,8 @@ async def get_data_from_db_process(message: types.Message):
     )
 
 # это запрос tg_id для добавления нового админа
+
+
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Добавить админа'), state='*')
 async def pre_step_for_add_admin_process(message: types.Message, state: FSMContext):
@@ -71,6 +73,8 @@ async def pre_step_for_add_admin_process(message: types.Message, state: FSMConte
     )
 
 # это добавление нового админа
+
+
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     state=states.Admin.tg_id_to_add)
 async def add_admin_process(message: types.Message, state: FSMContext):
@@ -83,6 +87,8 @@ async def add_admin_process(message: types.Message, state: FSMContext):
     )
 
 # это запрос tg_id для удаления старого админа
+
+
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Удалить админа'), state='*')
 async def pre_step_for_delete_admin_process(message: types.Message, state: FSMContext):
@@ -95,6 +101,8 @@ async def pre_step_for_delete_admin_process(message: types.Message, state: FSMCo
     )
 
 # это удаление старого админа
+
+
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     state=states.Admin.tg_id_to_delete)
 async def delete_admin_process(message: types.Message, state: FSMContext):
@@ -107,6 +115,8 @@ async def delete_admin_process(message: types.Message, state: FSMContext):
     )
 
 # Сбор данных пользователя
+
+
 @dp.message_handler(state=states.User.name)
 async def process_name(message: types.Message, state: FSMContext):
     response = await c.message_name_state(message=message, state=state)
@@ -194,6 +204,8 @@ async def waiting_seo_result_process(message: types.Message, state: FSMContext):
     )
 
 # это меню "ценовая сегментация"
+
+
 @dp.message_handler(Text(equals='Ценовая сегментация'), state='*')
 @dp.message_handler(Text(equals='Узнать ценовую сегментацию повторно'), state='*')
 async def category_for_price_segmentation_process(message: types.Message, state: FSMContext):
@@ -206,6 +218,8 @@ async def category_for_price_segmentation_process(message: types.Message, state:
     )
 
 # это выдача результатов "ценовая сегментация"
+
+
 @dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.price_category)
 async def price_segmentation_process(message: types.Message, state: FSMContext):
     response = await c.price_segmentation(message=message, state=state)
@@ -217,6 +231,8 @@ async def price_segmentation_process(message: types.Message, state: FSMContext):
     )
 
 # это меню поиска позиции
+
+
 @dp.message_handler(Text(equals='Поиск по ранжированию'), state='*')
 @dp.message_handler(Text(equals='Ввести запрос повторно'), state='*')
 async def card_position_search(message: types.Message, state: FSMContext):
@@ -229,7 +245,7 @@ async def card_position_search(message: types.Message, state: FSMContext):
     )
 
 
-# это меню ожидания и выдачи позиции товара 
+# это меню ожидания и выдачи позиции товара
 @dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.range_search)
 async def card_article_search(message: types.Message, state: FSMContext):
     response = await c.waiting_for_article_search(message, state)
@@ -258,3 +274,8 @@ async def instruction_bar_process(message: types.Message):
         parse_mode="HTML",
         reply=False
     )
+
+
+@dp.callback_query_handler()
+async def query_handler(query: types.CallbackQuery):
+    await c.query_handler(query=query)
