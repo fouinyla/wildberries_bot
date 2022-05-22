@@ -45,3 +45,4 @@ watchgod==0.8.2
 websockets==10.2
 XlsxWriter==3.0.3
 yarl==1.7.2
+matplotlib==3.5.2

@@ -28,3 +28,17 @@ class SEOquery(Base):
     id = Column(Integer, primary_key=True)
     query_for_SEO = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+
+class SearchPosition(Base):
+    __tablename__ = "search_position"
+    id = Column(Integer, primary_key=True)
+    search_position_query = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+
+class PriceSegmentation(Base):
+    __tablename__ = "price_segmentations"
+    id = Column(Integer, primary_key=True)
+    query_for_price = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)

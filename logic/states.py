@@ -4,6 +4,8 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 class NameGroup(StatesGroup):
     query = State()
     SEO_queries = State()
+    range_search = State()
+    price_category = State()
 
 
 class User(StatesGroup):
