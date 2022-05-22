@@ -4,7 +4,7 @@ from logic.notification_service import Notification_Service
 from . import states
 from . import wildberries as wb
 from . import mpstats
-from const.phrases import FAQ
+from const.phrases import *
 from const.const import *
 import re
 import os

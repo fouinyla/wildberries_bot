@@ -1,4 +1,3 @@
-from tokenize import Triple
 import httpx
 from bs4 import BeautifulSoup
 import json
@@ -7,12 +6,8 @@ from . import time
 import os
 import datetime
 import string
-from typing import Tuple
-
-
-MAIN_PAGE_URL = 'https://mpstats.io/'
-BASE_SKU_GETTING_URL = 'https://mpstats.io/wb/bysearch?'
-BASE_SKU_GETTING_SEO = 'https://mpstats.io/api/seo/keywords/expanding'
+from typing import Tuple, List, Dict
+from const.const import *
 
 COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
     '_ga=GA1.1.2054104203.1651240592; _ym_isad=2; ' \
@@ -24,18 +19,34 @@ COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
     '_ga_8S8Y1X62NG=GS1.1.1651240592.1.1.1651240652.0'
 
 # создание директории для записи данных
-path_to_results = os.path.join(os.getcwd(), 'results')
-if not os.path.exists(path_to_results):
-    os.makedirs(path_to_results)
+os.makedirs('results', exist_ok=True)
 
 
-def get_SEO(queries: str) -> Tuple[str, bool]:
-    flag_all_queries_are_empty = True  # флаг, если все запросы пользователя пустые
+def get_trends_data(path: str, view: str) -> List[Dict]:
+    """
+        path: 'Детям/Детское питание/Детская смесь' (example)
+        view: 'category' or 'itemsInCategory'
+    """
+    with httpx.Client() as client:
+        main_page_response = client.get(MPSTATS_MAIN_PAGE_URL)
+        main_page_response.raise_for_status()
+        cookie = main_page_response.headers['set-cookie']
+        trends_response = client.get(MPSTATS_TRENDS_URL,
+                                     headers={'cookie': cookie + COOKIES_PART},
+                                     params={'view': view,
+                                             'path': path},
+                                     follow_redirects=True)
+        trends_response.raise_for_status()
+        return trends_response.json()
+
+
+def get_seo(queries: str) -> Tuple[str, bool]:
+    flag_all_queries_are_empty = True  # флаг, если все запросы пустые
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()
-    with httpx.Client(timeout=120) as client:
+    with httpx.Client() as client:
         # получение кук для отправки запроса для получения SKU
-        main_page_response = client.get(MAIN_PAGE_URL)
+        main_page_response = client.get(MPSTATS_MAIN_PAGE_URL)
         main_page_response.raise_for_status()
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
@@ -50,9 +61,10 @@ def get_SEO(queries: str) -> Tuple[str, bool]:
             workbook = xlsxwriter.Workbook(path_to_excel)
             for num, query in enumerate(queries, start=1):
                 # запрос на получение html с SKU
-                sku_response = client.get(BASE_SKU_GETTING_URL,
+                sku_response = client.get(MPSTATS_SKU_URL,
                                           headers=headers,
-                                          params={'query': query}, follow_redirects=True)
+                                          params={'query': query},
+                                          follow_redirects=True)
                 sku_response.raise_for_status()
                 # парсинг html ответа для получения SKU
                 html = sku_response.text
@@ -60,9 +72,8 @@ def get_SEO(queries: str) -> Tuple[str, bool]:
                 tpls = soup.find('wb-search-result')
                 if not tpls:
                     continue
-                data = json.loads(tpls['tpls'])
                 flag_all_queries_are_empty = False
-                attributes = [sku for _, sku in data]
+                attributes = [sku for _, sku in json.loads(tpls['tpls'])]
                 # получение запросов по атрибутам
                 data = {'query': ','.join(map(str, attributes)),
                         'type': 'sku',
@@ -71,7 +82,7 @@ def get_SEO(queries: str) -> Tuple[str, bool]:
                         'searchFullWord': False,
                         'd1': today_date - datetime.timedelta(days=30),
                         'd2': today_date}
-                response = client.post(BASE_SKU_GETTING_SEO,
+                response = client.post(MPSTATS_SEO_URL,
                                        headers=headers,
                                        data=data)
                 response.raise_for_status()
