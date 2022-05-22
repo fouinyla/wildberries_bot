@@ -14,6 +14,8 @@ from .inline_buttons_process_callback import InlineCallback
 import json
 from math import ceil
 from const import phrases
+import utils
+from datetime import date
 
 
 class Controller:
@@ -21,9 +23,7 @@ class Controller:
         self.bot = bot
         self.db = Database()
         self.notification = Notification_Service(bot=self.bot)
-        self.inline_buttons_callback = InlineCallback(
-            bot=self.bot,
-        )
+        self.inline_buttons_callback = InlineCallback(bot=self.bot)
 
     async def subscribed(self, user_id: int) -> bool:
         """
@@ -204,14 +204,10 @@ class Controller:
 
         async with state.proxy() as data:
             data['query'] = message.text
-
         user = self.db.get_user(tg_id=message.from_user.id)
         if user:
-            self.db.add_search_query(
-                search_query=message.text,
-                user_id=user['id']
-            )
-
+            self.db.add_search_query(search_query=message.text,
+                                     user_id=user['id'])
         hints = wb.get_hints(data['query'])
         if hints:
             text = '\n'.join(hints)
@@ -289,23 +285,44 @@ class Controller:
         await state.finish()
         return dict(text=text, markup=markup)
 
-    async def category_for_price_segmentation(self, state):
+    async def category_selection(self, state):
         parent = "0"
         categories = json.load(open("static/cats/" + parent + ".json"))
         text = phrases.phrase_for_categories_inline_keyboard(
-            data=dict(
-                category="",
-                current_page=1,
-                total_page=ceil(len(categories)/10)
-            )
-        )
+            data=dict(category="",
+                      current_page=1,
+                      total_page=ceil(len(categories)/10)))
         markup = markups.inline_categories_markup(
             categories=[dict(id=key, name=value.split('/')[-1]) for key, value in categories.items()][:10],
             cat_id=parent,
             next_page=2,
             back_to=False,
-            select=False
-        )
+            select=False)
+        return dict(text=text, markup=markup)
+
+    async def callback_trend_graph(self, query):
+        path = await self.inline_buttons_callback.process_callback(query)
+        if not path:
+            return None
+        trend_data = mpstats.get_trends_data(path, 'itemsInCategory')  # !!!!!!! ПРЕДОСТАВИТЬ ВЫБОР VIEW
+        path_to_graph = utils.make_graph(value='Число продаж',         # !!!!!!! ПРЕДОСТАВИТЬ ВЫБОР ПАРАМЕТРОВ
+                                         data=trend_data,
+                                         date_1=date(2022, 1, 1),
+                                         date_2=date(2022, 4, 1),
+                                         header=path)
+        if path_to_graph:
+            user = self.db.get_user(tg_id=query.from_user.id)
+            if user:
+                self.db.add_price_query(query_for_price=path,
+                                        tg_id=query.from_user.id)
+
+            await self.bot.send_document(chat_id=query.from_user.id,
+                                         document=types.InputFile(path_to_graph))
+            os.remove(path_to_graph)
+            text = 'График по вашему запросу готов!'
+        else:
+            text = 'Ошибка на стороне сервера. Попробуйте повторить запрос или изменить категорию товара.'
+        markup = markups.another_price_segmentation_markup()
         return dict(text=text, markup=markup)
 
     async def callback_price_segmentation(self, query):
@@ -336,8 +353,7 @@ class Controller:
             else:
                 markup = markups.start_menu_markup()
         else:
-            path_to_excel = \
-                await self.inline_buttons_callback.process_callback(query.message.text)
+            path_to_excel = await self.inline_buttons_callback.process_callback(query.message.text)
             if path_to_excel:
                 user = self.db.get_user(tg_id=message.from_user.id)
                 if user:
@@ -355,5 +371,3 @@ class Controller:
         markup = markups.back_to_main_menu_markup()
         text = f"{FAQ} {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
         return dict(text=text, markup=markup)
-
-

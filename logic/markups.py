@@ -11,7 +11,7 @@ def admin_start_menu_markup():
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
     markup.insert(types.KeyboardButton('Поиск по ранжированию'))
-    markup.insert(types.KeyboardButton('Получить график'))
+    # markup.insert(types.KeyboardButton('Получить график'))
     markup.add(types.KeyboardButton('Как пользоваться ботом'))
     return markup
 
@@ -21,7 +21,7 @@ def start_menu_markup():
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
     markup.insert(types.KeyboardButton('Поиск по ранжированию'))
-    markup.insert(types.KeyboardButton('Получить график'))
+    # markup.insert(types.KeyboardButton('Получить график'))
     markup.insert(types.KeyboardButton('Ценовая сегментация'))
     markup.insert(types.KeyboardButton('Как пользоваться ботом'))
     return markup
@@ -86,11 +86,11 @@ def another_card_position_search_markup():
     return markup
 
 
-def another_trend_graph_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add(types.KeyboardButton('Получить другой график'))
-    markup.insert(types.KeyboardButton('Назад в главное меню'))
-    return markup
+# def another_trend_graph_markup():
+#     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+#     markup.add(types.KeyboardButton('Получить другой график'))
+#     markup.insert(types.KeyboardButton('Назад в главное меню'))
+#     return markup
 
     
 def another_price_segmentation_markup():
