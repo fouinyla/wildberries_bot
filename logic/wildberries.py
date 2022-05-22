@@ -43,6 +43,7 @@ def get_page_url(query):
 
 
 def search_for_article(article, query):
+    card_counter = 3
     page_counter = 0
     for url in get_page_url(query):
         resp = httpx.get(url=url)
@@ -52,6 +53,7 @@ def search_for_article(article, query):
             card_list = resp.json()['catalog']['data']['products']
             for card in range(len(card_list)):
                 if card_list[card]['id'] == article:
-                    return page_counter, card + 3
+                    return page_counter, card_counter
+                card_counter += 1
         else:
             return None

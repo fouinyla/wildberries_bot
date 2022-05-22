@@ -109,3 +109,18 @@ class Database:
         finally:
             workbook.close()
         return file_name
+
+
+    def add_search_position_query(self, search_position_query, tg_id):
+        with self.session() as session:
+            with session.begin():
+                user_id = session\
+                    .query(User.id)\
+                    .filter(User.tg_id.__eq__(tg_id))\
+                    .scalar()
+
+                query = Search_position(
+                   search_position_query=search_position_query,
+                    user_id=user_id
+                )
+                session.add(query)
