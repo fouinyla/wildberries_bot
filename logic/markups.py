@@ -20,8 +20,8 @@ def start_menu_markup():
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
     markup.insert(types.KeyboardButton('Поиск по ранжированию'))
-    markup.add(types.KeyboardButton('Как пользоваться ботом'))
     markup.insert(types.KeyboardButton('Получить график'))
+    markup.add(types.KeyboardButton('Как пользоваться ботом'))
     return markup
 
 
