@@ -1,3 +1,4 @@
+from urllib import response
 from .controller import Controller
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -204,8 +205,6 @@ async def waiting_seo_result_process(message: types.Message, state: FSMContext):
     )
 
 # это меню "ценовая сегментация"
-
-
 @dp.message_handler(Text(equals='Ценовая сегментация'), state='*')
 @dp.message_handler(Text(equals='Узнать ценовую сегментацию повторно'), state='*')
 async def category_for_price_segmentation_process(message: types.Message, state: FSMContext):
@@ -218,21 +217,19 @@ async def category_for_price_segmentation_process(message: types.Message, state:
     )
 
 # это выдача результатов "ценовая сегментация"
+@dp.callback_query_handler()
+async def callback_price_segmentation_process(query: types.CallbackQuery):
+    response = await c.callback_price_segmentation(query=query)
+    if response:
+        await bot.send_message(
+            chat_id=query.from_user.id, 
+            text=response['text'], 
+            reply_markup=response['markup'], 
+            parse_mode='HTML'
+        )
 
-
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.price_category)
-async def price_segmentation_process(message: types.Message, state: FSMContext):
-    response = await c.price_segmentation(message=message, state=state)
-    await message.reply(
-        text=response["text"],
-        reply_markup=response["markup"],
-        parse_mode="HTML",
-        reply=False
-    )
 
 # это меню поиска позиции
-
-
 @dp.message_handler(Text(equals='Поиск по ранжированию'), state='*')
 @dp.message_handler(Text(equals='Ввести запрос повторно'), state='*')
 async def card_position_search(message: types.Message, state: FSMContext):
@@ -274,8 +271,3 @@ async def instruction_bar_process(message: types.Message):
         parse_mode="HTML",
         reply=False
     )
-
-
-@dp.callback_query_handler()
-async def query_handler(query: types.CallbackQuery):
-    await c.query_handler(query=query)

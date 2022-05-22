@@ -36,10 +36,10 @@ class Controller:
     async def command_start(self, message, state):
         await state.finish()
 
-        # if not await self.subscribed(message.from_user.id):
-        #     text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-        #     markup = markups.not_subscribed_markup()
-        #     return dict(text=text, markup=markup)
+        if not await self.subscribed(message.from_user.id):
+            text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+            markup = markups.not_subscribed_markup()
+            return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
@@ -302,18 +302,32 @@ class Controller:
         )
         return dict(text=text, markup=markup)
 
-    async def price_segmentation(self, message, state):
-        if message.text == 'Назад в главное меню':
-            name = message.from_user.first_name
+    async def callback_price_segmentation(self, query):
+        path = await self.inline_buttons_callback.process_callback(query)
+        if path:
+            user = self.db.get_user(tg_id=query.from_user.id)
+            if user:
+                self.db.add_price_query(query_for_price=path,
+                                        tg_id=query.from_user.id)
+            text = 'Пожалуйста, ценовая сегментация в таблице.'
+            path_to_excel = mpstats.get_price_segmentation(path)
+            await self.bot.send_document(chat_id=query.from_user.id, document=types.InputFile(path_to_excel))
+            os.remove(path_to_excel)
+            markup = markups.another_price_segmentation_markup()
+            return dict(text=text, markup=markup)
+    
+    async def price_segmentation(self, message, query):
+        if query.message.text == 'Назад в главное меню':
+            name = query.message.from_user.first_name
             text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
-            is_admin = self.db.check_for_admin(message.from_user.id)
+            is_admin = self.db.check_for_admin(query.message.from_user.id)
             if is_admin:
                 markup = markups.admin_start_menu_markup()
             else:
                 markup = markups.start_menu_markup()
         else:
             path_to_excel = \
-                mpstats.get_price_segmentation(query=message.text)
+                await self.inline_buttons_callback.process_callback(query.message.text)
             if path_to_excel:
                 user = self.db.get_user(tg_id=message.from_user.id)
                 if user:
@@ -322,7 +336,6 @@ class Controller:
                 text = 'Пожалуйста, ценовая сегментация для данной категории в таблице.'
                 await message.answer_document(document=types.InputFile(path_to_excel))
                 os.remove(path_to_excel)
-                await state.finish()
             else:
                 text = 'Вы ввели невалидную категорию.'
             markup = markups.another_price_segmentation_markup()
@@ -333,5 +346,4 @@ class Controller:
         text = f"{FAQ} {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
         return dict(text=text, markup=markup)
 
-    async def query_handler(self, query):
-        await self.inline_buttons_callback.process_callback(query)
+

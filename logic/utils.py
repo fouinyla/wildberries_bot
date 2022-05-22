@@ -15,7 +15,6 @@ class Dict(dict):
 
 def callback(data):
     d = json.dumps(data)
-    print("SIZE", len(d.encode("utf-8")))
     return d
 
 

@@ -3,7 +3,6 @@ from const import phrases
 from .utils import get_callback
 from . import markups
 import json
-from . import prices
 
 
 class InlineCallback():
@@ -12,7 +11,6 @@ class InlineCallback():
 
     async def process_callback(self, query):
         data = get_callback(query.data)
-        print("data", data)
         action = data["a"]
         if action == '.':
             await self.bot.answer_callback_query(
@@ -22,29 +20,26 @@ class InlineCallback():
             cat_id = data["d"]
             cat_json = json.load(open("static/cats/" + cat_id.rsplit('.', cat_id.count('.')-1)[0] + ".json"))
             path = cat_json[cat_id]
-            prices.get_price_categories(path)
-            text = "Вы выбрали " + path
-            markup = None
+            text = f'Вы выбрали категорию {path}. Подождите немного, мы подготавливаем результат.'
             await self.edit_message(
                 query=query,
                 text=text,
-                markup=markup
+                markup=None
             )
+            return path
 
         elif action == "PCK":
             cat_id = data["d"]
             if cat_id.count('.') == 3:
                 cat_json = json.load(open("static/cats/" + cat_id.rsplit('.', cat_id.count('.')-1)[0] + ".json"))
                 path = cat_json[cat_id]
-                prices.get_price_categories(path)
-                text = "Вы выбрали " + path
-                markup = None
+                text = f'Вы выбрали категорию {path}. Подождите немного, мы подготавливаем результат.'
                 await self.edit_message(
                     query=query,
                     text=text,
-                    markup=markup
+                    markup=None
                 )
-                return
+                return path
 
             cat_json = json.load(open("static/cats/"+(cat_id if cat_id.count('.') <= 1 else cat_id.rsplit('.', 1)[0])+".json"))
             subcats = [dict(id=key, name=value.split('/')[-1]) for key, value in cat_json.items() if key.startswith(cat_id) and key.count('.') == (cat_id.count('.') + 1)]
@@ -61,7 +56,7 @@ class InlineCallback():
                 cat_id=cat_id,
                 next_page=(2 if len(subcats) > 10 else False),
                 back_to=(cat_id.rsplit('.', 1)[0] if cat_id.count('.') > 0 else False),
-                select=not (cat_id.count('.') == 2)
+                select=not (cat_id.count('.') == 0)
             )
             await self.edit_message(
                 query=query,
@@ -87,7 +82,7 @@ class InlineCallback():
                 prev_page=page-1,
                 next_page=(page+1 if len(siblings[10*(page-1):]) > 10 else False),
                 back_to=(cat_id.rsplit('.', 1)[0] if cat_id.count('.') > 1 else False),
-                select=not (cat_id.count('.') == 2)
+                select=not (cat_id.count('.') == 0)
             )
             await self.edit_message(
                 query=query,
@@ -114,7 +109,7 @@ class InlineCallback():
                 prev_page=page-1,
                 next_page=(page+1 if len(siblings[10*(page-1):]) > 10 else False),
                 back_to=(cat_id.rsplit('.', 1)[0] if cat_id.count('.') > 1 else False),
-                select=not (cat_id.count('.') == 2)
+                select=not (cat_id.count('.') == 0)
             )
             await self.edit_message(
                 query=query,
