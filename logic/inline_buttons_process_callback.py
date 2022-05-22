@@ -3,6 +3,7 @@ from const import phrases
 from .utils import get_callback
 from . import markups
 import json
+from aiogram import types
 
 
 class InlineCallback():

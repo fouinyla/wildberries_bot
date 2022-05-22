@@ -14,7 +14,7 @@ from .inline_buttons_process_callback import InlineCallback
 import json
 from math import ceil
 from const import phrases
-import utils
+from . import utils
 from datetime import date
 
 
