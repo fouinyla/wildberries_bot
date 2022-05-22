@@ -32,7 +32,7 @@ def get_callback(callback_data):
 def make_graph(value: str, data: List[typing.Dict], date_1: date, date_2: date,
                header: str):
     """
-        value: key from TRENDS_VALUES
+        value: key from MPSTATS_TRENDS
     """
     value_english = MPSTATS_TRENDS[value]
     dates = []
