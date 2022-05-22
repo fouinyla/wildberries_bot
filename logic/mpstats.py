@@ -8,7 +8,7 @@ import datetime
 import string
 from typing import Tuple, List, Dict
 import string
-from ..const.const import *
+from const.const import *
 
 
 # создание директории для записи данных
@@ -125,9 +125,9 @@ def get_price_segmentation(query: str):
                               params=params,
                               headers=headers,
                               follow_redirects=True)
-        data = response.json()
-        if not data:
+        if response.status_code != 200 or not response.json():
             return False
+        data = response.json()
         try:
             workbook = xlsxwriter.Workbook(path_to_excel)
             worksheet = workbook.add_worksheet(name=query_for_name[0:30])

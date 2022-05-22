@@ -311,14 +311,18 @@ class Controller:
     async def callback_price_segmentation(self, query):
         path = await self.inline_buttons_callback.process_callback(query)
         if path:
-            user = self.db.get_user(tg_id=query.from_user.id)
-            if user:
-                self.db.add_price_query(query_for_price=path,
-                                        tg_id=query.from_user.id)
-            text = 'Пожалуйста, ценовая сегментация в таблице.'
             path_to_excel = mpstats.get_price_segmentation(path)
-            await self.bot.send_document(chat_id=query.from_user.id, document=types.InputFile(path_to_excel))
-            os.remove(path_to_excel)
+            if path_to_excel:
+                user = self.db.get_user(tg_id=query.from_user.id)
+                if user:
+                    self.db.add_price_query(query_for_price=path,
+                                            tg_id=query.from_user.id)
+                
+                await self.bot.send_document(chat_id=query.from_user.id, document=types.InputFile(path_to_excel))
+                os.remove(path_to_excel)
+                text = 'Пожалуйста, ценовая сегментация в таблице.'
+            else:
+                text = 'Ошибка на стороне сервера. Попробуйте повторить запрос или изменить категорию товара.'
             markup = markups.another_price_segmentation_markup()
             return dict(text=text, markup=markup)
     

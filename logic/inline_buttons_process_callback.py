@@ -21,10 +21,11 @@ class InlineCallback():
             cat_json = json.load(open("static/cats/" + cat_id.rsplit('.', cat_id.count('.')-1)[0] + ".json"))
             path = cat_json[cat_id]
             text = f'Вы выбрали категорию {path}. Подождите немного, мы подготавливаем результат.'
+            markup = None
             await self.edit_message(
                 query=query,
                 text=text,
-                markup=None
+                markup=markup
             )
             return path
 
@@ -34,10 +35,11 @@ class InlineCallback():
                 cat_json = json.load(open("static/cats/" + cat_id.rsplit('.', cat_id.count('.')-1)[0] + ".json"))
                 path = cat_json[cat_id]
                 text = f'Вы выбрали категорию {path}. Подождите немного, мы подготавливаем результат.'
+                markup = None
                 await self.edit_message(
                     query=query,
                     text=text,
-                    markup=None
+                    markup=markup
                 )
                 return path
 
