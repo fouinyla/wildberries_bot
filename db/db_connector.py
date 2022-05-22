@@ -110,7 +110,6 @@ class Database:
             workbook.close()
         return file_name
 
-
     def add_search_position_query(self, search_position_query, tg_id):
         with self.session() as session:
             with session.begin():
