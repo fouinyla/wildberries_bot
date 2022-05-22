@@ -231,7 +231,7 @@ class Controller:
 
     async def building_seo_result(self, message, state):
         async with state.proxy() as data:
-            path_to_excel, flag_all_empty_queries = mpstats.get_SEO(data['SEO_queries'])
+            path_to_excel, flag_all_empty_queries = mpstats.get_seo(data['SEO_queries'])
             if not flag_all_empty_queries:
                 await message.answer_document(document=types.InputFile(path_to_excel))
                 user = self.db.get_user(tg_id=message.from_user.id)
