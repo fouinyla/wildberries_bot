@@ -11,6 +11,13 @@ def phrase_for_notify_admins_about_some_event(data):
     {data['weekday']} <b> {data['date']} </b> в <b> {data['time']}"""
 
 
+def phrase_for_categories_inline_keyboard(data):
+    return "По какой категории определяем ценовую сегментацию?\nКатегория: " + data["category"] + "\nСтраница: " + str(data["current_page"]) + " из " + str(data["total_page"])
+
+def phrase_for_categories_inline_keyboard_final(data):
+    return "Вы выбрали " + data["category"] + " категорию"
+
+
 FAQ = ('<b>ИНСТРУКЦИЯ:</b>\n\n1. Выберите команду «Поисковой запрос» и введите название товара, '
        'по которому хотите собрать SEO-ядро. Robot подтянет с Wildberries все самые популярные запросы '
        'на данный момент и напишет их в чат.\n\n<b>Например, на запрос «Футболка»</b>, Robot '

@@ -1,4 +1,5 @@
 from aiogram import types
+from .utils import callback
 
 
 def admin_start_menu_markup():
@@ -21,7 +22,8 @@ def start_menu_markup():
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
     markup.insert(types.KeyboardButton('Поиск по ранжированию'))
     markup.insert(types.KeyboardButton('Получить график'))
-    markup.add(types.KeyboardButton('Как пользоваться ботом'))
+    markup.insert(types.KeyboardButton('Ценовая сегментация'))
+    markup.insert(types.KeyboardButton('Как пользоваться ботом'))
     return markup
 
 
@@ -71,7 +73,7 @@ def another_search_query_markup():
 
 
 def another_seo_building_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.add(types.KeyboardButton('Собрать SEO повторно'))
     markup.insert(types.KeyboardButton('Назад в главное меню'))
     return markup
@@ -88,4 +90,103 @@ def another_trend_graph_markup():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.add(types.KeyboardButton('Получить другой график'))
     markup.insert(types.KeyboardButton('Назад в главное меню'))
+    return markup
+
+    
+def another_price_segmentation_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(types.KeyboardButton('Узнать ценовую сегментацию повторно'))
+    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def inline_categories_markup(categories, cat_id=None, prev_page=False, next_page=False, back_to=False, select=True):
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    if select:
+        markup.add(
+            types.InlineKeyboardButton(
+                "⬇️Выбрать весь раздел⬇️",
+                callback_data=callback(
+                    dict(
+                        a="SCT",
+                        d=cat_id
+                    )
+                )
+            )
+        )
+
+    for category in categories:
+        markup.add(
+            types.InlineKeyboardButton(
+                category["name"],
+                callback_data=callback(
+                    dict(
+                        a="PCK",
+                        d=category["id"]
+                    )
+                )
+            )
+        )
+
+    markup.add(
+        types.InlineKeyboardButton(
+            ("⬅️" if prev_page else "❌"),
+            callback_data=callback(
+                (
+                    dict(
+                        a="PRV",
+                        d=str(cat_id),
+                        p=prev_page
+                    ) if prev_page
+                    else (
+                        dict(
+                            a='.'
+                        )
+                    )
+                )
+            )
+        ),
+        types.InlineKeyboardButton(
+            ("➡️" if next_page else "❌"),
+            callback_data=callback(
+                (
+                    dict(
+                        a="NXT",
+                        d=str(cat_id),
+                        p=next_page
+                    ) if next_page
+                    else (
+                        dict(
+                            a='.'
+                        )
+                    )
+                )
+            )
+        )
+    )
+
+    markup.add(
+        types.InlineKeyboardButton(
+            ("Назад" if back_to else "❌"),
+            callback_data=callback(
+                (
+                    dict(
+                        a="PCK",
+                        d=back_to,
+                    ) if back_to
+                    else dict(
+                        a='.'
+                    )
+                )
+            )
+        ),
+        types.InlineKeyboardButton(
+            "В главное меню",
+            callback_data=callback(
+                dict(
+                    a="ABR"
+                )
+            )
+        )
+    )
     return markup

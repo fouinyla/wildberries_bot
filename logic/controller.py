@@ -10,6 +10,10 @@ import re
 import os
 from aiogram.utils.markdown import hlink
 from aiogram import types
+from .inline_buttons_process_callback import InlineCallback
+import json
+from math import ceil
+from const import phrases
 
 
 class Controller:
@@ -17,6 +21,9 @@ class Controller:
         self.bot = bot
         self.db = Database()
         self.notification = Notification_Service(bot=self.bot)
+        self.inline_buttons_callback = InlineCallback(
+            bot=self.bot,
+        )
 
     async def subscribed(self, user_id: int) -> bool:
         """
@@ -263,7 +270,7 @@ class Controller:
     async def article_search(self, message, state):
         async with state.proxy() as data:
             if data['range_search'][0].isdigit() and len(data['range_search'][0]) == 8:
-                position = wb.search_for_article(int(data['range_search'][0]), data['range_search'][1]) 
+                position = wb.search_for_article(int(data['range_search'][0]), data['range_search'][1])
                 if position:
                     text = f"Артикул {data['range_search'][0]} по запросу " \
                         f"{data['range_search'][1]} найден:\n\n" \
@@ -282,7 +289,67 @@ class Controller:
         await state.finish()
         return dict(text=text, markup=markup)
 
+    async def category_for_price_segmentation(self, state):
+        parent = "0"
+        categories = json.load(open("static/cats/" + parent + ".json"))
+        text = phrases.phrase_for_categories_inline_keyboard(
+            data=dict(
+                category="",
+                current_page=1,
+                total_page=ceil(len(categories)/10)
+            )
+        )
+        markup = markups.inline_categories_markup(
+            categories=[dict(id=key, name=value.split('/')[-1]) for key, value in categories.items()][:10],
+            cat_id=parent,
+            next_page=2,
+            back_to=False,
+            select=False
+        )
+        return dict(text=text, markup=markup)
+
+    async def callback_price_segmentation(self, query):
+        path = await self.inline_buttons_callback.process_callback(query)
+        if path:
+            user = self.db.get_user(tg_id=query.from_user.id)
+            if user:
+                self.db.add_price_query(query_for_price=path,
+                                        tg_id=query.from_user.id)
+            text = 'Пожалуйста, ценовая сегментация в таблице.'
+            path_to_excel = mpstats.get_price_segmentation(path)
+            await self.bot.send_document(chat_id=query.from_user.id, document=types.InputFile(path_to_excel))
+            os.remove(path_to_excel)
+            markup = markups.another_price_segmentation_markup()
+            return dict(text=text, markup=markup)
+    
+    async def price_segmentation(self, message, query):
+        if query.message.text == 'Назад в главное меню':
+            name = query.message.from_user.first_name
+            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+            is_admin = self.db.check_for_admin(query.message.from_user.id)
+            if is_admin:
+                markup = markups.admin_start_menu_markup()
+            else:
+                markup = markups.start_menu_markup()
+        else:
+            path_to_excel = \
+                await self.inline_buttons_callback.process_callback(query.message.text)
+            if path_to_excel:
+                user = self.db.get_user(tg_id=message.from_user.id)
+                if user:
+                    self.db.add_price_query(query_for_price=message.text,
+                                            tg_id=message.from_user.id)
+                text = 'Пожалуйста, ценовая сегментация для данной категории в таблице.'
+                await message.answer_document(document=types.InputFile(path_to_excel))
+                os.remove(path_to_excel)
+            else:
+                text = 'Вы ввели невалидную категорию.'
+            markup = markups.another_price_segmentation_markup()
+        return dict(text=text, markup=markup)
+
     async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()
         text = f"{FAQ} {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
         return dict(text=text, markup=markup)
+
+

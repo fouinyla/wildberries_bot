@@ -1,3 +1,4 @@
+from urllib import response
 from .controller import Controller
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -151,7 +152,7 @@ async def process_phone_number(message: types.Message, state: FSMContext):
 @dp.message_handler(Text(equals='Поисковой запрос'), state='*')
 @dp.message_handler(Text(equals='Ввести поисковой запрос повторно'), state='*')
 async def search_query_process(message: types.Message, state: FSMContext):
-    response = await c.search_query(state)
+    response = await c.search_query(state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
@@ -163,7 +164,7 @@ async def search_query_process(message: types.Message, state: FSMContext):
 # это меню получение поискового запроса
 @dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.query)
 async def giving_hints_process(message: types.Message, state: FSMContext):
-    response = await c.giving_hints(message, state)
+    response = await c.giving_hints(message=message, state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
@@ -176,7 +177,7 @@ async def giving_hints_process(message: types.Message, state: FSMContext):
 @dp.message_handler(Text(equals='Сбор SEO ядра'), state='*')
 @dp.message_handler(Text(equals='Собрать SEO повторно'), state='*')
 async def building_seo_core_process(message: types.Message, state: FSMContext):
-    response = await c.building_seo_core(state)
+    response = await c.building_seo_core(state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
@@ -188,20 +189,44 @@ async def building_seo_core_process(message: types.Message, state: FSMContext):
 # это ответ (ожидание) после передачи запросов для SEO
 @dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.SEO_queries)
 async def waiting_seo_result_process(message: types.Message, state: FSMContext):
-    response = await c.waiting_seo_result(message, state)
+    response = await c.waiting_seo_result(message=message, state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
         parse_mode="HTML",
         reply=False
     )
-    response = await c.building_seo_result(message, state)
+    response = await c.building_seo_result(message=message, state=state)
     await message.reply(
         text=response["text"],
         reply_markup=response["markup"],
         parse_mode="HTML",
         reply=False
     )
+
+# это меню "ценовая сегментация"
+@dp.message_handler(Text(equals='Ценовая сегментация'), state='*')
+@dp.message_handler(Text(equals='Узнать ценовую сегментацию повторно'), state='*')
+async def category_for_price_segmentation_process(message: types.Message, state: FSMContext):
+    response = await c.category_for_price_segmentation(state=state)
+    await message.reply(
+        text=response["text"],
+        reply_markup=response["markup"],
+        parse_mode="HTML",
+        reply=False
+    )
+
+# это выдача результатов "ценовая сегментация"
+@dp.callback_query_handler()
+async def callback_price_segmentation_process(query: types.CallbackQuery):
+    response = await c.callback_price_segmentation(query=query)
+    if response:
+        await bot.send_message(
+            chat_id=query.from_user.id, 
+            text=response['text'], 
+            reply_markup=response['markup'], 
+            parse_mode='HTML'
+        )
 
 
 # это меню поиска позиции
@@ -217,7 +242,7 @@ async def card_position_search(message: types.Message, state: FSMContext):
     )
 
 
-# это меню ожидания и выдачи позиции товара 
+# это меню ожидания и выдачи позиции товара
 @dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.range_search)
 async def card_article_search(message: types.Message, state: FSMContext):
     response = await c.waiting_for_article_search(message, state)

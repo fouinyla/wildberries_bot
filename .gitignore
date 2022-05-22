@@ -102,3 +102,4 @@ cython_debug/
 # Other files
 test.py
 results/
+json_categories/cats.json
