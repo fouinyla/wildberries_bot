@@ -10,6 +10,7 @@ import re
 import os
 from aiogram.utils.markdown import hlink
 from aiogram import types
+from .inline_keyboard.inline_buttons_process_callback import InlineCallback
 
 
 class Controller:
@@ -17,6 +18,12 @@ class Controller:
         self.bot = bot
         self.db = Database()
         self.notification = Notification_Service(bot=self.bot)
+        self.inline_buttons_callback = InlineCallback(
+            notification_service=self.notification,
+            bot=self.bot,
+            db=self.db,
+            scheduler=self.scheduler
+        )
 
     async def subscribed(self, user_id: int) -> bool:
         """
