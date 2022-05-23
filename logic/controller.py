@@ -257,30 +257,37 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def waiting_for_article_search(self, message, state):
-        async with state.proxy() as data:
-            data['range_search'] = message.text.replace(' ', '$', 1).split('$')
-        text = '🔎<b>Поиск запущен..</b> Результат скоро появится.'
-        markup = markups.back_to_main_menu_markup()
-        return dict(text=text, markup=markup)
+        range_search_pattern = r'[0-9]{8}\s.+'
+        if re.fullmatch(range_search_pattern, message.text):
+            async with state.proxy() as data:
+                data['range_search'] = message.text.split(' ', maxsplit=1)
+            text = '🔎<b>Поиск запущен..</b> Результат скоро появится.'
+            markup = None
+            is_valid_query = True
+        else:
+            text = 'Проверьте корректность введенного запроса.\n'\
+                   'Запрос должен состоять из артикула и поискового запроса, разделенных пробелом.'
+            markup = markups.another_card_position_search_markup()
+            is_valid_query = False
+        return dict(text=text, markup=markup, is_valid_query=is_valid_query)
 
     async def article_search(self, message, state):
         async with state.proxy() as data:
-            if data['range_search'][0].isdigit() and len(data['range_search'][0]) == 8:
-                position = wb.search_for_article(int(data['range_search'][0]), data['range_search'][1])
-                if position:
-                    text = f"Артикул {data['range_search'][0]} по запросу " \
-                        f"{data['range_search'][1]} найден:\n\n" \
-                        f"Страница {position[0]}\nПозиция {position[1]}"
-                    user = self.db.get_user(tg_id=message.from_user.id)
-                    if user:
-                        self.db.add_search_position_query(
-                            search_position_query=message.text,
-                            tg_id=message.from_user.id
-                        )
-                else:
-                    text = 'Товара по данному запросу не обнаружено.'
+            art_number = int(data['range_search'][0])
+            query = data['range_search'][1]
+            position = wb.search_for_article(art_number, query)
+            if position:
+                text = f"Артикул {art_number} по запросу " \
+                    f"{query} найден:\n\n" \
+                    f"Страница {position[0]}\nПозиция {position[1]}"
+                user = self.db.get_user(tg_id=message.from_user.id)
+                if user:
+                    self.db.add_search_position_query(
+                        search_position_query=message.text,
+                        tg_id=message.from_user.id
+                    )
             else:
-                text = 'Товар не найден, проверьте корректность введенного артикула.'
+                text = 'Товара по данному запросу не обнаружено.'
         markup = markups.another_card_position_search_markup()
         await state.finish()
         return dict(text=text, markup=markup)
