@@ -1,4 +1,4 @@
-CUSTOMER_CHANNEL_ID = '@opt_tyrke'
+CUSTOMER_CHANNEL_ID = '@wb_sales_test' #'@opt_tyrke'
 
 WB_HINTS_URL = 'https://suggestions.wildberries.ru/api/v2/hint'
 WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common'

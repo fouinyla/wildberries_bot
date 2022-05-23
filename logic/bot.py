@@ -240,11 +240,12 @@ async def card_article_search(message: types.Message, state: FSMContext):
                         reply_markup=response['markup'],
                         parse_mode='HTML',
                         reply=False)
-    response = await c.article_search(message, state)
-    await message.reply(text=response['text'],
-                        reply_markup=response['markup'],
-                        parse_mode='HTML',
-                        reply=False)
+    if response['is_valid_query']:
+        response = await c.article_search(message, state)
+        await message.reply(text=response['text'],
+                            reply_markup=response['markup'],
+                            parse_mode='HTML',
+                            reply=False)
 
 
 # это меню 'Как пользоваться ботом'
