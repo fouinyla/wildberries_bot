@@ -20,7 +20,7 @@ def get_trends_data(path: str, view: str) -> List[Dict]:
         path: 'Детям/Детское питание/Детская смесь' (example)
         view: 'category' or 'itemsInCategory'
     """
-    with httpx.Client() as client:
+    with httpx.Client(timeout=60) as client:
         main_page_response = client.get(MPSTATS_MAIN_PAGE_URL)
         main_page_response.raise_for_status()
         cookie = main_page_response.headers['set-cookie']

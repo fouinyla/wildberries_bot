@@ -170,10 +170,14 @@ async def waiting_seo_result_process(message: Message, state: FSMContext):
                         reply=False)
 
 
-# меню "ценовая сегментация"
+# выбор категории с помощью inline кнопок
 @dp.message_handler(Text(equals='Ценовая сегментация'), state='*')
 @dp.message_handler(Text(equals='Узнать ценовую сегментацию повторно'), state='*')
-async def category_for_price_segmentation_process(message: Message, state: FSMContext):
+@dp.message_handler(Text(equals='Получить график'), state='*')
+@dp.message_handler(Text(equals='Получить другой график'), state='*')
+async def category_selection_process(message: Message, state: FSMContext):
+    if 'график' in message.text:
+        await state.set_state(states.TrendGraph.category_selection)
     response = await c.category_selection(state=state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
@@ -193,27 +197,63 @@ async def callback_price_segmentation_process(query: CallbackQuery):
                            parse_mode='HTML')
 
 
-# меню выдачи графика
-@dp.message_handler(Text(equals='Получить график'), state='*')
-@dp.message_handler(Text(equals='Получить другой график'), state='*')
-async def category_for_price_segmentation_process(message: Message, state: FSMContext):
-    response = await c.category_selection(state=state)
-    await message.reply(text=response['text'],
-                        reply_markup=response['markup'],
-                        parse_mode='HTML',
-                        reply=False)
-
-
-# выдача графика
-@dp.callback_query_handler()
-async def callback_trend_graph_process(query: CallbackQuery):
-    response = await c.callback_price_segmentation(query=query)
+# __________________________логика по выдаче графика__________________________
+# выбираем category для выдачи графика -> предлагаем выбрать view
+@dp.callback_query_handler(state=states.TrendGraph.category_selection)
+async def callback_graph_category_selection_process(query: CallbackQuery, state: FSMContext):
+    response = await c.callback_graph_category_selection(query=query, state=state)
     if not response:
         return None
+    await state.set_state(states.TrendGraph.view_selection)
     await bot.send_message(chat_id=query.from_user.id,
                            text=response['text'],
                            reply_markup=response['markup'],
                            parse_mode='HTML')
+
+
+# выбрали view -> предлагаем выбрать value
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.TrendGraph.view_selection)
+async def graph_view_selection_process(message: Message, state: FSMContext):
+    response = await c.graph_view_selection(message=message, state=state)
+    await state.set_state(states.TrendGraph.value_selection)
+    await bot.send_message(chat_id=message.from_user.id,
+                           text=response['text'],
+                           reply_markup=response['markup'],
+                           parse_mode='HTML')
+
+
+# выбрали value -> предлагаем ввести date_1
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.TrendGraph.value_selection)
+async def graph_value_selection_process(message: Message, state: FSMContext):
+    response = await c.graph_value_selection(message=message, state=state)
+    await state.set_state(states.TrendGraph.date_1_selection)
+    await bot.send_message(chat_id=message.from_user.id,
+                           text=response['text'],
+                           reply_markup=response['markup'],
+                           parse_mode='HTML')
+
+
+# ввели date_1 -> предлагаем ввести date_2
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.TrendGraph.date_1_selection)
+async def graph_date_1_selection_process(message: Message, state: FSMContext):
+    response = await c.graph_date_1_selection(message=message, state=state)
+    await state.set_state(states.TrendGraph.date_2_selection)
+    await bot.send_message(chat_id=message.from_user.id,
+                           text=response['text'],
+                           reply_markup=response['markup'],
+                           parse_mode='HTML')
+
+
+# выбрали date_2 -> выдаем график
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.TrendGraph.date_2_selection)
+async def graph_date_2_selection_process(message: Message, state: FSMContext):
+    response = await c.graph_date_2_selection(message=message, state=state)
+    await state.finish()
+    await bot.send_message(chat_id=message.from_user.id,
+                           text=response['text'],
+                           reply_markup=response['markup'],
+                           parse_mode='HTML')
+# _____________________окончание логики по выдаче графиков_____________________
 
 
 # меню поиска позиции

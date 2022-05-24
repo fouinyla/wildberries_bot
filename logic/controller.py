@@ -36,10 +36,10 @@ class Controller:
     async def command_start(self, message, state):
         await state.finish()
 
-        if not await self.subscribed(message.from_user.id):
-            text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-            markup = markups.not_subscribed_markup()
-            return dict(text=text, markup=markup)
+        # if not await self.subscribed(message.from_user.id):
+        #     text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+        #     markup = markups.not_subscribed_markup()
+        #     return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
@@ -307,30 +307,64 @@ class Controller:
             select=False)
         return dict(text=text, markup=markup)
 
-    async def callback_trend_graph(self, query):
-        path = await self.inline_buttons_callback.process_callback(query)
-        if not path:
+    # ________________________логика по выдаче графиков________________________
+    # выбираем category для выдачи графика -> предлагаем выбрать view
+    async def callback_graph_category_selection(self, query, state):
+        category = await self.inline_buttons_callback.process_callback(query)
+        if not category:
             return None
-        trend_data = mpstats.get_trends_data(path, 'itemsInCategory')  # !!!!!!! ПРЕДОСТАВИТЬ ВЫБОР VIEW
-        path_to_graph = utils.make_graph(value='Число продаж',         # !!!!!!! ПРЕДОСТАВИТЬ ВЫБОР ПАРАМЕТРОВ
-                                         data=trend_data,
-                                         date_1=date(2022, 1, 1),
-                                         date_2=date(2022, 4, 1),
-                                         header=path)
-        if path_to_graph:
-            user = self.db.get_user(tg_id=query.from_user.id)
-            if user:
-                self.db.add_price_query(query_for_price=path,
-                                        tg_id=query.from_user.id)
+        async with state.proxy() as state:
+            state['category'] = category
+        text = 'Выберите VIEW'
+        markup = markups.graph_view_selection_markup()
+        return dict(text=text, markup=markup)
 
-            await self.bot.send_document(chat_id=query.from_user.id,
+    # выбрали view -> предлагаем выбрать value
+    async def graph_view_selection(self, message, state):
+        async with state.proxy() as state:
+            state['view'] = message.text
+        text = 'Выберите VALUE'
+        markup = markups.graph_value_selection_markup()
+        return dict(text=text, markup=markup)
+
+    # выбрали value -> предлагаем ввести date_1
+    async def graph_value_selection(self, message, state):
+        async with state.proxy() as state:
+            state['value'] = message.text
+        text = 'Введите дату начала периода в формате гггг-мм-дд'
+        markup = markups.back_to_main_menu_markup()
+        return dict(text=text, markup=markup)
+
+    # ввели date_1 -> предлагаем ввести date_2
+    async def graph_date_1_selection(self, message, state):
+        async with state.proxy() as state:
+            state['date_1'] = date(*map(int, message.text.split('-')))
+        text = 'Введите дату окончания периода в формате гггг-мм-дд'
+        markup = markups.back_to_main_menu_markup()
+        return dict(text=text, markup=markup)
+
+    # выбрали date_2 -> выдаем график
+    async def graph_date_2_selection(self, message, state):
+        async with state.proxy() as state:
+            state['date_2'] = date(*map(int, message.text.split('-')))
+        await message.answer(text='Подготовливаем график...',
+                             reply_markup=markups.back_to_main_menu_markup())
+        trend_data = mpstats.get_trends_data(state['category'], state['view'])
+        path_to_graph = utils.make_graph(value=state['value'],
+                                         data=trend_data,
+                                         date_1=state['date_1'],
+                                         date_2=state['date_2'],
+                                         category=state['category'])
+        if path_to_graph:
+            await self.bot.send_document(chat_id=message.from_user.id,
                                          document=types.InputFile(path_to_graph))
             os.remove(path_to_graph)
             text = 'График по вашему запросу готов!'
         else:
             text = 'Ошибка на стороне сервера. Попробуйте повторить запрос или изменить категорию товара.'
-        markup = markups.another_price_segmentation_markup()
+        markup = markups.another_trend_graph_markup()
         return dict(text=text, markup=markup)
+    # __________________окончание логики по выдаче графиков__________________
 
     async def callback_price_segmentation(self, query):
         path = await self.inline_buttons_callback.process_callback(query)
