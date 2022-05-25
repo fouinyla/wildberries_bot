@@ -42,14 +42,18 @@ def make_graph(value: str, data: List[typing.Dict], date_1: date, date_2: date,
         if not date_1 <= week <= date_2:
             continue
         dates.append(week)
-        quantities.append(chunk[value_english])
+        if value_english in chunk:
+            quantities.append(chunk[value_english])
+        else:
+            quantities.append(0)
 
-    plt.plot(dates, quantities)
-    plt.title(category)
-    plt.ylabel(value)
-    plt.grid(True, axis='both')
-    plt.xticks(fontsize=5, rotation=90)
+    fig, ax = plt.subplots()
+    ax.plot(dates, quantities)
+    ax.set_title(category)
+    ax.set_ylabel(value)
+    ax.grid(True, axis='both')
+    ax.tick_params(axis='x', which='major', labelsize=5, labelrotation=90)
 
     image_path = f"results/{category.replace('/', '_')}.jpeg"
-    plt.savefig(image_path, dpi=1000)
+    fig.savefig(image_path, dpi=1000)
     return image_path

@@ -1,21 +1,20 @@
 from db.db_connector import Database
-from . import markups
 from logic.notification_service import Notification_Service
+from .inline_buttons_process_callback import InlineCallback
 from . import states
 from . import wildberries as wb
 from . import mpstats
+from . import utils
+from . import markups
 from const.phrases import *
 from const.const import *
-import re
-import os
 from aiogram.utils.markdown import hlink
 from aiogram import types
-from .inline_buttons_process_callback import InlineCallback
-import json
 from math import ceil
-from const import phrases
-from . import utils
 from datetime import date
+import json
+import re
+import os
 
 
 class Controller:
@@ -36,10 +35,10 @@ class Controller:
     async def command_start(self, message, state):
         await state.finish()
 
-        # if not await self.subscribed(message.from_user.id):
-        #     text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-        #     markup = markups.not_subscribed_markup()
-        #     return dict(text=text, markup=markup)
+        if not await self.subscribed(message.from_user.id):
+            text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+            markup = markups.not_subscribed_markup()
+            return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
@@ -284,8 +283,7 @@ class Controller:
                 if user:
                     self.db.add_search_position_query(
                         search_position_query=message.text,
-                        tg_id=message.from_user.id
-                    )
+                        tg_id=message.from_user.id)
             else:
                 text = 'Товара по данному запросу не обнаружено.'
         markup = markups.another_card_position_search_markup()
@@ -295,10 +293,9 @@ class Controller:
     async def category_selection(self, state):
         parent = "0"
         categories = json.load(open("static/cats/" + parent + ".json"))
-        text = phrases.phrase_for_categories_inline_keyboard(
-            data=dict(category="",
-                      current_page=1,
-                      total_page=ceil(len(categories)/10)))
+        text = phrase_for_categories_inline_keyboard(data=dict(category="",
+                                                               current_page=1,
+                                                               total_page=ceil(len(categories)/10)))
         markup = markups.inline_categories_markup(
             categories=[dict(id=key, name=value.split('/')[-1]) for key, value in categories.items()][:10],
             cat_id=parent,
