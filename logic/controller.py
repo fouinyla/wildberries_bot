@@ -9,7 +9,7 @@ from . import markups
 from const.phrases import *
 from const.const import *
 from aiogram.utils.markdown import hlink
-from aiogram import types
+from aiogram.types import InputFile
 from math import ceil
 from datetime import date
 import json
@@ -39,7 +39,7 @@ class Controller:
         if not await self.subscribed(message.from_user.id):
             name = message.from_user.first_name
             text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
-                "Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+                f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
             markup = markups.not_subscribed_markup()
             return dict(text=text, markup=markup)
 
@@ -69,7 +69,7 @@ class Controller:
     async def get_data_from_db(self, message):
         markup = markups.admin_start_menu_markup()
         file_name = self.db.get_data_from_db()
-        await message.answer_document(document=types.InputFile(file_name))
+        await message.answer_document(document=InputFile(file_name))
         os.remove(file_name)
         text = 'Это актуальная выгрузка из всей БД.'
         return dict(text=text, markup=markup)
@@ -271,7 +271,7 @@ class Controller:
         async with state.proxy() as data:
             path_to_excel, flag_all_empty_queries = mpstats.get_seo(data['SEO_queries'])
             if not flag_all_empty_queries:
-                await message.answer_document(document=types.InputFile(path_to_excel))
+                await message.answer_document(document=InputFile(path_to_excel))
                 user = self.db.get_user(tg_id=message.from_user.id)
                 if user:
                     query_for_SEO = str(message.text).replace('\n', '; ')
@@ -326,9 +326,9 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def category_selection(self, state):
-        parent = "0"
-        categories = json.load(open("static/cats/" + parent + ".json"))
-        text = phrase_for_categories_inline_keyboard(data=dict(category="",
+        parent = '0'
+        categories = json.load(open(f'static/cats/{parent}.json'))
+        text = phrase_for_categories_inline_keyboard(data=dict(category='',
                                                                current_page=1,
                                                                total_page=ceil(len(categories)/10)))
         markup = markups.inline_categories_markup(
@@ -347,7 +347,7 @@ class Controller:
             return None
         async with state.proxy() as state:
             state['category'] = category
-        text = 'Выберите VIEW'
+        text = 'Выберите раздел'
         markup = markups.graph_view_selection_markup()
         return dict(text=text, markup=markup)
 
@@ -355,7 +355,7 @@ class Controller:
     async def graph_view_selection(self, message, state):
         async with state.proxy() as state:
             state['view'] = message.text
-        text = 'Выберите VALUE'
+        text = 'По какому параметру составить график?'
         markup = markups.graph_value_selection_markup()
         return dict(text=text, markup=markup)
 
@@ -379,7 +379,7 @@ class Controller:
     async def graph_date_2_selection(self, message, state):
         async with state.proxy() as state:
             state['date_2'] = date(*map(int, message.text.split('-')))
-        await message.answer(text='Подготовливаем график...',
+        await message.answer(text='Подготавливаем график...',
                              reply_markup=markups.back_to_main_menu_markup())
         trend_data = mpstats.get_trends_data(state['category'], state['view'])
         path_to_graph = utils.make_graph(value=state['value'],
@@ -389,7 +389,7 @@ class Controller:
                                          category=state['category'])
         if path_to_graph:
             await self.bot.send_document(chat_id=message.from_user.id,
-                                         document=types.InputFile(path_to_graph))
+                                         document=InputFile(path_to_graph))
             os.remove(path_to_graph)
             text = 'График по вашему запросу готов!'
         else:
@@ -408,8 +408,8 @@ class Controller:
                 if user:
                     self.db.add_price_query(query_for_price=path,
                                             tg_id=query.from_user.id)
-                
-                await self.bot.send_document(chat_id=query.from_user.id, document=types.InputFile(path_to_excel))
+                await self.bot.send_document(chat_id=query.from_user.id,
+                                             document=InputFile(path_to_excel))
                 os.remove(path_to_excel)
                 text = '<b>Пожалуйста, ценовая сегментация готова.</b>'
             else:
@@ -435,7 +435,7 @@ class Controller:
                     self.db.add_price_query(query_for_price=message.text,
                                             tg_id=message.from_user.id)
                 text = '<b>Пожалуйста, ценовая сегментация готова.</b>'
-                await message.answer_document(document=types.InputFile(path_to_excel))
+                await message.answer_document(document=InputFile(path_to_excel))
                 os.remove(path_to_excel)
             else:
                 text = 'Ты ввел невалидную категорию. Пожалуйста, используй клавиатуру.'
