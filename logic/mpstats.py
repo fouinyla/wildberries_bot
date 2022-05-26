@@ -131,7 +131,7 @@ def get_price_segmentation(query: str):
         try:
             workbook = xlsxwriter.Workbook(path_to_excel)
             worksheet = workbook.add_worksheet(name=query_for_name[0:30])
-            worksheet.set_column(0, 11, 12)
+            worksheet.set_column(0, 12, 12)
             header_format = workbook.add_format({'bold': True, 'text_wrap': True, \
                                                 'bg_color': '#D9D9D9', 'valign': 'vcenter'})
             bold_format = workbook.add_format({'bold': True})
@@ -146,8 +146,9 @@ def get_price_segmentation(query: str):
             worksheet.write(0, 7, 'Выручка, руб.', header_format)
             worksheet.write(0, 8, 'Продажи, шт.', header_format)
             worksheet.write(0, 9, 'Выручка на товар, руб.', header_format)
-            worksheet.write(0, 10, 'Упущенная выручка, руб.', header_format)
-            worksheet.write(0, 11, 'Упущенная выручка, %', header_format)
+            worksheet.write(0, 10, 'Потенциальная выручка, руб.', header_format)
+            worksheet.write(0, 11, 'Упущенная выручка, руб.', header_format)
+            worksheet.write(0, 12, 'Упущенная выручка, %', header_format)
             for row_index, values in enumerate(data, start=1):
                 number_of_missed_cols = 0  # сдвиг номера колонки при пропуске
                 for col_index, (key, value) in enumerate(values.items()):
