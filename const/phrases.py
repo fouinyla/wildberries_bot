@@ -16,7 +16,7 @@ def phrase_for_categories_inline_keyboard(data):
 
 
 def phrase_for_categories_inline_keyboard_final(data):
-    return "Вы выбрали " + data["category"] + " категорию"
+    return f"Вы выбрали <b>{data['category']}</b> категорию"
 
 
 FAQ = ('<b>ИНСТРУКЦИЯ:</b>\n\n1. Выберите команду «Поисковой запрос» и введите название товара, '

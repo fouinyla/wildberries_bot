@@ -134,6 +134,7 @@ async def process_name(message: Message, state: FSMContext):
     response = await c.message_name_state(message=message, state=state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
+                        parse_mode='HTML',
                         reply=False)
 
 @dp.message_handler(state=states.User.email)
@@ -141,6 +142,7 @@ async def process_email(message: Message, state: FSMContext):
     response = await c.message_email_state(message=message, state=state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
+                        parse_mode='HTML',
                         reply=False)
 
 
@@ -149,6 +151,7 @@ async def process_phone_number(message: Message, state: FSMContext):
     response = await c.message_phone_number_state(message=message, state=state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
+                        parse_mode='HTML',
                         reply=False)
 
 
