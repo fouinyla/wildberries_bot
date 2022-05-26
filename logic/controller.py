@@ -150,10 +150,8 @@ class Controller:
             for tg_id in tg_id_list:
                 try:
                     await self.bot.send_message(tg_id, data['message_to_clients'], parse_mode='HTML')
-                    #print(f'{tg_id} успешно.')
                 except BotBlocked:
                     pass
-                    #print(f'{tg_id} не подписан на канал.')
         text = 'Сообщение отправлено успешно!'
         markup = markups.admin_start_menu_markup()
         await state.finish()
@@ -344,49 +342,75 @@ class Controller:
     async def callback_graph_category_selection(self, query, state):
         category = await self.inline_buttons_callback.process_callback(query)
         if not category:
-            return None
+            return False
         async with state.proxy() as state:
             state['category'] = category
         text = 'Выберите раздел'
         markup = markups.graph_view_selection_markup()
-        return dict(text=text, markup=markup)
+        await query.answer(text=text, reply_markup=markup)
+        return True
 
     # выбрали view -> предлагаем выбрать value
     async def graph_view_selection(self, message, state):
+        if message not in MPSTATS_SECTIONS:
+            text = 'Вы ввели невалидный раздел. Пожалуйста, используйте предложенную клавиатуру.'
+            markup = markups.graph_view_selection_markup()
+            await message.answer(text=text, reply_markup=markup)
+            return False
         async with state.proxy() as state:
             state['view'] = message.text
         text = 'По какому параметру составить график?'
         markup = markups.graph_value_selection_markup()
-        return dict(text=text, markup=markup)
+        await message.answer(text=text, reply_markup=markup)
+        return True
 
     # выбрали value -> предлагаем ввести date_1
     async def graph_value_selection(self, message, state):
+        if message not in MPSTATS_TRENDS:
+            text = 'Вы ввели невалидный параметр. Пожалуйста, используйте предложенную клавиатуру.'
+            markup = markups.graph_value_selection_markup()
+            await message.answer(text=text, reply_markup=markup)
+            return False
         async with state.proxy() as state:
             state['value'] = message.text
         text = 'Введите дату начала периода в формате гггг-мм-дд'
         markup = markups.back_to_main_menu_markup()
-        return dict(text=text, markup=markup)
+        await message.answer(text=text, reply_markup=markup)
+        return True
 
     # ввели date_1 -> предлагаем ввести date_2
     async def graph_date_1_selection(self, message, state):
+        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', message.text):
+            text = 'Вы ввели дату в неверном формате. Введите дату начала периода в формате гггг-мм-дд'
+            markup = markups.back_to_main_menu_markup()
+            await message.answer(text=text, reply_markup=markup)
+            return False
         async with state.proxy() as state:
             state['date_1'] = date(*map(int, message.text.split('-')))
         text = 'Введите дату окончания периода в формате гггг-мм-дд'
         markup = markups.back_to_main_menu_markup()
-        return dict(text=text, markup=markup)
+        await message.answer(text=text, reply_markup=markup)
+        return True
 
     # выбрали date_2 -> выдаем график
     async def graph_date_2_selection(self, message, state):
+        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', message.text):
+            text = 'Вы ввели дату в неверном формате. Введите дату окончания периода в формате гггг-мм-дд'
+            markup = markups.back_to_main_menu_markup()
+            await message.answer(text=text, reply_markup=markup)
+            return False
         async with state.proxy() as state:
             state['date_2'] = date(*map(int, message.text.split('-')))
-        await message.answer(text='Подготавливаем график...',
-                             reply_markup=markups.back_to_main_menu_markup())
+        text = 'Подготавливаем график...'
+        markup = markups.back_to_main_menu_markup()
+        await message.answer(text=text, reply_markup=markup)
         trend_data = mpstats.get_trends_data(state['category'], state['view'])
-        path_to_graph = utils.make_graph(value=state['value'],
+        path_to_graph = utils.make_graph(category=state['category'],
+                                         view=state['view'],
+                                         value=state['value'],
                                          data=trend_data,
                                          date_1=state['date_1'],
-                                         date_2=state['date_2'],
-                                         category=state['category'])
+                                         date_2=state['date_2'])
         if path_to_graph:
             await self.bot.send_document(chat_id=message.from_user.id,
                                          document=InputFile(path_to_graph))
@@ -396,7 +420,8 @@ class Controller:
             text = 'Ошибка на стороне сервера, пока что мы не можем этого исправить 😔\n\n' \
                 'Попробуй повторить запрос или изменить категорию товара.'
         markup = markups.another_trend_graph_markup()
-        return dict(text=text, markup=markup)
+        await message.answer(text=text, reply_markup=markup)
+        return True
     # __________________окончание логики по выдаче графиков__________________
 
     async def callback_price_segmentation(self, query):
@@ -420,7 +445,6 @@ class Controller:
     
     async def price_segmentation(self, message, query):
         if query.message.text == 'Назад в главное меню':
-            name = query.message.from_user.first_name
             text = "<b>Это главное меню</b>"
             is_admin = self.db.check_for_admin(query.message.from_user.id)
             if is_admin:

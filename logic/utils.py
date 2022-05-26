@@ -29,8 +29,8 @@ def get_callback(callback_data):
     return json.loads(callback_data)
 
 
-def make_graph(value: str, data: List[typing.Dict], date_1: date, date_2: date,
-               category: str):
+def make_graph(category: str, value: str, view: str, data: List[typing.Dict],
+               date_1: date, date_2: date):
     """
         value: key from MPSTATS_TRENDS
     """

@@ -13,7 +13,7 @@ def admin_start_menu_markup():
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
     markup.insert(types.KeyboardButton('Поиск по ранжированию'))
-    # markup.insert(types.KeyboardButton('Получить график'))
+    markup.insert(types.KeyboardButton('Получить график'))
     markup.insert(types.KeyboardButton('Ценовая сегментация'))
     markup.insert(types.KeyboardButton('Как пользоваться ботом'))
     return markup
@@ -24,7 +24,7 @@ def start_menu_markup():
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
     markup.insert(types.KeyboardButton('Поиск по ранжированию'))
-    #markup.insert(types.KeyboardButton('Получить график'))
+    markup.insert(types.KeyboardButton('Получить график'))
     markup.insert(types.KeyboardButton('Ценовая сегментация'))
     markup.insert(types.KeyboardButton('Как пользоваться ботом'))
     return markup

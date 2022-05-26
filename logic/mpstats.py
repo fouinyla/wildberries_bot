@@ -17,7 +17,7 @@ os.makedirs('results', exist_ok=True)
 def get_trends_data(path: str, view: str) -> List[Dict]:
     """
         path: 'Детям/Детское питание/Детская смесь' (example)
-        view: 'category' or 'itemsInCategory'
+        view: key from MPSTATS_SECTIONS
     """
     with httpx.Client(timeout=60) as client:
         main_page_response = client.get(MPSTATS_MAIN_PAGE_URL)
@@ -25,11 +25,12 @@ def get_trends_data(path: str, view: str) -> List[Dict]:
         cookie = main_page_response.headers['set-cookie']
         trends_response = client.get(MPSTATS_TRENDS_URL,
                                      headers={'cookie': cookie + COOKIES_PART},
-                                     params={'view': view,
+                                     params={'view': MPSTATS_SECTIONS[view],
                                              'path': path},
                                      follow_redirects=True)
         trends_response.raise_for_status()
-        return trends_response.json()
+        if trends_response.status_code == 200 and trends_response.json():
+            return trends_response.json()
 
 
 def get_seo(queries: str) -> Tuple[str, bool]:

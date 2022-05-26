@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, CallbackQuery
 from os import getenv
-from . import states
+from .states import NameGroup, User, Admin, TrendGraph
 from db.db_connector import Database
 
 
@@ -67,7 +67,7 @@ async def pre_step_for_add_admin_process(message: Message, state: FSMContext):
 
 # добавление нового админа
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
-                    state=states.Admin.tg_id_to_add)
+                    state=Admin.tg_id_to_add)
 async def add_admin_process(message: Message, state: FSMContext):
     response = await c.add_admin(message=message, state=state)
     await message.reply(text=response['text'],
@@ -86,15 +86,17 @@ async def pre_step_for_delete_admin_process(message: Message, state: FSMContext)
                         parse_mode='HTML',
                         reply=False)
 
+
 # удаление старого админа
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
-                    state=states.Admin.tg_id_to_delete)
+                    state=Admin.tg_id_to_delete)
 async def delete_admin_process(message: Message, state: FSMContext):
     response = await c.delete_admin(message=message, state=state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
                         parse_mode='HTML',
                         reply=False)
+
 
 # запрос сообщения для рассылки на всех пользователей
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
@@ -106,21 +108,23 @@ async def pre_step_for_mailing_to_clients_process(message: Message, state: FSMCo
                         parse_mode='HTML',
                         reply=False)
 
+
 # подтверждение рассылки на всех пользователей
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id) and \
                     message.text != 'Да, отправляй',
-                    state=states.Admin.message_to_clients)
+                    state=Admin.message_to_clients)
 async def confirmation_mailing_to_clients_process(message: Message, state: FSMContext):
     response = await c.confirmation_mailing_to_clients(message=message, state=state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
                         parse_mode='HTML',
                         reply=False)
-                
+
+
 # рассылка на всех пользователей
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id) and \
                     message.text == 'Да, отправляй',
-                    state=states.Admin.message_to_clients)
+                    state=Admin.message_to_clients)
 async def mailing_to_clients_process(message: Message, state: FSMContext):
     response = await c.mailing_to_clients(state=state)
     await message.reply(text=response['text'],
@@ -128,8 +132,9 @@ async def mailing_to_clients_process(message: Message, state: FSMContext):
                         parse_mode='HTML',
                         reply=False)
 
+
 # Сбор данных пользователя
-@dp.message_handler(state=states.User.name)
+@dp.message_handler(state=User.name)
 async def process_name(message: Message, state: FSMContext):
     response = await c.message_name_state(message=message, state=state)
     await message.reply(text=response['text'],
@@ -137,7 +142,8 @@ async def process_name(message: Message, state: FSMContext):
                         parse_mode='HTML',
                         reply=False)
 
-@dp.message_handler(state=states.User.email)
+
+@dp.message_handler(state=User.email)
 async def process_email(message: Message, state: FSMContext):
     response = await c.message_email_state(message=message, state=state)
     await message.reply(text=response['text'],
@@ -146,7 +152,7 @@ async def process_email(message: Message, state: FSMContext):
                         reply=False)
 
 
-@dp.message_handler(state=states.User.phone_number)
+@dp.message_handler(state=User.phone_number)
 async def process_phone_number(message: Message, state: FSMContext):
     response = await c.message_phone_number_state(message=message, state=state)
     await message.reply(text=response['text'],
@@ -167,7 +173,7 @@ async def search_query_process(message: Message, state: FSMContext):
 
 
 # меню получение поискового запроса
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.query)
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=NameGroup.query)
 async def giving_hints_process(message: Message, state: FSMContext):
     response = await c.giving_hints(message=message, state=state)
     await message.reply(text=response['text'],
@@ -188,7 +194,7 @@ async def building_seo_core_process(message: Message, state: FSMContext):
 
 
 # ответ (ожидание) после передачи запросов для SEO
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.SEO_queries)
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=NameGroup.SEO_queries)
 async def waiting_seo_result_process(message: Message, state: FSMContext):
     response = await c.waiting_seo_result(message=message, state=state)
     await message.reply(text=response['text'],
@@ -209,7 +215,7 @@ async def waiting_seo_result_process(message: Message, state: FSMContext):
 @dp.message_handler(Text(equals='Получить другой график'), state='*')
 async def category_selection_process(message: Message, state: FSMContext):
     if 'график' in message.text:
-        await state.set_state(states.TrendGraph.category_selection)
+        await state.set_state(TrendGraph.category_selection)
     response = await c.category_selection(state=state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
@@ -231,60 +237,47 @@ async def callback_price_segmentation_process(query: CallbackQuery):
 
 # __________________________логика по выдаче графика__________________________
 # выбираем category для выдачи графика -> предлагаем выбрать view
-@dp.callback_query_handler(state=states.TrendGraph.category_selection)
+@dp.callback_query_handler(state=TrendGraph.category_selection)
 async def callback_graph_category_selection_process(query: CallbackQuery, state: FSMContext):
-    response = await c.callback_graph_category_selection(query=query, state=state)
-    if not response:
-        return None
-    await state.set_state(states.TrendGraph.view_selection)
-    await bot.send_message(chat_id=query.from_user.id,
-                           text=response['text'],
-                           reply_markup=response['markup'],
-                           parse_mode='HTML')
+    successful_step = await c.callback_graph_category_selection(query, state)
+    if successful_step:
+        await state.set_state(TrendGraph.view_selection)
 
 
 # выбрали view -> предлагаем выбрать value
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.TrendGraph.view_selection)
+@dp.message_handler(lambda x: not str(x).startswith('Назад'),
+                    state=TrendGraph.view_selection)
 async def graph_view_selection_process(message: Message, state: FSMContext):
-    response = await c.graph_view_selection(message=message, state=state)
-    await state.set_state(states.TrendGraph.value_selection)
-    await bot.send_message(chat_id=message.from_user.id,
-                           text=response['text'],
-                           reply_markup=response['markup'],
-                           parse_mode='HTML')
+    successful_step = await c.graph_view_selection(message, state)
+    if successful_step:
+        await state.set_state(TrendGraph.value_selection)
 
 
 # выбрали value -> предлагаем ввести date_1
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.TrendGraph.value_selection)
+@dp.message_handler(lambda x: not str(x).startswith('Назад'),
+                    state=TrendGraph.value_selection)
 async def graph_value_selection_process(message: Message, state: FSMContext):
-    response = await c.graph_value_selection(message=message, state=state)
-    await state.set_state(states.TrendGraph.date_1_selection)
-    await bot.send_message(chat_id=message.from_user.id,
-                           text=response['text'],
-                           reply_markup=response['markup'],
-                           parse_mode='HTML')
+    successful_step = await c.graph_value_selection(message, state)
+    if successful_step:
+        await state.set_state(TrendGraph.date_1_selection)
 
 
 # ввели date_1 -> предлагаем ввести date_2
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.TrendGraph.date_1_selection)
+@dp.message_handler(lambda x: not str(x).startswith('Назад'),
+                    state=TrendGraph.date_1_selection)
 async def graph_date_1_selection_process(message: Message, state: FSMContext):
-    response = await c.graph_date_1_selection(message=message, state=state)
-    await state.set_state(states.TrendGraph.date_2_selection)
-    await bot.send_message(chat_id=message.from_user.id,
-                           text=response['text'],
-                           reply_markup=response['markup'],
-                           parse_mode='HTML')
+    successful_step = await c.graph_date_1_selection(message, state)
+    if successful_step:
+        await state.set_state(TrendGraph.date_2_selection)
 
 
 # выбрали date_2 -> выдаем график
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.TrendGraph.date_2_selection)
+@dp.message_handler(lambda x: not str(x).startswith('Назад'),
+                    state=TrendGraph.date_2_selection)
 async def graph_date_2_selection_process(message: Message, state: FSMContext):
-    response = await c.graph_date_2_selection(message=message, state=state)
-    await state.finish()
-    await bot.send_message(chat_id=message.from_user.id,
-                           text=response['text'],
-                           reply_markup=response['markup'],
-                           parse_mode='HTML')
+    successful_step = await c.graph_date_2_selection(message, state)
+    if successful_step:
+        await state.finish()
 # _____________________окончание логики по выдаче графиков_____________________
 
 
@@ -300,7 +293,7 @@ async def card_position_search(message: Message, state: FSMContext):
 
 
 # это меню ожидания и выдачи позиции товара
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=states.NameGroup.range_search)
+@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=NameGroup.range_search)
 async def card_article_search(message: Message, state: FSMContext):
     response = await c.waiting_for_article_search(message, state)
     await message.reply(text=response['text'],
