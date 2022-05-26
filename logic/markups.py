@@ -1,23 +1,15 @@
 from aiogram import types
 from .utils import callback
+from const.const import MPSTATS_TRENDS
 
 
 def admin_start_menu_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
     markup.insert(types.KeyboardButton('Количество пользователей в БД'))
     markup.insert(types.KeyboardButton('Полная выгрузка из БД'))
+    markup.add(types.KeyboardButton('Рассылка на всех пользователей'))
     markup.insert(types.KeyboardButton('Добавить админа'))
     markup.insert(types.KeyboardButton('Удалить админа'))
-    markup.insert(types.KeyboardButton('Поисковой запрос'))
-    markup.insert(types.KeyboardButton('Сбор SEO ядра'))
-    markup.insert(types.KeyboardButton('Поиск по ранжированию'))
-    # markup.insert(types.KeyboardButton('Получить график'))
-    markup.add(types.KeyboardButton('Как пользоваться ботом'))
-    return markup
-
-
-def start_menu_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
     markup.insert(types.KeyboardButton('Поиск по ранжированию'))
@@ -27,9 +19,27 @@ def start_menu_markup():
     return markup
 
 
+def start_menu_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.insert(types.KeyboardButton('Поисковой запрос'))
+    markup.insert(types.KeyboardButton('Сбор SEO ядра'))
+    markup.insert(types.KeyboardButton('Поиск по ранжированию'))
+    #markup.insert(types.KeyboardButton('Получить график'))
+    markup.insert(types.KeyboardButton('Ценовая сегментация'))
+    markup.insert(types.KeyboardButton('Как пользоваться ботом'))
+    return markup
+
+
+def confirmation_mailing_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.insert(types.KeyboardButton('Да, отправляй'))
+    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    return markup
+
+
 def not_subscribed_markup():
     markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    markup.add(types.KeyboardButton('Я подписался(-лась)'))
+    markup.insert(types.KeyboardButton('Я подписался(-лась)'))
     return markup
 
 
@@ -86,13 +96,31 @@ def another_card_position_search_markup():
     return markup
 
 
-# def another_trend_graph_markup():
-#     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-#     markup.add(types.KeyboardButton('Получить другой график'))
-#     markup.insert(types.KeyboardButton('Назад в главное меню'))
-#     return markup
+# _______________________клавиатуры для выдачи графиков_______________________
+def graph_view_selection_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.insert(types.KeyboardButton('category'))
+    markup.insert(types.KeyboardButton('itemsInCategory'))
+    markup.add(types.KeyboardButton('Назад в главное меню'))
+    return markup
 
-    
+
+def graph_value_selection_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    for value in MPSTATS_TRENDS:
+        markup.insert(types.KeyboardButton(value))
+    markup.add(types.KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def another_trend_graph_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(types.KeyboardButton('Получить другой график'))
+    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    return markup
+# ___________________окончание клавиатур для выдачи графиков___________________
+
+
 def another_price_segmentation_markup():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.add(types.KeyboardButton('Узнать ценовую сегментацию повторно'))

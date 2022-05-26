@@ -2,7 +2,7 @@ import json
 from datetime import date
 from typing import List
 import typing
-import matplotlib as plt
+import matplotlib.pyplot as plt
 from const.const import MPSTATS_TRENDS
 
 # using:
@@ -21,7 +21,7 @@ class Dict(dict):
 
 def callback(data):
     d = json.dumps(data)
-    #print('SIZE', len(d.encode('utf-8')))
+    # print('SIZE', len(d.encode('utf-8')))
     return d
 
 
@@ -30,7 +30,7 @@ def get_callback(callback_data):
 
 
 def make_graph(value: str, data: List[typing.Dict], date_1: date, date_2: date,
-               header: str):
+               category: str):
     """
         value: key from MPSTATS_TRENDS
     """
@@ -41,15 +41,19 @@ def make_graph(value: str, data: List[typing.Dict], date_1: date, date_2: date,
         week = date(*map(int, chunk['week'].split('-')))
         if not date_1 <= week <= date_2:
             continue
-        dates.append(chunk['week'])
-        quantities.append(chunk[value_english])
+        dates.append(week)
+        if value_english in chunk:
+            quantities.append(chunk[value_english])
+        else:
+            quantities.append(0)
 
-    plt.plot(dates, quantities)
-    plt.title(header)
-    plt.ylabel(value)
-    plt.grid(True, axis='both')
-    plt.xticks(fontsize=5, rotation=90)
+    fig, ax = plt.subplots()
+    ax.plot(dates, quantities)
+    ax.set_title(category)
+    ax.set_ylabel(value)
+    ax.grid(True, axis='both')
+    ax.tick_params(axis='x', which='major', labelsize=5, labelrotation=90)
 
-    image_path = f'results/{header}.jpeg'
-    plt.savefig(image_path, dpi=1000)
+    image_path = f"results/{category.replace('/', '_')}.jpeg"
+    fig.savefig(image_path, dpi=1000)
     return image_path

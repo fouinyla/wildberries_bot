@@ -15,34 +15,36 @@ class Database:
     def add_user(self, tg_id, tg_nickname, name, email, phone_number):
         with self.session() as session:
             with session.begin():
-                user = User(
-                    tg_id=tg_id,
-                    tg_nickname=tg_nickname,
-                    name=name,
-                    email=email,
-                    phone_number=phone_number
-                )
+                user = User(tg_id=tg_id,
+                            tg_nickname=tg_nickname,
+                            name=name,
+                            email=email,
+                            phone_number=phone_number)
                 session.add(user)
 
     def get_user(self, tg_id):
         with self.session() as session:
             with session.begin():
-                query = session\
-                    .query(User)\
-                    .filter(User.tg_id.__eq__(tg_id))\
-                    .scalar()  # scalar?
+                query = session.query(User).filter(User.tg_id.__eq__(tg_id)).scalar()  # scalar?
 
                 if query:
-                    return dict(id=query.id, tg_nickname=query.tg_nickname, is_admin=query.is_admin)
+                    return dict(id=query.id,
+                                tg_nickname=query.tg_nickname,
+                                is_admin=query.is_admin)
                 return False
+
+    def get_all_users_list(self):
+        with self.session() as session:
+            with session.begin():
+                query = session\
+                    .query(User.tg_id)
+                result = [int(id[0]) for id in query]
+                return result
 
     def check_for_admin(self, tg_id):
         with self.session() as session:
             with session.begin():
-                query = session\
-                    .query(User.is_admin)\
-                    .filter(User.tg_id.__eq__(tg_id))\
-                    .scalar()
+                query = session.query(User.is_admin).filter(User.tg_id.__eq__(tg_id)).scalar()
         if query:
             return int(query)
         return False
@@ -50,60 +52,38 @@ class Database:
     def add_admin_to_user(self, tg_id):
         with self.session() as session:
             with session.begin():
-                session.query(User)\
-                    .where(User.tg_id == tg_id)\
-                    .update({User.is_admin: 1})
+                session.query(User).where(User.tg_id == tg_id).update({User.is_admin: 1})
 
     def delete_admin_to_user(self, tg_id):
         with self.session() as session:
             with session.begin():
-                session.query(User)\
-                    .where(User.tg_id == tg_id)\
-                    .update({User.is_admin: 0})
+                session.query(User).where(User.tg_id == tg_id).update({User.is_admin: 0})
 
     def add_search_query(self, search_query, user_id):
         with self.session() as session:
             with session.begin():
-                query = Query(
-                    search_query=search_query,
-                    user_id=user_id
-                )
+                query = Query(search_query=search_query,user_id=user_id)
                 session.add(query)
 
     def add_SEO_query(self, query_for_SEO, tg_id):
         with self.session() as session:
             with session.begin():
-                user_id = session\
-                    .query(User.id)\
-                    .filter(User.tg_id.__eq__(tg_id))\
-                    .scalar()
-
-                query = SEOquery(
-                    query_for_SEO=query_for_SEO,
-                    user_id=user_id
-                )
+                user_id = session.query(User.id).filter(User.tg_id.__eq__(tg_id)).scalar()
+                query = SEOquery(query_for_SEO=query_for_SEO, user_id=user_id)
                 session.add(query)
 
     def add_price_query(self, query_for_price, tg_id):
         with self.session() as session:
             with session.begin():
-                user_id = session\
-                    .query(User.id)\
-                    .filter(User.tg_id.__eq__(tg_id))\
-                    .scalar()
-
-                query = PriceSegmentation(
-                    query_for_price=query_for_price,
-                    user_id=user_id
-                )
+                user_id = session.query(User.id).filter(User.tg_id.__eq__(tg_id)).scalar()
+                query = PriceSegmentation(query_for_price=query_for_price,
+                                          user_id=user_id)
                 session.add(query)
 
     def get_number_of_users(self):
         with self.session() as session:
             with session.begin():
-                number_of_users = session\
-                                .query(func.count(User.id))\
-                                .scalar()
+                number_of_users = session.query(func.count(User.id)).scalar()
                 return number_of_users
 
     def get_data_from_db(self):
@@ -127,13 +107,7 @@ class Database:
     def add_search_position_query(self, search_position_query, tg_id):
         with self.session() as session:
             with session.begin():
-                user_id = session\
-                    .query(User.id)\
-                    .filter(User.tg_id.__eq__(tg_id))\
-                    .scalar()
-
-                query = SearchPosition(
-                   search_position_query=search_position_query,
-                    user_id=user_id
-                )
+                user_id = session.query(User.id).filter(User.tg_id.__eq__(tg_id)).scalar()
+                query = SearchPosition(search_position_query=search_position_query,
+                                       user_id=user_id)
                 session.add(query)
