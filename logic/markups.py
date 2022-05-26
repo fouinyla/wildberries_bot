@@ -1,6 +1,6 @@
 from aiogram import types
 from .utils import callback
-from const.const import MPSTATS_TRENDS
+from const.const import MPSTATS_TRENDS, MPSTATS_SECTIONS
 
 
 def admin_start_menu_markup():
@@ -90,8 +90,8 @@ def another_card_position_search_markup():
 # _______________________клавиатуры для выдачи графиков_______________________
 def graph_view_selection_markup():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('category'))
-    markup.insert(types.KeyboardButton('itemsInCategory'))
+    for section in MPSTATS_SECTIONS:
+        markup.insert(types.KeyboardButton(section))
     markup.add(types.KeyboardButton('Назад в главное меню'))
     return markup
 
@@ -119,7 +119,8 @@ def another_price_segmentation_markup():
     return markup
 
 
-def inline_categories_markup(categories, cat_id=None, prev_page=False, next_page=False, back_to=False, select=True):
+def inline_categories_markup(categories, cat_id=None, prev_page=False,
+                             next_page=False, back_to=False, select=True):
     markup = types.InlineKeyboardMarkup(row_width=2)
     if select:
         markup.add(

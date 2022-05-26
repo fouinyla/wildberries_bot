@@ -1,12 +1,10 @@
 CUSTOMER_CHANNEL_ID = '@opt_tyrke'
 
-WB_HINTS_URL = 'https://suggestions.wildberries.ru/api/v2/hint'
-WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common'
-
 MPSTATS_MAIN_PAGE_URL = 'https://mpstats.io/'
 MPSTATS_SKU_URL = 'https://mpstats.io/wb/bysearch'
 MPSTATS_SEO_URL = 'https://mpstats.io/api/seo/keywords/expanding'
 MPSTATS_TRENDS_URL = 'https://mpstats.io/api/wb/get/category/trends'
+MPSTATS_PRICE_SEGMENTATION_URL = 'https://mpstats.io/api/wb/get/category/price_segmentation'
 
 COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
     '_ga=GA1.1.2054104203.1651240592; _ym_isad=2; ' \
@@ -27,7 +25,9 @@ MPSTATS_TRENDS = {'Число продаж': 'sales',
                   'Продавцов с продажами': 'sellers_with_sells',
                   'Выручка на товар': 'product_revenue',
                   'Cредний чек': 'average_order_value'}
-                  
-BASE_WB_HINTS_API_URL = 'https://suggestions.wildberries.ru/api/v2/hint?'
-BASE_WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common?'
-BASE_PRICE_SEGMENTATION_URL = 'https://mpstats.io/api/wb/get/category/price_segmentation?'
+
+MPSTATS_SECTIONS = {'По категории': 'category',
+                    'По товарам в категории': 'itemsInCategory'}
+
+WB_HINTS_URL = 'https://suggestions.wildberries.ru/api/v2/hint'
+WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common'

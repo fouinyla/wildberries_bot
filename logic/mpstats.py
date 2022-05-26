@@ -5,7 +5,6 @@ import xlsxwriter
 from . import time
 import os
 import datetime
-import string
 from typing import Tuple, List, Dict
 import string
 from const.const import *
@@ -116,12 +115,12 @@ def get_price_segmentation(query: str):
     path_to_excel = \
         f'results/price_segmentation_{query_for_name[0:30]}_{end_date}.xlsx'
 
-    with httpx.Client(timeout=120) as client:
+    with httpx.Client(timeout=60) as client:
         main_page_response = client.get(MPSTATS_MAIN_PAGE_URL)
         main_page_response.raise_for_status()
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
-        response = client.get(BASE_PRICE_SEGMENTATION_URL, 
+        response = client.get(MPSTATS_PRICE_SEGMENTATION_URL,
                               params=params,
                               headers=headers,
                               follow_redirects=True)
