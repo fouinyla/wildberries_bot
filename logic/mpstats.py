@@ -135,7 +135,6 @@ def get_price_segmentation(query: str):
             header_format = workbook.add_format({'bold': True, 'text_wrap': True, \
                                                 'bg_color': '#D9D9D9', 'valign': 'vcenter'})
             bold_format = workbook.add_format({'bold': True})
-            percentage_format = workbook.add_format({'num_format': '0.00'})
             worksheet.write(0, 0, 'Диапазон стоимости товара, руб.', header_format)
             worksheet.write(0, 1, 'Товаров, шт.', header_format)
             worksheet.write(0, 2, 'Товаров с продажами, шт.', header_format)
@@ -156,8 +155,6 @@ def get_price_segmentation(query: str):
                         col_index -= number_of_missed_cols
                         if key == 'range':
                             worksheet.write(row_index, col_index, value, bold_format)
-                        elif key == 'lost_profit_percent':
-                            worksheet.write(row_index, col_index, value, percentage_format)
                         else:
                             worksheet.write(row_index, col_index, value)
                     else:
