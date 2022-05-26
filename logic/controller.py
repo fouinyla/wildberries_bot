@@ -36,12 +36,12 @@ class Controller:
     async def command_start(self, message, state):
         await state.finish()
 
-        # if not await self.subscribed(message.from_user.id):
-        #     name = message.from_user.first_name
-        #     text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
-        #         f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-        #     markup = markups.not_subscribed_markup()
-        #     return dict(text=text, markup=markup)
+        if not await self.subscribed(message.from_user.id):
+            name = message.from_user.first_name
+            text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
+                f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+            markup = markups.not_subscribed_markup()
+            return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
