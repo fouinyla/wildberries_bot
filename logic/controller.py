@@ -16,6 +16,7 @@ from math import ceil
 from const import phrases
 from . import utils
 from datetime import date
+from aiogram.utils.exceptions import BotBlocked
 
 
 class Controller:
@@ -37,24 +38,22 @@ class Controller:
         await state.finish()
 
         if not await self.subscribed(message.from_user.id):
-            text = f"Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+            name = message.from_user.first_name
+            text = f"Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.\n" \
+                "Для доступа к функционалу бота подпишитесь на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
             markup = markups.not_subscribed_markup()
             return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
-            name = message.from_user.first_name
             is_admin = self.db.check_for_admin(message.from_user.id)
-            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+            text = "Вы в главном меню. Пожалуйста, выберите необходимую функцию."
             if is_admin:  # check for existing in db?
                 markup = markups.admin_start_menu_markup()
             else:
                 markup = markups.start_menu_markup()
         else:
-            name = message.from_user.first_name
-            text = f'Приветствую, {name}!\n' + \
-                'Это наш бот для улучшения твоей карточки на WB.\n' + \
-                'Для начала мы хотим узнать немного о тебе.\n' + \
+            text = 'Для начала мы хотим узнать немного о тебе.\n' + \
                 'Пожалуйста, введи своё имя.'
             markup = None
             await state.set_state(states.User.name)
@@ -86,8 +85,7 @@ class Controller:
     async def add_admin(self, message, state):
         if message.text == 'Назад в главное меню':
             await state.finish()
-            name = message.from_user.first_name
-            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+            text = "Вы в главном меню. Пожалуйста, выберите необходимую функцию."
         else:
             if message.text.isdigit():
                 new_admin_tg_id = int(message.text)
@@ -114,8 +112,7 @@ class Controller:
     async def delete_admin(self, message, state):
         if message.text == 'Назад в главное меню':
             await state.finish()
-            name = message.from_user.first_name
-            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+            text = "Вы в главном меню. Пожалуйста, выберите необходимую функцию."
         else:
             if message.text.isdigit():
                 del_admin_tg_id = int(message.text)
@@ -130,6 +127,34 @@ class Controller:
         markup = markups.admin_start_menu_markup()
         await state.finish()
         return dict(text=text, markup=markup)
+
+    async def pre_step_for_mailing_to_clients(self, state):
+        text = 'Введите сообщение, которое будет отправлено на ВСЕХ пользователей, зарегистрированных в боте.'
+        markup = markups.back_to_main_menu_markup()
+        await state.set_state(states.Admin.message_to_clients)
+        return dict(text=text, markup=markup)
+
+    async def confirmation_mailing_to_clients(self, message, state):
+        async with state.proxy() as data:
+            data['message_to_clients'] = message.text
+        text = f'Прошу подтверждения, все ли корректно:\n\n{message.text}'
+        markup = markups.confirmation_mailing_markup()
+        return dict(text=text, markup=markup)
+
+    async def mailing_to_clients(self, state):
+        tg_id_list = self.db.get_all_users_list()
+        async with state.proxy() as data:
+            for tg_id in tg_id_list:
+                try:
+                    await self.bot.send_message(tg_id, data['message_to_clients'], parse_mode='HTML')
+                    print(f'{tg_id} успешно.')
+                except BotBlocked:
+                    print(f'{tg_id} не подписан на канал.')
+        text = 'Сообщение отправлено.'
+        markup = markups.admin_start_menu_markup()
+        await state.finish()
+        return dict(text=text, markup=markup)
+
     # ____________________end_of_admin_part____________________________
 
     async def message_name_state(self, message, state):
@@ -174,7 +199,7 @@ class Controller:
                                  data['email'],
                                  data['phone_number'])
             await state.finish()
-            text = 'Спасибо за информацию! Теперь можешь собрать SEO.'
+            text = 'Спасибо за информацию! Теперь тебе доступны все функции нашего бота.'
             is_admin = self.db.check_for_admin(message.from_user.id)
             if is_admin:
                 markup = markups.admin_start_menu_markup()
@@ -353,7 +378,7 @@ class Controller:
     async def price_segmentation(self, message, query):
         if query.message.text == 'Назад в главное меню':
             name = query.message.from_user.first_name
-            text = f'Приветствую, {name}! Это наш бот для улучшения твоей карточки на WB.'
+            text = "Вы в главном меню. Пожалуйста, выберите необходимую функцию."
             is_admin = self.db.check_for_admin(query.message.from_user.id)
             if is_admin:
                 markup = markups.admin_start_menu_markup()

@@ -3,16 +3,18 @@ from .utils import callback
 
 
 def admin_start_menu_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
     markup.insert(types.KeyboardButton('Количество пользователей в БД'))
     markup.insert(types.KeyboardButton('Полная выгрузка из БД'))
+    markup.add(types.KeyboardButton('Рассылка на всех пользователей'))
     markup.insert(types.KeyboardButton('Добавить админа'))
     markup.insert(types.KeyboardButton('Удалить админа'))
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
     markup.insert(types.KeyboardButton('Поиск по ранжированию'))
     # markup.insert(types.KeyboardButton('Получить график'))
-    markup.add(types.KeyboardButton('Как пользоваться ботом'))
+    markup.insert(types.KeyboardButton('Ценовая сегментация'))
+    markup.insert(types.KeyboardButton('Как пользоваться ботом'))
     return markup
 
 
@@ -24,6 +26,13 @@ def start_menu_markup():
     # markup.insert(types.KeyboardButton('Получить график'))
     markup.insert(types.KeyboardButton('Ценовая сегментация'))
     markup.insert(types.KeyboardButton('Как пользоваться ботом'))
+    return markup
+
+
+def confirmation_mailing_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.insert(types.KeyboardButton('Да, отправляй'))
+    markup.insert(types.KeyboardButton('Назад в главное меню'))
     return markup
 
 
