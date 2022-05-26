@@ -52,7 +52,7 @@ def make_graph(category: str, value: str, view: str, data: List[typing.Dict],
     ax.set_title(category)
     ax.set_ylabel(value)
     ax.grid(True, axis='both')
-    ax.tick_params(axis='x', which='major', labelsize=10, labelrotation=45)
+    ax.tick_params(axis='x', which='major', labelsize=7, labelrotation=45)
 
     image_path = f"results/{category.replace('/', '_')}.jpeg"
     fig.savefig(image_path, dpi=1000)

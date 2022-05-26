@@ -36,12 +36,12 @@ class Controller:
     async def command_start(self, message, state):
         await state.finish()
 
-        if not await self.subscribed(message.from_user.id):
-            name = message.from_user.first_name
-            text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
-                f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-            markup = markups.not_subscribed_markup()
-            return dict(text=text, markup=markup)
+        # if not await self.subscribed(message.from_user.id):
+        #     name = message.from_user.first_name
+        #     text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
+        #         f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+        #     markup = markups.not_subscribed_markup()
+        #     return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
@@ -347,12 +347,14 @@ class Controller:
             state['category'] = category
         text = 'Выберите раздел'
         markup = markups.graph_view_selection_markup()
-        await query.answer(text=text, reply_markup=markup)
+        await self.bot.send_message(chat_id=query.from_user.id,
+                                    text=text,
+                                    reply_markup=markup)
         return True
 
     # выбрали view -> предлагаем выбрать value
     async def graph_view_selection(self, message, state):
-        if message not in MPSTATS_SECTIONS:
+        if message.text not in MPSTATS_SECTIONS:
             text = 'Вы ввели невалидный раздел. Пожалуйста, используйте предложенную клавиатуру.'
             markup = markups.graph_view_selection_markup()
             await message.answer(text=text, reply_markup=markup)
@@ -366,7 +368,7 @@ class Controller:
 
     # выбрали value -> предлагаем ввести date_1
     async def graph_value_selection(self, message, state):
-        if message not in MPSTATS_TRENDS:
+        if message.text not in MPSTATS_TRENDS:
             text = 'Вы ввели невалидный параметр. Пожалуйста, используйте предложенную клавиатуру.'
             markup = markups.graph_value_selection_markup()
             await message.answer(text=text, reply_markup=markup)

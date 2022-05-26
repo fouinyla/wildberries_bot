@@ -29,8 +29,7 @@ def get_trends_data(path: str, view: str) -> List[Dict]:
                                              'path': path},
                                      follow_redirects=True)
         trends_response.raise_for_status()
-        if trends_response.status_code == 200 and trends_response.json():
-            return trends_response.json()
+        return trends_response.json()
 
 
 def get_seo(queries: str) -> Tuple[str, bool]:
