@@ -17,6 +17,7 @@ class User(StatesGroup):
 class Admin(StatesGroup):
     tg_id_to_add = State()
     tg_id_to_delete = State()
+    message_to_clients = State()
 
 
 class TrendGraph(StatesGroup):
