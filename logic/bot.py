@@ -86,7 +86,6 @@ async def pre_step_for_delete_admin_process(message: Message, state: FSMContext)
                         parse_mode='HTML',
                         reply=False)
 
-
 # удаление старого админа
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     state=states.Admin.tg_id_to_delete)
@@ -97,6 +96,37 @@ async def delete_admin_process(message: Message, state: FSMContext):
                         parse_mode='HTML',
                         reply=False)
 
+# запрос сообщения для рассылки на всех пользователей
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+                    Text(equals='Рассылка на всех пользователей'), state='*')
+async def pre_step_for_mailing_to_clients_process(message: Message, state: FSMContext):
+    response = await c.pre_step_for_mailing_to_clients(state=state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+
+# подтверждение рассылки на всех пользователей
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id) and \
+                    message.text != 'Да, отправляй',
+                    state=states.Admin.message_to_clients)
+async def confirmation_mailing_to_clients_process(message: Message, state: FSMContext):
+    response = await c.confirmation_mailing_to_clients(message=message, state=state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+                
+# рассылка на всех пользователей
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id) and \
+                    message.text == 'Да, отправляй',
+                    state=states.Admin.message_to_clients)
+async def mailing_to_clients_process(message: Message, state: FSMContext):
+    response = await c.mailing_to_clients(state=state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
 
 # Сбор данных пользователя
 @dp.message_handler(state=states.User.name)
@@ -104,14 +134,15 @@ async def process_name(message: Message, state: FSMContext):
     response = await c.message_name_state(message=message, state=state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
+                        parse_mode='HTML',
                         reply=False)
-
 
 @dp.message_handler(state=states.User.email)
 async def process_email(message: Message, state: FSMContext):
     response = await c.message_email_state(message=message, state=state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
+                        parse_mode='HTML',
                         reply=False)
 
 
@@ -120,6 +151,7 @@ async def process_phone_number(message: Message, state: FSMContext):
     response = await c.message_phone_number_state(message=message, state=state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
+                        parse_mode='HTML',
                         reply=False)
 
 
