@@ -39,7 +39,7 @@ class Controller:
         if not await self.subscribed(message.from_user.id):
             name = message.from_user.first_name
             text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
-                "Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+                f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
             markup = markups.not_subscribed_markup()
             return dict(text=text, markup=markup)
 
@@ -435,7 +435,7 @@ class Controller:
                     self.db.add_price_query(query_for_price=message.text,
                                             tg_id=message.from_user.id)
                 text = '<b>Пожалуйста, ценовая сегментация готова.</b>'
-                await message.answer_document(document=types.InputFile(path_to_excel))
+                await message.answer_document(document=InputFile(path_to_excel))
                 os.remove(path_to_excel)
             else:
                 text = 'Ты ввел невалидную категорию. Пожалуйста, используй клавиатуру.'
