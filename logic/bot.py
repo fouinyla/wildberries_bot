@@ -258,6 +258,8 @@ async def graph_view_selection_process(message: Message, state: FSMContext):
                     state=TrendGraph.value_selection)
 async def graph_value_selection_process(message: Message, state: FSMContext):
     successful_step = await c.graph_value_selection(message, state)
+    if successful_step is None:
+        await state.finish()
     if successful_step:
         await state.set_state(TrendGraph.date_1_selection)
 

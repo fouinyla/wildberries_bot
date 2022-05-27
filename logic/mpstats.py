@@ -29,6 +29,7 @@ def get_trends_data(path: str, view: str) -> List[Dict]:
                                              'path': path},
                                      follow_redirects=True)
         trends_response.raise_for_status()
+        print(trends_response.json())
         return trends_response.json()
 
 
