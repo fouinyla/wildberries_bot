@@ -35,7 +35,7 @@ class InlineCallback():
             if cat_id.count('.') == 3:
                 cat_json = json.load(open("static/cats/" + cat_id.rsplit('.', cat_id.count('.')-1)[0] + ".json"))
                 path = cat_json[cat_id]
-                text = f'Вы выбрали категорию <b>{path}</b>.\nПодождите немного, мы подготавливаем результат.'
+                text = f'Вы выбрали категорию <b>{path}</b>.'
                 markup = None
                 await self.edit_message(
                     query=query,

@@ -36,12 +36,12 @@ class Controller:
     async def command_start(self, message, state):
         await state.finish()
 
-        # if not await self.subscribed(message.from_user.id):
-        #     name = message.from_user.first_name
-        #     text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
-        #         f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-        #     markup = markups.not_subscribed_markup()
-        #     return dict(text=text, markup=markup)
+        if not await self.subscribed(message.from_user.id):
+            name = message.from_user.first_name
+            text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
+                f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+            markup = markups.not_subscribed_markup()
+            return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
@@ -375,6 +375,9 @@ class Controller:
             return False
         async with state.proxy() as state:
             state['value'] = message.text
+        text = 'Проверяем наличие статистики...'
+        markup = markups.back_to_main_menu_markup()
+        await message.answer(text=text, reply_markup=markup)
         graph_data = mpstats.get_trends_data(state['category'], state['view'])
         if not graph_data:
             text = 'К сожалению у нас нет статистики по данной категории, выберите другую категорию'
@@ -387,11 +390,11 @@ class Controller:
             markup = markups.graph_value_selection_markup()
             await message.answer(text=text, reply_markup=markup)
             return False
-        async with state.proxy() as state:
+        async with state as state:
             state['min_date'] = min_date
             state['max_date'] = max_date
             state['graph_data'] = graph_data
-        text = f'По данной категории у нас собрана статистика с {min_date} по {max_date}' \
+        text = f'По данной категории у нас собрана статистика с {min_date} по {max_date}\n' \
                f'Введите дату начала периода в формате гггг-мм-дд'
         markup = markups.back_to_main_menu_markup()
         await message.answer(text=text, reply_markup=markup)
@@ -399,13 +402,15 @@ class Controller:
 
     # ввели date_1 -> предлагаем ввести date_2
     async def graph_date_1_selection(self, message, state):
+        async with state.proxy() as state:
+            pass
         if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', message.text) or date(*map(int, message.text.split('-'))) < state["min_date"]:
-            text = f'Вы ввели неверную дату начала периода. ' \
+            text = f'Вы ввели неверную дату начала периода.\n' \
                    f'Введите дату начала периода в формате гггг-мм-дд, начиная с {state["min_date"]}'
             markup = markups.back_to_main_menu_markup()
             await message.answer(text=text, reply_markup=markup)
             return False
-        async with state.proxy() as state:
+        async with state as state:
             state['date_1'] = date(*map(int, message.text.split('-')))
         text = 'Введите дату окончания периода в формате гггг-мм-дд'
         markup = markups.back_to_main_menu_markup()
@@ -414,13 +419,15 @@ class Controller:
 
     # выбрали date_2 -> выдаем график
     async def graph_date_2_selection(self, message, state):
+        async with state.proxy() as state:
+            pass
         if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', message.text) or date(*map(int, message.text.split('-'))) > state["max_date"]:
-            text = f'Вы ввели неверную дату окончания периода. ' \
-                   f'Введите дату окончания периода в формате гггг-мм-дд, начиная с {state["max_date"]}'
+            text = f'Вы ввели неверную дату окончания периода.\n' \
+                   f'Введите дату окончания периода в формате гггг-мм-дд, заканчивая {state["max_date"]}'
             markup = markups.back_to_main_menu_markup()
             await message.answer(text=text, reply_markup=markup)
             return False
-        async with state.proxy() as state:
+        async with state as state:
             state['date_2'] = date(*map(int, message.text.split('-')))
         text = 'Подготавливаем график...'
         markup = markups.back_to_main_menu_markup()

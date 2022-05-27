@@ -60,17 +60,14 @@ def make_graph(graph_data: List[typing.Dict], date_1: date, date_2: date,
         if not date_1 <= week <= date_2:
             continue
         dates.append(week)
-        if value_english in period:
-            quantities.append(period[value_english])
-        else:
-            quantities.append(0)
+        quantities.append(period[value_english])
 
     fig, ax = plt.subplots()
     ax.plot(dates, quantities)
     ax.set_title(category)
     ax.set_ylabel(value)
     ax.grid(True, axis='both')
-    ax.tick_params(axis='x', which='major', labelsize=7, labelrotation=45)
+    ax.tick_params(axis='x', which='major', labelsize=8, labelrotation=45)
 
     image_path = f"results/{category.replace('/', '_')}.jpeg"
     fig.savefig(image_path, dpi=1000)
