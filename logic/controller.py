@@ -45,7 +45,7 @@ class Controller:
 
         user = self.db.get_user(message.from_user.id)
         if user:
-            text = '<b>Это главное меню</b>\n\nВыбери нужную функцию или сначала загляни в подсказку ' \
+            text = '<b>Это главное меню</b>\n\nВыберите нужную функцию или сначала загляните в подсказку ' \
                    '<b>"Как пользоваться ботом"</b>'
             is_admin = self.db.check_for_admin(message.from_user.id)
             if is_admin:  # check for existing in db?
@@ -53,8 +53,8 @@ class Controller:
             else:
                 markup = markups.start_menu_markup()
         else:
-            text = 'Для начала мы хотим узнать немного о тебе.\n' + \
-                '<b>Пожалуйста, введи своё имя</b>.'
+            text = 'Для начала мы хотим узнать немного о вас.\n' + \
+                '<b>Пожалуйста, введите ваше имя</b>.'
             markup = None
             await state.set_state(states.User.name)
         return dict(text=text, markup=markup)
@@ -75,7 +75,7 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def pre_step_for_add_admin(self, state):
-        text = 'Введи tg_id пользователя, которому вы хотите дать права админа.\n' \
+        text = 'Введите tg_id пользователя, которому вы хотите дать права админа.\n' \
                 'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot . ' \
                 'Достаточно лишь начать с ним общение. ' \
                 'Или можно найти эту информацию в выгрузке из БД.'
@@ -103,7 +103,7 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def pre_step_for_delete_admin(self, state):
-        text = 'Введи tg_id пользователя, которого вы хотите лишить прав админа.\n' \
+        text = 'Введите tg_id пользователя, которого вы хотите лишить прав админа.\n' \
             'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot . ' \
             'Достаточно лишь начать с ним общение.' \
             'Или можно найти эту информацию в выгрузке из БД.'
@@ -125,13 +125,13 @@ class Controller:
                 else:
                     text = f'Такого пользователя нет в БД.\nА значит и админки у него нет.'
             else:
-                text = 'Пожалуйста, введи id в числовом формате.'
+                text = 'Пожалуйста, введите id в числовом формате.'
         markup = markups.admin_start_menu_markup()
         await state.finish()
         return dict(text=text, markup=markup)
 
     async def pre_step_for_mailing_to_clients(self, state):
-        text = 'Введи сообщение, которое будет отправлено ВСЕМ пользователям, зарегистрированным в боте ' \
+        text = 'Введите сообщение, которое будет отправлено ВСЕМ пользователям, зарегистрированным в боте ' \
                '(но не заблокировавшим его). В сообщении можно использовать смайлы и <b>средства HTML</b>.'
         markup = markups.back_to_main_menu_markup()
         await state.set_state(states.Admin.message_to_clients)
@@ -150,10 +150,8 @@ class Controller:
             for tg_id in tg_id_list:
                 try:
                     await self.bot.send_message(tg_id, data['message_to_clients'], parse_mode='HTML')
-                    #print(f'{tg_id} успешно.')
                 except BotBlocked:
                     pass
-                    #print(f'{tg_id} не подписан на канал.')
         text = 'Сообщение отправлено успешно!'
         markup = markups.admin_start_menu_markup()
         await state.finish()
@@ -166,11 +164,11 @@ class Controller:
         if re.fullmatch(name_pattern, message.text):
             async with state.proxy() as data:
                 data['name'] = message.text
-            text = '<b>Пожалуйста, введи свой e-mail</b>.'
+            text = '<b>Пожалуйста, введите ваш e-mail</b>.'
             markup = markups.back_to_name_markup()
             await state.set_state(states.User.email)
         else:
-            text = 'Не похоже на твоё имя. Введи что-то более корректное (только буквы и дефис).'
+            text = 'Не похоже на ваше имя. Введите что-то более корректное (только буквы и дефис).'
             markup = None
         return dict(text=text, markup=markup)
 
@@ -179,15 +177,15 @@ class Controller:
         if re.fullmatch(email_pattern, message.text):
             async with state.proxy() as data:
                 data['email'] = message.text
-            text = '<b>Пожалуйста, введи свой номер телефона</b>.'
+            text = '<b>Пожалуйста, введите ваш номер телефона</b>.'
             markup = markups.back_to_email_markup()
             await state.set_state(states.User.phone_number)
         elif message.text == 'Назад к вводу имени':
-            text = '<b>Пожалуйста, введи своё имя</b>.'
+            text = '<b>Пожалуйста, введите ваше имя</b>.'
             markup = None
             await state.set_state(states.User.name)
         else:
-            text = 'Не похоже на email. Введи что-то более корректное (только английские буквы, цифры и спецсимволы).'
+            text = 'Не похоже на email. Введите что-то более корректное (только английские буквы, цифры и спецсимволы).'
             markup = markups.back_to_name_markup()
         return dict(text=text, markup=markup)
 
@@ -202,33 +200,33 @@ class Controller:
                                  data['email'],
                                  data['phone_number'])
             await state.finish()
-            text = '<b>Спасибо за информацию!</b>\nТеперь тебе доступны все функции нашего бота.'
+            text = '<b>Спасибо за информацию!</b>\nТеперь вам доступны все функции нашего бота.'
             is_admin = self.db.check_for_admin(message.from_user.id)
             if is_admin:
                 markup = markups.admin_start_menu_markup()
             else:
                 markup = markups.start_menu_markup()
         elif message.text == 'Назад к вводу почты':
-            text = '<b>Пожалуйста, введи свой e-mail</b>.'
+            text = '<b>Пожалуйста, введите ваш e-mail</b>.'
             markup = markups.back_to_name_markup()
             await state.set_state(states.User.email)
         else:
-            text = 'Не похоже на номер телефона. Введи что-то более корректное (только цифры, плюс, минус или скобки).'
+            text = 'Не похоже на номер телефона. Введите что-то более корректное (только цифры, плюс, минус или скобки).'
             markup = markups.back_to_email_markup()
         return dict(text=text, markup=markup)
 
     async def search_query(self, state):
         markup = markups.back_to_main_menu_markup()
-        text = '<b>Пожалуйста, введи один поисковой запрос</b> 🔎\n\nНаш робот выдаст список вариантов, как его можно "уточнить".\n' \
-               'Подобрав наиболее точные поисковые запросы (лучше несколько), можешь собрать по ним SEO - набор слов, ' \
-               'которые обязательно надо использовать в карточке своего товара.'
+        text = '<b>Пожалуйста, введите один поисковой запрос</b> 🔎\n\nНаш робот выдаст список вариантов, как его можно "уточнить".\n' \
+               'Подобрав наиболее точные поисковые запросы (лучше несколько), можете собрать по ним SEO - набор слов, ' \
+               'которые обязательно надо использовать в карточке вашего товара.'
         await state.set_state(states.NameGroup.query)
         return dict(text=text, markup=markup)
 
     async def giving_hints(self, message, state):
         if message.text == 'Сбор SEO ядра':
             markup = markups.back_to_main_menu_markup()
-            text = '<b>Пожалуйста, отправь мне все поисковые запросы для твоего товара</b>.\n\n' \
+            text = '<b>Пожалуйста, отправьте мне все поисковые запросы для вашего товара</b>.\n\n' \
                    'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
                    '<b>Каждый запрос с новой строки.</b>'
             await state.set_state(states.NameGroup.SEO_queries)
@@ -244,17 +242,17 @@ class Controller:
         if hints:
             text = '\n'.join(hints)
         elif hints == [] or (hints is None and wb.product_exists(data['query'])):
-            text = 'Ты ввел конечный поисковый запрос. Его уже никак не улучшить.\n' \
+            text = 'Вы ввели конечный поисковый запрос. Его уже никак не улучшить.\n' \
                    '<b>Может использовать его для сбора SEO?</b>'
         else:
-            text = 'По твоему запросу продолжений на Wildberries не найдено.\n<b>Попробуй другой запрос</b>.'
+            text = 'По вашему запросу продолжений на Wildberries не найдено.\n<b>Попробуйте другой запрос</b>.'
         markup = markups.another_search_query_markup()
         await state.finish()
         return dict(text=text, markup=markup)
 
     async def building_seo_core(self, state):
         markup = markups.back_to_main_menu_markup()
-        text = '<b>Пожалуйста, отправь мне все поисковые запросы для твоего товара</b>.\n\n' \
+        text = '<b>Пожалуйста, отправьте мне все поисковые запросы для вашего товара</b>.\n\n' \
                 'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
                 '<b>Каждый запрос с новой строки.</b>'
         await state.set_state(states.NameGroup.SEO_queries)
@@ -279,7 +277,7 @@ class Controller:
                                           tg_id=message.from_user.id)
                 text = '<b>SEO подготовлено!</b>'
             else:
-                text = '<b>По данным запросам товары на WB отсутствуют.</b>\nПопробуешь другие?'
+                text = '<b>По данным запросам товары на WB отсутствуют.</b>\nПопробуете другие?'
             os.remove(path_to_excel)
             await state.finish()
             markup = markups.another_seo_building_markup()
@@ -320,7 +318,7 @@ class Controller:
                         search_position_query=message.text,
                         tg_id=message.from_user.id)
             else:
-                text = '<b>Товара по данному запросу не обнаружено.</b>\nПопробуешь другой?'
+                text = '<b>Товара по данному запросу не обнаружено.</b>\nПопробуете другой?'
         markup = markups.another_card_position_search_markup()
         await state.finish()
         return dict(text=text, markup=markup)
@@ -344,49 +342,102 @@ class Controller:
     async def callback_graph_category_selection(self, query, state):
         category = await self.inline_buttons_callback.process_callback(query)
         if not category:
-            return None
+            return False
         async with state.proxy() as state:
             state['category'] = category
         text = 'Выберите раздел'
         markup = markups.graph_view_selection_markup()
-        return dict(text=text, markup=markup)
+        await self.bot.send_message(chat_id=query.from_user.id,
+                                    text=text,
+                                    reply_markup=markup)
+        return True
 
     # выбрали view -> предлагаем выбрать value
     async def graph_view_selection(self, message, state):
+        if message.text not in MPSTATS_SECTIONS:
+            text = 'Вы ввели невалидный раздел. Пожалуйста, используйте предложенную клавиатуру.'
+            markup = markups.graph_view_selection_markup()
+            await message.answer(text=text, reply_markup=markup)
+            return False
         async with state.proxy() as state:
             state['view'] = message.text
         text = 'По какому параметру составить график?'
         markup = markups.graph_value_selection_markup()
-        return dict(text=text, markup=markup)
+        await message.answer(text=text, reply_markup=markup)
+        return True
 
     # выбрали value -> предлагаем ввести date_1
     async def graph_value_selection(self, message, state):
+        if message.text not in MPSTATS_TRENDS:
+            text = 'Вы ввели невалидный параметр. Пожалуйста, используйте предложенную клавиатуру.'
+            markup = markups.graph_value_selection_markup()
+            await message.answer(text=text, reply_markup=markup)
+            return False
         async with state.proxy() as state:
             state['value'] = message.text
-        text = 'Введите дату начала периода в формате гггг-мм-дд'
+        text = 'Проверяем наличие статистики...'
         markup = markups.back_to_main_menu_markup()
-        return dict(text=text, markup=markup)
+        await message.answer(text=text, reply_markup=markup)
+        graph_data = mpstats.get_trends_data(state['category'], state['view'])
+        if not graph_data:
+            text = 'К сожалению у нас нет статистики по данной категории, выберите другую категорию'
+            markup = markups.another_trend_graph_markup()
+            await message.answer(text=text, reply_markup=markup)
+            return None
+        min_date, max_date = utils.get_min_max_week(graph_data, state['value'])
+        if min_date is None:
+            text = 'К сожалению по данному параметру у нас нет статистики, выберите другой параметр'
+            markup = markups.graph_value_selection_markup()
+            await message.answer(text=text, reply_markup=markup)
+            return False
+        async with state as state:
+            state['min_date'] = min_date
+            state['max_date'] = max_date
+            state['graph_data'] = graph_data
+        text = f'По данной категории у нас собрана статистика с {min_date} по {max_date}\n' \
+               f'Введите дату начала периода в формате гггг-мм-дд'
+        markup = markups.back_to_main_menu_markup()
+        await message.answer(text=text, reply_markup=markup)
+        return True
 
     # ввели date_1 -> предлагаем ввести date_2
     async def graph_date_1_selection(self, message, state):
         async with state.proxy() as state:
+            pass
+        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', message.text) or date(*map(int, message.text.split('-'))) < state["min_date"]:
+            text = f'Вы ввели неверную дату начала периода.\n' \
+                   f'Введите дату начала периода в формате гггг-мм-дд, начиная с {state["min_date"]}'
+            markup = markups.back_to_main_menu_markup()
+            await message.answer(text=text, reply_markup=markup)
+            return False
+        async with state as state:
             state['date_1'] = date(*map(int, message.text.split('-')))
         text = 'Введите дату окончания периода в формате гггг-мм-дд'
         markup = markups.back_to_main_menu_markup()
-        return dict(text=text, markup=markup)
+        await message.answer(text=text, reply_markup=markup)
+        return True
 
     # выбрали date_2 -> выдаем график
     async def graph_date_2_selection(self, message, state):
         async with state.proxy() as state:
+            pass
+        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', message.text) or date(*map(int, message.text.split('-'))) > state["max_date"]:
+            text = f'Вы ввели неверную дату окончания периода.\n' \
+                   f'Введите дату окончания периода в формате гггг-мм-дд, заканчивая {state["max_date"]}'
+            markup = markups.back_to_main_menu_markup()
+            await message.answer(text=text, reply_markup=markup)
+            return False
+        async with state as state:
             state['date_2'] = date(*map(int, message.text.split('-')))
-        await message.answer(text='Подготавливаем график...',
-                             reply_markup=markups.back_to_main_menu_markup())
-        trend_data = mpstats.get_trends_data(state['category'], state['view'])
-        path_to_graph = utils.make_graph(value=state['value'],
-                                         data=trend_data,
+        text = 'Подготавливаем график...'
+        markup = markups.back_to_main_menu_markup()
+        await message.answer(text=text, reply_markup=markup)
+        path_to_graph = utils.make_graph(category=state['category'],
+                                         view=state['view'],
+                                         value=state['value'],
+                                         graph_data=state['graph_data'],
                                          date_1=state['date_1'],
-                                         date_2=state['date_2'],
-                                         category=state['category'])
+                                         date_2=state['date_2'])
         if path_to_graph:
             await self.bot.send_document(chat_id=message.from_user.id,
                                          document=InputFile(path_to_graph))
@@ -394,9 +445,10 @@ class Controller:
             text = 'График по вашему запросу готов!'
         else:
             text = 'Ошибка на стороне сервера, пока что мы не можем этого исправить 😔\n\n' \
-                'Попробуй повторить запрос или изменить категорию товара.'
+                'Попробуйте повторить запрос или изменить категорию товара.'
         markup = markups.another_trend_graph_markup()
-        return dict(text=text, markup=markup)
+        await message.answer(text=text, reply_markup=markup)
+        return True
     # __________________окончание логики по выдаче графиков__________________
 
     async def callback_price_segmentation(self, query):
@@ -414,13 +466,12 @@ class Controller:
                 text = '<b>Пожалуйста, ценовая сегментация готова.</b>'
             else:
                 text = 'Ошибка на стороне сервера, пока что мы не можем этого исправить 😔\n\n' \
-                       'Попробуй повторить запрос или изменить категорию товара.'
+                       'Попробуйте повторить запрос или изменить категорию товара.'
             markup = markups.another_price_segmentation_markup()
             return dict(text=text, markup=markup)
     
     async def price_segmentation(self, message, query):
         if query.message.text == 'Назад в главное меню':
-            name = query.message.from_user.first_name
             text = "<b>Это главное меню</b>"
             is_admin = self.db.check_for_admin(query.message.from_user.id)
             if is_admin:
@@ -438,7 +489,7 @@ class Controller:
                 await message.answer_document(document=InputFile(path_to_excel))
                 os.remove(path_to_excel)
             else:
-                text = 'Ты ввел невалидную категорию. Пожалуйста, используй клавиатуру.'
+                text = 'Вы ввели невалидную категорию. Пожалуйста, используйте предложенную клавиатуру.'
             markup = markups.another_price_segmentation_markup()
         return dict(text=text, markup=markup)
 
