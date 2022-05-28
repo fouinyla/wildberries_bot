@@ -32,6 +32,18 @@ async def command_start_process(message: Message, state: FSMContext):
                         reply=False)
 
 
+# это меню админа
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+                    Text(equals='Функции админа'), state='*')
+@dp.message_handler(Text(equals='Назад в меню админа'), state='*')
+async def admin_menu_process(message: Message, state: FSMContext):
+    response = await c.admin_menu(state=state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+
+
 # получение количества пользователей в БД для админа
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Количество пользователей в БД'), state='*')
