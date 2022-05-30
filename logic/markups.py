@@ -4,18 +4,25 @@ from const.const import MPSTATS_TRENDS, MPSTATS_SECTIONS
 
 
 def admin_start_menu_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Количество пользователей в БД'))
-    markup.insert(types.KeyboardButton('Полная выгрузка из БД'))
-    markup.add(types.KeyboardButton('Рассылка на всех пользователей'))
-    markup.insert(types.KeyboardButton('Добавить админа'))
-    markup.insert(types.KeyboardButton('Удалить админа'))
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.insert(types.KeyboardButton('Поисковой запрос'))
     markup.insert(types.KeyboardButton('Сбор SEO ядра'))
     markup.insert(types.KeyboardButton('Поиск по ранжированию'))
     markup.insert(types.KeyboardButton('Получить график'))
     markup.insert(types.KeyboardButton('Ценовая сегментация'))
     markup.insert(types.KeyboardButton('Как пользоваться ботом'))
+    markup.insert(types.KeyboardButton('Функции админа'))
+    return markup
+
+
+def admin_menu_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.insert(types.KeyboardButton('Количество пользователей в БД'))
+    markup.insert(types.KeyboardButton('Полная выгрузка из БД'))
+    markup.insert(types.KeyboardButton('Добавить админа'))
+    markup.insert(types.KeyboardButton('Удалить админа'))
+    markup.insert(types.KeyboardButton('Рассылка на всех пользователей'))
+    markup.insert(types.KeyboardButton('Назад в главное меню'))
     return markup
 
 
@@ -29,6 +36,10 @@ def start_menu_markup():
     markup.insert(types.KeyboardButton('Как пользоваться ботом'))
     return markup
 
+def back_to_admin_menu_markup():
+    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(types.KeyboardButton('Назад в меню админа'))
+    return markup
 
 def confirmation_mailing_markup():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)

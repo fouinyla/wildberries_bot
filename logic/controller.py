@@ -60,14 +60,20 @@ class Controller:
         return dict(text=text, markup=markup)
 
     # ________________________admin_part_______________________________
+    async def admin_menu(self, state):
+        await state.finish()
+        markup = markups.admin_menu_markup()
+        text = '<b>Это меню админа.</b>'
+        return dict(text=text, markup=markup)
+
     async def get_number_of_users(self):
-        markup = markups.admin_start_menu_markup()
+        markup = markups.admin_menu_markup()
         number_of_users = self.db.get_number_of_users()
         text = f'В нашем боте зарегистриован {number_of_users} пользователь.'
         return dict(text=text, markup=markup)
 
     async def get_data_from_db(self, message):
-        markup = markups.admin_start_menu_markup()
+        markup = markups.admin_menu_markup()
         file_name = self.db.get_data_from_db()
         await message.answer_document(document=InputFile(file_name))
         os.remove(file_name)
@@ -79,7 +85,7 @@ class Controller:
                 'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot . ' \
                 'Достаточно лишь начать с ним общение. ' \
                 'Или можно найти эту информацию в выгрузке из БД.'
-        markup = markups.back_to_main_menu_markup()
+        markup = markups.back_to_admin_menu_markup()
         await state.set_state(states.Admin.tg_id_to_add)
         return dict(text=text, markup=markup)
 
@@ -98,7 +104,7 @@ class Controller:
                     text = f'Такого пользователя нет в БД.\nСначала ему необходимо зарегистрироваться в боте.'
             else:
                 text = 'Пожалуйста, введите id в числовом формате.'
-        markup = markups.admin_start_menu_markup()
+        markup = markups.admin_menu_markup()
         await state.finish()
         return dict(text=text, markup=markup)
 
@@ -107,7 +113,7 @@ class Controller:
             'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot . ' \
             'Достаточно лишь начать с ним общение.' \
             'Или можно найти эту информацию в выгрузке из БД.'
-        markup = markups.back_to_main_menu_markup()
+        markup = markups.back_to_admin_menu_markup()
         await state.set_state(states.Admin.tg_id_to_delete)
         return dict(text=text, markup=markup)
 
@@ -126,14 +132,14 @@ class Controller:
                     text = f'Такого пользователя нет в БД.\nА значит и админки у него нет.'
             else:
                 text = 'Пожалуйста, введите id в числовом формате.'
-        markup = markups.admin_start_menu_markup()
+        markup = markups.admin_menu_markup()
         await state.finish()
         return dict(text=text, markup=markup)
 
     async def pre_step_for_mailing_to_clients(self, state):
         text = 'Введите сообщение, которое будет отправлено ВСЕМ пользователям, зарегистрированным в боте ' \
                '(но не заблокировавшим его). В сообщении можно использовать смайлы и <b>средства HTML</b>.'
-        markup = markups.back_to_main_menu_markup()
+        markup = markups.back_to_admin_menu_markup()
         await state.set_state(states.Admin.message_to_clients)
         return dict(text=text, markup=markup)
 
@@ -153,7 +159,7 @@ class Controller:
                 except BotBlocked:
                     pass
         text = 'Сообщение отправлено успешно!'
-        markup = markups.admin_start_menu_markup()
+        markup = markups.admin_menu_markup()
         await state.finish()
         return dict(text=text, markup=markup)
 
@@ -260,7 +266,7 @@ class Controller:
 
     async def waiting_seo_result(self, message, state):
         async with state.proxy() as data:
-            data['SEO_queries'] = message.text
+            data['SEO_queries'] = message.text.lstrip('/')
         text = '<b>Подготавливаем excel-файл..</b>\nЭто может занять до 1 минуты (в зависимости от количества запросов).'
         markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)

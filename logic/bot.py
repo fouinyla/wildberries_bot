@@ -32,6 +32,18 @@ async def command_start_process(message: Message, state: FSMContext):
                         reply=False)
 
 
+# это меню админа
+@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+                    Text(equals='Функции админа'), state='*')
+@dp.message_handler(Text(equals='Назад в меню админа'), state='*')
+async def admin_menu_process(message: Message, state: FSMContext):
+    response = await c.admin_menu(state=state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+
+
 # получение количества пользователей в БД для админа
 @dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
                     Text(equals='Количество пользователей в БД'), state='*')
@@ -162,6 +174,7 @@ async def process_phone_number(message: Message, state: FSMContext):
 
 
 # меню "поисковой запрос"
+@dp.message_handler(commands='query', state='*')
 @dp.message_handler(Text(equals='Поисковой запрос'), state='*')
 @dp.message_handler(Text(equals='Ввести поисковой запрос повторно'), state='*')
 async def search_query_process(message: Message, state: FSMContext):
@@ -173,7 +186,7 @@ async def search_query_process(message: Message, state: FSMContext):
 
 
 # меню получение поискового запроса
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=NameGroup.query)
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=NameGroup.query)
 async def giving_hints_process(message: Message, state: FSMContext):
     response = await c.giving_hints(message=message, state=state)
     await message.reply(text=response['text'],
@@ -183,6 +196,7 @@ async def giving_hints_process(message: Message, state: FSMContext):
 
 
 # меню "Сбор SEO ядра"
+@dp.message_handler(commands='seo', state='*')
 @dp.message_handler(Text(equals='Сбор SEO ядра'), state='*')
 @dp.message_handler(Text(equals='Собрать SEO повторно'), state='*')
 async def building_seo_core_process(message: Message, state: FSMContext):
@@ -194,7 +208,7 @@ async def building_seo_core_process(message: Message, state: FSMContext):
 
 
 # ответ (ожидание) после передачи запросов для SEO
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=NameGroup.SEO_queries)
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=NameGroup.SEO_queries)
 async def waiting_seo_result_process(message: Message, state: FSMContext):
     response = await c.waiting_seo_result(message=message, state=state)
     await message.reply(text=response['text'],
@@ -209,12 +223,14 @@ async def waiting_seo_result_process(message: Message, state: FSMContext):
 
 
 # выбор категории с помощью inline кнопок
+@dp.message_handler(commands='prices', state='*')
+@dp.message_handler(commands='graph', state='*')
 @dp.message_handler(Text(equals='Ценовая сегментация'), state='*')
 @dp.message_handler(Text(equals='Узнать ценовую сегментацию повторно'), state='*')
 @dp.message_handler(Text(equals='Получить график'), state='*')
 @dp.message_handler(Text(equals='Получить другой график'), state='*')
 async def category_selection_process(message: Message, state: FSMContext):
-    if 'график' in message.text:
+    if 'график' in message.text or 'graph' in message.text:
         await state.set_state(TrendGraph.category_selection)
     response = await c.category_selection(state=state)
     await message.reply(text=response['text'],
@@ -284,6 +300,7 @@ async def graph_date_2_selection_process(message: Message, state: FSMContext):
 
 
 # меню поиска позиции
+@dp.message_handler(commands='search', state='*')
 @dp.message_handler(Text(equals='Поиск по ранжированию'), state='*')
 @dp.message_handler(Text(equals='Ввести запрос повторно'), state='*')
 async def card_position_search(message: Message, state: FSMContext):
@@ -295,7 +312,7 @@ async def card_position_search(message: Message, state: FSMContext):
 
 
 # это меню ожидания и выдачи позиции товара
-@dp.message_handler(lambda x: not str(x).startswith('Назад'), state=NameGroup.range_search)
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=NameGroup.range_search)
 async def card_article_search(message: Message, state: FSMContext):
     response = await c.waiting_for_article_search(message, state)
     await message.reply(text=response['text'],
@@ -311,6 +328,7 @@ async def card_article_search(message: Message, state: FSMContext):
 
 
 # это меню 'Как пользоваться ботом'
+@dp.message_handler(commands='help', state='*')
 @dp.message_handler(Text(equals='Как пользоваться ботом'))
 async def instruction_bar_process(message: Message):
     response = await c.instruction_bar()
