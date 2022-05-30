@@ -266,7 +266,7 @@ class Controller:
 
     async def waiting_seo_result(self, message, state):
         async with state.proxy() as data:
-            data['SEO_queries'] = message.text
+            data['SEO_queries'] = message.text.lstrip('/')
         text = '<b>Подготавливаем excel-файл..</b>\nЭто может занять до 1 минуты (в зависимости от количества запросов).'
         markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)
