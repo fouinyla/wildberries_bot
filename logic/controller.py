@@ -8,6 +8,7 @@ from . import utils
 from . import markups
 from const.phrases import *
 from const.const import *
+from . import memory
 from aiogram.utils.markdown import hlink
 from aiogram.types import InputFile
 from math import ceil
@@ -24,6 +25,12 @@ class Controller:
         self.db = Database()
         self.notification = Notification_Service(bot=self.bot)
         self.inline_buttons_callback = InlineCallback(bot=self.bot)
+        self.load_categories()
+
+    def load_categories(self):
+        for f in os.listdir("static/cats"):
+            with open("static/cats/" + f, mode="r") as json_file:
+                memory.categories[f.split(".json")[0]] = json_file.read()
 
     async def subscribed(self, user_id: int) -> bool:
         """
@@ -36,12 +43,12 @@ class Controller:
     async def command_start(self, message, state):
         await state.finish()
 
-        if not await self.subscribed(message.from_user.id):
-            name = message.from_user.first_name
-            text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
-                f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-            markup = markups.not_subscribed_markup()
-            return dict(text=text, markup=markup)
+        # if not await self.subscribed(message.from_user.id):
+        #     name = message.from_user.first_name
+        #     text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
+        #         f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+        #     markup = markups.not_subscribed_markup()
+        #     return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
@@ -82,9 +89,9 @@ class Controller:
 
     async def pre_step_for_add_admin(self, state):
         text = 'Введите tg_id пользователя, которому вы хотите дать права админа.\n' \
-                'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot . ' \
-                'Достаточно лишь начать с ним общение. ' \
-                'Или можно найти эту информацию в выгрузке из БД.'
+            'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot . ' \
+            'Достаточно лишь начать с ним общение. ' \
+            'Или можно найти эту информацию в выгрузке из БД.'
         markup = markups.back_to_admin_menu_markup()
         await state.set_state(states.Admin.tg_id_to_add)
         return dict(text=text, markup=markup)
@@ -259,8 +266,8 @@ class Controller:
     async def building_seo_core(self, state):
         markup = markups.back_to_main_menu_markup()
         text = '<b>Пожалуйста, отправьте мне все поисковые запросы для вашего товара</b>.\n\n' \
-                'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
-                '<b>Каждый запрос с новой строки.</b>'
+            'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
+            '<b>Каждый запрос с новой строки.</b>'
         await state.set_state(states.NameGroup.SEO_queries)
         return dict(text=text, markup=markup)
 
@@ -475,7 +482,7 @@ class Controller:
                        'Попробуйте повторить запрос или изменить категорию товара.'
             markup = markups.another_price_segmentation_markup()
             return dict(text=text, markup=markup)
-    
+
     async def price_segmentation(self, message, query):
         if query.message.text == 'Назад в главное меню':
             text = "<b>Это главное меню</b>"

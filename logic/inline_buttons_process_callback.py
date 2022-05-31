@@ -2,8 +2,8 @@ from math import ceil
 from const import phrases
 from .utils import get_callback
 from . import markups
+from . import memory
 import json
-from aiogram import types
 
 
 class InlineCallback():
@@ -19,7 +19,7 @@ class InlineCallback():
             )
         elif action == "SCT":
             cat_id = data["d"]
-            cat_json = json.load(open("static/cats/" + cat_id.rsplit('.', cat_id.count('.')-1)[0] + ".json"))
+            cat_json = json.loads(memory.categories[cat_id.rsplit('.', cat_id.count('.')-1)[0]])
             path = cat_json[cat_id]
             text = f'Вы выбрали категорию <b>{path}</b>'
             markup = None
@@ -33,7 +33,7 @@ class InlineCallback():
         elif action == "PCK":
             cat_id = data["d"]
             if cat_id.count('.') == 3:
-                cat_json = json.load(open("static/cats/" + cat_id.rsplit('.', cat_id.count('.')-1)[0] + ".json"))
+                cat_json = json.loads(memory.categories[cat_id.rsplit('.', cat_id.count('.')-1)[0]])
                 path = cat_json[cat_id]
                 text = f'Вы выбрали категорию <b>{path}</b>.'
                 markup = None
@@ -44,7 +44,7 @@ class InlineCallback():
                 )
                 return path
 
-            cat_json = json.load(open("static/cats/"+(cat_id if cat_id.count('.') <= 1 else cat_id.rsplit('.', 1)[0])+".json"))
+            cat_json = json.loads(memory.categories[(cat_id if cat_id.count('.') <= 1 else cat_id.rsplit('.', 1)[0])])
             subcats = [dict(id=key, name=value.split('/')[-1]) for key, value in cat_json.items() if key.startswith(cat_id) and key.count('.') == (cat_id.count('.') + 1)]
 
             text = phrases.phrase_for_categories_inline_keyboard(
@@ -70,7 +70,7 @@ class InlineCallback():
         elif action == "NXT":
             cat_id = data["d"]
             page = data["p"]
-            cat_json = json.load(open("static/cats/"+(cat_id if cat_id.count('.') <= 1 else cat_id.rsplit('.', 1)[0])+".json"))
+            cat_json = json.loads(memory.categories[(cat_id if cat_id.count('.') <= 1 else cat_id.rsplit('.', 1)[0])])
             siblings = [dict(id=key, name=value.split('/')[-1]) for key, value in cat_json.items() if key.startswith(cat_id) and key.count('.') == (cat_id.count('.') + 1)]
             text = phrases.phrase_for_categories_inline_keyboard(
                 data=dict(
@@ -96,7 +96,7 @@ class InlineCallback():
         elif action == "PRV":
             cat_id = data["d"]
             page = data["p"]
-            cat_json = json.load(open("static/cats/"+(cat_id if cat_id.count('.') <= 1 else cat_id.rsplit('.', 1)[0])+".json"))
+            cat_json = json.loads(memory.categories[(cat_id if cat_id.count('.') <= 1 else cat_id.rsplit('.', 1)[0])])
             siblings = [dict(id=key, name=value.split('/')[-1]) for key, value in cat_json.items() if key.startswith(cat_id) and key.count('.') == (cat_id.count('.') + 1)]
 
             text = phrases.phrase_for_categories_inline_keyboard(
