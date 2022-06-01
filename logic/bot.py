@@ -7,6 +7,7 @@ from aiogram.types import Message, CallbackQuery
 from os import getenv
 from .states import NameGroup, User, Admin, TrendGraph
 from db.db_connector import Database
+from . import memory
 
 
 # temp
@@ -33,7 +34,7 @@ async def command_start_process(message: Message, state: FSMContext):
 
 
 # это меню админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+@dp.message_handler(lambda message: message.from_user.id in memory.admins,
                     Text(equals='Функции админа'), state='*')
 @dp.message_handler(Text(equals='Назад в меню админа'), state='*')
 async def admin_menu_process(message: Message, state: FSMContext):
@@ -45,7 +46,7 @@ async def admin_menu_process(message: Message, state: FSMContext):
 
 
 # получение количества пользователей в БД для админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+@dp.message_handler(lambda message: message.from_user.id in memory.admins,
                     Text(equals='Количество пользователей в БД'), state='*')
 async def get_number_of_users_process(message: Message):
     response = await c.get_number_of_users()
@@ -56,7 +57,7 @@ async def get_number_of_users_process(message: Message):
 
 
 # выгрузка из БД для админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+@dp.message_handler(lambda message: message.from_user.id in memory.admins,
                     Text(equals='Полная выгрузка из БД'), state='*')
 async def get_data_from_db_process(message: Message):
     response = await c.get_data_from_db(message=message)
@@ -67,7 +68,7 @@ async def get_data_from_db_process(message: Message):
 
 
 # запрос tg_id для добавления нового админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+@dp.message_handler(lambda message: message.from_user.id in memory.admins,
                     Text(equals='Добавить админа'), state='*')
 async def pre_step_for_add_admin_process(message: Message, state: FSMContext):
     response = await c.pre_step_for_add_admin(state=state)
@@ -78,7 +79,7 @@ async def pre_step_for_add_admin_process(message: Message, state: FSMContext):
 
 
 # добавление нового админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+@dp.message_handler(lambda message: message.from_user.id in memory.admins,
                     state=Admin.tg_id_to_add)
 async def add_admin_process(message: Message, state: FSMContext):
     response = await c.add_admin(message=message, state=state)
@@ -89,7 +90,7 @@ async def add_admin_process(message: Message, state: FSMContext):
 
 
 # запрос tg_id для удаления старого админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+@dp.message_handler(lambda message: message.from_user.id in memory.admins,
                     Text(equals='Удалить админа'), state='*')
 async def pre_step_for_delete_admin_process(message: Message, state: FSMContext):
     response = await c.pre_step_for_delete_admin(state=state)
@@ -100,7 +101,7 @@ async def pre_step_for_delete_admin_process(message: Message, state: FSMContext)
 
 
 # удаление старого админа
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+@dp.message_handler(lambda message: message.from_user.id in memory.admins,
                     state=Admin.tg_id_to_delete)
 async def delete_admin_process(message: Message, state: FSMContext):
     response = await c.delete_admin(message=message, state=state)
@@ -111,7 +112,7 @@ async def delete_admin_process(message: Message, state: FSMContext):
 
 
 # запрос сообщения для рассылки на всех пользователей
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id),
+@dp.message_handler(lambda message: message.from_user.id in memory.admins,
                     Text(equals='Рассылка на всех пользователей'), state='*')
 async def pre_step_for_mailing_to_clients_process(message: Message, state: FSMContext):
     response = await c.pre_step_for_mailing_to_clients(state=state)
@@ -122,7 +123,7 @@ async def pre_step_for_mailing_to_clients_process(message: Message, state: FSMCo
 
 
 # подтверждение рассылки на всех пользователей
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id) and \
+@dp.message_handler(lambda message: message.from_user.id in memory.admins and \
                     message.text != 'Да, отправляй',
                     state=Admin.message_to_clients)
 async def confirmation_mailing_to_clients_process(message: Message, state: FSMContext):
@@ -134,7 +135,7 @@ async def confirmation_mailing_to_clients_process(message: Message, state: FSMCo
 
 
 # рассылка на всех пользователей
-@dp.message_handler(lambda message: database.check_for_admin(message.from_user.id) and \
+@dp.message_handler(lambda message: message.from_user.id in memory.admins and \
                     message.text == 'Да, отправляй',
                     state=Admin.message_to_clients)
 async def mailing_to_clients_process(message: Message, state: FSMContext):

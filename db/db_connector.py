@@ -5,6 +5,7 @@ from .models import *
 from os import getenv
 import xlsxwriter 
 from datetime import date
+from logic import memory
 
 
 class Database:
@@ -41,23 +42,28 @@ class Database:
                 result = [int(id[0]) for id in query]
                 return result
 
-    def check_for_admin(self, tg_id):
+
+    def get_admins(self):
         with self.session() as session:
             with session.begin():
-                query = session.query(User.is_admin).filter(User.tg_id.__eq__(tg_id)).scalar()
-        if query:
-            return int(query)
-        return False
+                query = session.query(User.tg_id).filter(User.is_admin.__eq__(1))
+                result = [tg_id[0] for tg_id in query]
+                return result
+
 
     def add_admin_to_user(self, tg_id):
         with self.session() as session:
             with session.begin():
                 session.query(User).where(User.tg_id == tg_id).update({User.is_admin: 1})
+                memory.admins.append(tg_id)
+
 
     def delete_admin_to_user(self, tg_id):
         with self.session() as session:
             with session.begin():
                 session.query(User).where(User.tg_id == tg_id).update({User.is_admin: 0})
+                memory.admins.remove(tg_id)
+
 
     def add_search_query(self, search_query, user_id):
         with self.session() as session:
