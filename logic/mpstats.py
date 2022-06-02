@@ -5,7 +5,7 @@ import xlsxwriter
 from . import time
 import os
 import datetime
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Optional
 import string
 from const.const import *
 
@@ -14,7 +14,7 @@ from const.const import *
 os.makedirs('results', exist_ok=True)
 
 
-def get_trends_data(path: str, view: str) -> List[Dict]:
+def get_trends_data(path: str, view: str) -> Optional[List[Dict], None]:
     """
         path: 'Детям/Детское питание/Детская смесь' (example)
         view: key from MPSTATS_SECTIONS
@@ -28,8 +28,9 @@ def get_trends_data(path: str, view: str) -> List[Dict]:
                                      params={'view': MPSTATS_SECTIONS[view],
                                              'path': path},
                                      follow_redirects=True)
-        trends_response.raise_for_status()
-        return trends_response.json()
+    if trends_response.status_code != 200 or not trends_response.json():
+        return None
+    return trends_response.json()
 
 
 def get_seo(queries: str) -> Tuple[str, bool]:
@@ -88,8 +89,8 @@ def get_seo(queries: str) -> Tuple[str, bool]:
                 worksheet = workbook.add_worksheet(name=query_for_worksheet)
                 worksheet.set_column(0, 3, 15)
                 worksheet.set_column(1, 1, 90)
-                header_format = workbook.add_format({'bold': True, 'text_wrap': True, \
-                                                'bg_color': '#D9D9D9', 'valign': 'vcenter'})
+                header_format = workbook.add_format({'bold': True, 'text_wrap': True,
+                                                     'bg_color': '#D9D9D9', 'valign': 'vcenter'})
                 worksheet.write(0, 0, 'Слово', header_format)
                 worksheet.write(0, 1, 'Словоформы', header_format)
                 worksheet.write(0, 2, 'Количество вхождений', header_format)
@@ -131,8 +132,8 @@ def get_price_segmentation(query: str):
             workbook = xlsxwriter.Workbook(path_to_excel)
             worksheet = workbook.add_worksheet(name=query_for_name[0:30])
             worksheet.set_column(0, 12, 12)
-            header_format = workbook.add_format({'bold': True, 'text_wrap': True, \
-                                                'bg_color': '#D9D9D9', 'valign': 'vcenter'})
+            header_format = workbook.add_format({'bold': True, 'text_wrap': True,
+                                                 'bg_color': '#D9D9D9', 'valign': 'vcenter'})
             bold_format = workbook.add_format({'bold': True})
             worksheet.write(0, 0, 'Диапазон стоимости товара, руб.', header_format)
             worksheet.write(0, 1, 'Товаров, шт.', header_format)
@@ -161,5 +162,3 @@ def get_price_segmentation(query: str):
         finally:
             workbook.close()
         return path_to_excel
-
-
