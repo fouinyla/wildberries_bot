@@ -249,10 +249,10 @@ class Controller:
         if user:
             self.db.add_search_query(search_query=message.text,
                                      user_id=user['id'])
-        hints = wb.get_hints(data['query'])
+        hints = await wb.get_hints(data['query'])
         if hints:
             text = '\n'.join(hints)
-        elif hints == [] or (hints is None and wb.product_exists(data['query'])):
+        elif hints == [] or (hints is None and await wb.product_exists(data['query'])):
             text = 'Вы ввели конечный поисковый запрос. Его уже никак не улучшить.\n' \
                    '<b>Может использовать его для сбора SEO?</b>'
         else:
@@ -278,7 +278,7 @@ class Controller:
 
     async def building_seo_result(self, message, state):
         async with state.proxy() as data:
-            path_to_excel, flag_all_empty_queries = mpstats.get_seo(data['SEO_queries'])
+            path_to_excel, flag_all_empty_queries = await mpstats.get_seo(data['SEO_queries'])
             if not flag_all_empty_queries:
                 await message.answer_document(document=InputFile(path_to_excel))
                 user = self.db.get_user(tg_id=message.from_user.id)
@@ -319,7 +319,7 @@ class Controller:
         async with state.proxy() as data:
             art_number = int(data['range_search'][0])
             query = data['range_search'][1]
-            position = wb.search_for_article(art_number, query)
+            position = await wb.search_for_article(art_number, query)
             if position:
                 text = f"Артикул {art_number} по запросу {query} найден!\n\n" \
                     f"<b>Страница: {position[0]}\nПозиция: {position[1]}</b>"
@@ -389,7 +389,7 @@ class Controller:
         text = 'Проверяем наличие статистики...'
         markup = markups.back_to_main_menu_markup()
         await message.answer(text=text, reply_markup=markup)
-        graph_data = mpstats.get_trends_data(state['category'], state['view'])
+        graph_data = await mpstats.get_trends_data(state['category'], state['view'])
         if not graph_data:
             text = 'К сожалению у нас нет статистики по данной категории, выберите другую категорию'
             markup = markups.another_trend_graph_markup()
@@ -465,7 +465,7 @@ class Controller:
     async def callback_price_segmentation(self, query):
         path = await self.inline_buttons_callback.process_callback(query)
         if path:
-            path_to_excel = mpstats.get_price_segmentation(path)
+            path_to_excel = await mpstats.get_price_segmentation(path)
             if path_to_excel:
                 user = self.db.get_user(tg_id=query.from_user.id)
                 if user:

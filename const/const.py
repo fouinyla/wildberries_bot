@@ -26,8 +26,8 @@ MPSTATS_TRENDS = {'Число продаж': 'sales',
                   'Выручка на товар': 'product_revenue',
                   'Cредний чек': 'average_order_value'}
 
-MPSTATS_SECTIONS = {'По категории': 'category',
-                    'По товарам в категории': 'itemsInCategory'}
+MPSTATS_SECTIONS = {'По товарам в категории': 'itemsInCategory',
+                    'По категории': 'category'}
 
 WB_HINTS_URL = 'https://suggestions.wildberries.ru/api/v2/hint'
 WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common'
