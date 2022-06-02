@@ -5,7 +5,7 @@ import xlsxwriter
 from . import time
 import os
 import datetime
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Optional
 import string
 from const.const import *
 
@@ -14,32 +14,32 @@ from const.const import *
 os.makedirs('results', exist_ok=True)
 
 
-def get_trends_data(path: str, view: str):
+async def get_trends_data(path: str, view: str) -> Optional[List[Dict]]:
     """
         path: 'Детям/Детское питание/Детская смесь' (example)
         view: key from MPSTATS_SECTIONS
     """
-    with httpx.Client(timeout=60) as client:
-        main_page_response = client.get(MPSTATS_MAIN_PAGE_URL)
+    async with httpx.AsyncClient(timeout=60) as client:
+        main_page_response = await client.get(MPSTATS_MAIN_PAGE_URL)
         main_page_response.raise_for_status()
         cookie = main_page_response.headers['set-cookie']
-        trends_response = client.get(MPSTATS_TRENDS_URL,
-                                     headers={'cookie': cookie + COOKIES_PART},
-                                     params={'view': MPSTATS_SECTIONS[view],
-                                             'path': path},
-                                     follow_redirects=True)
+        trends_response = await client.get(
+            MPSTATS_TRENDS_URL,
+            headers={'cookie': cookie + COOKIES_PART},
+            params={'view': MPSTATS_SECTIONS[view], 'path': path},
+            follow_redirects=True)
     if trends_response.status_code != 200 or not trends_response.json():
         return None
     return trends_response.json()
 
 
-def get_seo(queries: str) -> Tuple[str, bool]:
+async def get_seo(queries: str) -> Tuple[str, bool]:
     flag_all_queries_are_empty = True  # флаг, если все запросы пустые
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()
-    with httpx.Client(timeout=60) as client:
+    async with httpx.AsyncClient(timeout=60) as client:
         # получение кук для отправки запроса для получения SKU
-        main_page_response = client.get(MPSTATS_MAIN_PAGE_URL)
+        main_page_response = await client.get(MPSTATS_MAIN_PAGE_URL)
         main_page_response.raise_for_status()
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
@@ -54,10 +54,10 @@ def get_seo(queries: str) -> Tuple[str, bool]:
             workbook = xlsxwriter.Workbook(path_to_excel)
             for num, query in enumerate(queries, start=1):
                 # запрос на получение html с SKU
-                sku_response = client.get(MPSTATS_SKU_URL,
-                                          headers=headers,
-                                          params={'query': query},
-                                          follow_redirects=True)
+                sku_response = await client.get(MPSTATS_SKU_URL,
+                                                headers=headers,
+                                                params={'query': query},
+                                                follow_redirects=True)
                 sku_response.raise_for_status()
                 # парсинг html ответа для получения SKU
                 html = sku_response.text
@@ -75,9 +75,9 @@ def get_seo(queries: str) -> Tuple[str, bool]:
                         'searchFullWord': False,
                         'd1': today_date - datetime.timedelta(days=30),
                         'd2': today_date}
-                response = client.post(MPSTATS_SEO_URL,
-                                       headers=headers,
-                                       data=data)
+                response = await client.post(MPSTATS_SEO_URL,
+                                             headers=headers,
+                                             data=data)
                 response.raise_for_status()
                 result = response.json()['result']
                 # создание страницы в excel-файле с названиями колонок
@@ -107,7 +107,7 @@ def get_seo(queries: str) -> Tuple[str, bool]:
     return path_to_excel, flag_all_queries_are_empty
 
 
-def get_price_segmentation(query: str):
+async def get_price_segmentation(query: str):
     end_date = time.get_moscow_datetime().date()
     start_date = end_date - datetime.timedelta(days=30)
     params = {'d1': start_date, 'd2': end_date, 'path': query}
@@ -116,15 +116,15 @@ def get_price_segmentation(query: str):
     path_to_excel = \
         f'results/price_segmentation_{query_for_name[0:30]}_{end_date}.xlsx'
 
-    with httpx.Client(timeout=60) as client:
-        main_page_response = client.get(MPSTATS_MAIN_PAGE_URL)
+    async with httpx.AsyncClient(timeout=60) as client:
+        main_page_response = await client.get(MPSTATS_MAIN_PAGE_URL)
         main_page_response.raise_for_status()
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
-        response = client.get(MPSTATS_PRICE_SEGMENTATION_URL,
-                              params=params,
-                              headers=headers,
-                              follow_redirects=True)
+        response = await client.get(MPSTATS_PRICE_SEGMENTATION_URL,
+                                    params=params,
+                                    headers=headers,
+                                    follow_redirects=True)
         if response.status_code != 200 or not response.json():
             return False
         data = response.json()
@@ -132,8 +132,10 @@ def get_price_segmentation(query: str):
             workbook = xlsxwriter.Workbook(path_to_excel)
             worksheet = workbook.add_worksheet(name=query_for_name[0:30])
             worksheet.set_column(0, 12, 12)
-            header_format = workbook.add_format({'bold': True, 'text_wrap': True,
-                                                 'bg_color': '#D9D9D9', 'valign': 'vcenter'})
+            header_format = workbook.add_format({'bold': True,
+                                                 'text_wrap': True,
+                                                 'bg_color': '#D9D9D9',
+                                                 'valign': 'vcenter'})
             bold_format = workbook.add_format({'bold': True})
             worksheet.write(0, 0, 'Диапазон стоимости товара, руб.', header_format)
             worksheet.write(0, 1, 'Товаров, шт.', header_format)
