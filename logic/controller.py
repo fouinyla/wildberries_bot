@@ -8,6 +8,7 @@ from . import utils
 from . import markups
 from const.phrases import *
 from const.const import *
+from . import memory
 from aiogram.utils.markdown import hlink
 from aiogram.types import InputFile
 from math import ceil
@@ -24,6 +25,16 @@ class Controller:
         self.db = Database()
         self.notification = Notification_Service(bot=self.bot)
         self.inline_buttons_callback = InlineCallback(bot=self.bot)
+        self.load_categories()
+        self.load_admins()
+
+    def load_categories(self):
+        for f in os.listdir("static/cats"):
+            with open("static/cats/" + f, mode="r") as json_file:
+                memory.categories[f.split(".json")[0]] = json_file.read()
+
+    def load_admins(self):
+        memory.admins = self.db.get_admins()
 
     async def subscribed(self, user_id: int) -> bool:
         """
@@ -35,7 +46,7 @@ class Controller:
 
     async def command_start(self, message, state):
         await state.finish()
-
+        #print(self.db.get_admins())
         if not await self.subscribed(message.from_user.id):
             name = message.from_user.first_name
             text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
@@ -47,8 +58,7 @@ class Controller:
         if user:
             text = '<b>Это главное меню</b>\n\nВыберите нужную функцию или сначала загляните в подсказку ' \
                    '<b>"Как пользоваться ботом"</b>'
-            is_admin = self.db.check_for_admin(message.from_user.id)
-            if is_admin:  # check for existing in db?
+            if message.from_user.id in memory.admins:  # check for existing in db?
                 markup = markups.admin_start_menu_markup()
             else:
                 markup = markups.start_menu_markup()
@@ -82,9 +92,9 @@ class Controller:
 
     async def pre_step_for_add_admin(self, state):
         text = 'Введите tg_id пользователя, которому вы хотите дать права админа.\n' \
-                'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot . ' \
-                'Достаточно лишь начать с ним общение. ' \
-                'Или можно найти эту информацию в выгрузке из БД.'
+            'Пользователь может узнать свой tg_id с помощью бота @getmyid_bot . ' \
+            'Достаточно лишь начать с ним общение. ' \
+            'Или можно найти эту информацию в выгрузке из БД.'
         markup = markups.back_to_admin_menu_markup()
         await state.set_state(states.Admin.tg_id_to_add)
         return dict(text=text, markup=markup)
@@ -207,11 +217,7 @@ class Controller:
                                  data['phone_number'])
             await state.finish()
             text = '<b>Спасибо за информацию!</b>\nТеперь вам доступны все функции нашего бота.'
-            is_admin = self.db.check_for_admin(message.from_user.id)
-            if is_admin:
-                markup = markups.admin_start_menu_markup()
-            else:
-                markup = markups.start_menu_markup()
+            markup = markups.start_menu_markup()
         elif message.text == 'Назад к вводу почты':
             text = '<b>Пожалуйста, введите ваш e-mail</b>.'
             markup = markups.back_to_name_markup()
@@ -259,8 +265,8 @@ class Controller:
     async def building_seo_core(self, state):
         markup = markups.back_to_main_menu_markup()
         text = '<b>Пожалуйста, отправьте мне все поисковые запросы для вашего товара</b>.\n\n' \
-                'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
-                '<b>Каждый запрос с новой строки.</b>'
+            'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
+            '<b>Каждый запрос с новой строки.</b>'
         await state.set_state(states.NameGroup.SEO_queries)
         return dict(text=text, markup=markup)
 
@@ -475,30 +481,8 @@ class Controller:
                        'Попробуйте повторить запрос или изменить категорию товара.'
             markup = markups.another_price_segmentation_markup()
             return dict(text=text, markup=markup)
-    
-    async def price_segmentation(self, message, query):
-        if query.message.text == 'Назад в главное меню':
-            text = "<b>Это главное меню</b>"
-            is_admin = self.db.check_for_admin(query.message.from_user.id)
-            if is_admin:
-                markup = markups.admin_start_menu_markup()
-            else:
-                markup = markups.start_menu_markup()
-        else:
-            path_to_excel = await self.inline_buttons_callback.process_callback(query.message.text)
-            if path_to_excel:
-                user = self.db.get_user(tg_id=message.from_user.id)
-                if user:
-                    self.db.add_price_query(query_for_price=message.text,
-                                            tg_id=message.from_user.id)
-                text = '<b>Пожалуйста, ценовая сегментация готова.</b>'
-                await message.answer_document(document=InputFile(path_to_excel))
-                os.remove(path_to_excel)
-            else:
-                text = 'Вы ввели невалидную категорию. Пожалуйста, используйте предложенную клавиатуру.'
-            markup = markups.another_price_segmentation_markup()
-        return dict(text=text, markup=markup)
 
+    
     async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()
         text = f"{FAQ} {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"

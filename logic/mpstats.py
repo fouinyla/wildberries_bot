@@ -36,7 +36,7 @@ def get_seo(queries: str) -> Tuple[str, bool]:
     flag_all_queries_are_empty = True  # флаг, если все запросы пустые
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()
-    with httpx.Client() as client:
+    with httpx.Client(timeout=60) as client:
         # получение кук для отправки запроса для получения SKU
         main_page_response = client.get(MPSTATS_MAIN_PAGE_URL)
         main_page_response.raise_for_status()

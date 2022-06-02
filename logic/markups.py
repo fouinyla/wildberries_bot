@@ -1,150 +1,153 @@
-from aiogram import types
+from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
+                           InlineKeyboardMarkup, InlineKeyboardButton)
 from .utils import callback
 from const.const import MPSTATS_TRENDS, MPSTATS_SECTIONS
 
 
 def admin_start_menu_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Поисковой запрос'))
-    markup.insert(types.KeyboardButton('Сбор SEO ядра'))
-    markup.insert(types.KeyboardButton('Поиск по ранжированию'))
-    markup.insert(types.KeyboardButton('Получить график'))
-    markup.insert(types.KeyboardButton('Ценовая сегментация'))
-    markup.insert(types.KeyboardButton('Как пользоваться ботом'))
-    markup.insert(types.KeyboardButton('Функции админа'))
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.insert(KeyboardButton('Поисковой запрос'))
+    markup.insert(KeyboardButton('Сбор SEO ядра'))
+    markup.insert(KeyboardButton('Поиск по ранжированию'))
+    markup.insert(KeyboardButton('Получить график'))
+    markup.insert(KeyboardButton('Ценовая сегментация'))
+    markup.insert(KeyboardButton('Как пользоваться ботом'))
+    markup.insert(KeyboardButton('Функции админа'))
     return markup
 
 
 def admin_menu_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Количество пользователей в БД'))
-    markup.insert(types.KeyboardButton('Полная выгрузка из БД'))
-    markup.insert(types.KeyboardButton('Добавить админа'))
-    markup.insert(types.KeyboardButton('Удалить админа'))
-    markup.insert(types.KeyboardButton('Рассылка на всех пользователей'))
-    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.insert(KeyboardButton('Количество пользователей в БД'))
+    markup.insert(KeyboardButton('Полная выгрузка из БД'))
+    markup.insert(KeyboardButton('Добавить админа'))
+    markup.insert(KeyboardButton('Удалить админа'))
+    markup.insert(KeyboardButton('Рассылка на всех пользователей'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 
 
 def start_menu_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Поисковой запрос'))
-    markup.insert(types.KeyboardButton('Сбор SEO ядра'))
-    markup.insert(types.KeyboardButton('Поиск по ранжированию'))
-    markup.insert(types.KeyboardButton('Получить график'))
-    markup.insert(types.KeyboardButton('Ценовая сегментация'))
-    markup.insert(types.KeyboardButton('Как пользоваться ботом'))
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.insert(KeyboardButton('Поисковой запрос'))
+    markup.insert(KeyboardButton('Сбор SEO ядра'))
+    markup.insert(KeyboardButton('Поиск по ранжированию'))
+    markup.insert(KeyboardButton('Получить график'))
+    markup.insert(KeyboardButton('Ценовая сегментация'))
+    markup.insert(KeyboardButton('Как пользоваться ботом'))
     return markup
+
 
 def back_to_admin_menu_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Назад в меню админа'))
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад в меню админа'))
     return markup
 
+
 def confirmation_mailing_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Да, отправляй'))
-    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.insert(KeyboardButton('Да, отправляй'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 
 
 def not_subscribed_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Я подписался(-лась)'))
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Я подписался(-лась)'))
     return markup
 
 
 def back_to_name_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Назад к вводу имени'))
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад к вводу имени'))
     return markup
 
 
 def back_to_email_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Назад к вводу почты'))
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад к вводу почты'))
     return markup
 
 
 def back_to_phone_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Назад к вводу телефона'))
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад к вводу телефона'))
     return markup
 
 
 def back_to_main_menu_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 
 
 def go_to_seo_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    markup.add(types.KeyboardButton('Сбор SEO ядра'))
-    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.add(KeyboardButton('Сбор SEO ядра'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 
 
 def another_search_query_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add(types.KeyboardButton('Ввести поисковой запрос повторно'))
-    markup.insert(types.KeyboardButton('Сбор SEO ядра'))
-    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(KeyboardButton('Ввести поисковой запрос повторно'))
+    markup.insert(KeyboardButton('Сбор SEO ядра'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 
 
 def another_seo_building_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add(types.KeyboardButton('Собрать SEO повторно'))
-    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(KeyboardButton('Собрать SEO повторно'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 
 
 def another_card_position_search_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add(types.KeyboardButton('Ввести запрос повторно'))
-    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(KeyboardButton('Ввести запрос повторно'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 
 
 # _______________________клавиатуры для выдачи графиков_______________________
 def graph_view_selection_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     for section in MPSTATS_SECTIONS:
-        markup.insert(types.KeyboardButton(section))
-    markup.add(types.KeyboardButton('Назад в главное меню'))
+        markup.insert(KeyboardButton(section))
+    markup.add(KeyboardButton('Назад в главное меню'))
     return markup
 
 
 def graph_value_selection_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     for value in MPSTATS_TRENDS:
-        markup.insert(types.KeyboardButton(value))
-    markup.add(types.KeyboardButton('Назад в главное меню'))
+        markup.insert(KeyboardButton(value))
+    markup.add(KeyboardButton('Назад в главное меню'))
     return markup
 
 
 def another_trend_graph_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add(types.KeyboardButton('Получить другой график'))
-    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(KeyboardButton('Получить другой график'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 # ___________________окончание клавиатур для выдачи графиков___________________
 
 
 def another_price_segmentation_markup():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add(types.KeyboardButton('Узнать ценовую сегментацию повторно'))
-    markup.insert(types.KeyboardButton('Назад в главное меню'))
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(KeyboardButton('Узнать ценовую сегментацию повторно'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 
 
 def inline_categories_markup(categories, cat_id=None, prev_page=False,
                              next_page=False, back_to=False, select=True):
-    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup = InlineKeyboardMarkup(row_width=2)
     if select:
         markup.add(
-            types.InlineKeyboardButton(
+            InlineKeyboardButton(
                 "⬇️Выбрать весь раздел⬇️",
                 callback_data=callback(
                     dict(
@@ -157,7 +160,7 @@ def inline_categories_markup(categories, cat_id=None, prev_page=False,
 
     for category in categories:
         markup.add(
-            types.InlineKeyboardButton(
+            InlineKeyboardButton(
                 category["name"],
                 callback_data=callback(
                     dict(
@@ -169,7 +172,7 @@ def inline_categories_markup(categories, cat_id=None, prev_page=False,
         )
 
     markup.add(
-        types.InlineKeyboardButton(
+        InlineKeyboardButton(
             ("⬅️" if prev_page else "❌"),
             callback_data=callback(
                 (
@@ -186,7 +189,7 @@ def inline_categories_markup(categories, cat_id=None, prev_page=False,
                 )
             )
         ),
-        types.InlineKeyboardButton(
+        InlineKeyboardButton(
             ("➡️" if next_page else "❌"),
             callback_data=callback(
                 (
@@ -206,7 +209,7 @@ def inline_categories_markup(categories, cat_id=None, prev_page=False,
     )
 
     markup.add(
-        types.InlineKeyboardButton(
+        InlineKeyboardButton(
             ("Назад" if back_to else "❌"),
             callback_data=callback(
                 (
@@ -220,7 +223,7 @@ def inline_categories_markup(categories, cat_id=None, prev_page=False,
                 )
             )
         ),
-        types.InlineKeyboardButton(
+        InlineKeyboardButton(
             "В главное меню",
             callback_data=callback(
                 dict(
