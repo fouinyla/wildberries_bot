@@ -5,7 +5,7 @@ import xlsxwriter
 from . import time
 import os
 import datetime
-from typing import Tuple, List, Dict, Optional
+from typing import Tuple, List, Dict
 import string
 from const.const import *
 
@@ -14,7 +14,7 @@ from const.const import *
 os.makedirs('results', exist_ok=True)
 
 
-def get_trends_data(path: str, view: str) -> Optional[List[Dict], None]:
+def get_trends_data(path: str, view: str):
     """
         path: 'Детям/Детское питание/Детская смесь' (example)
         view: key from MPSTATS_SECTIONS

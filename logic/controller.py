@@ -46,7 +46,6 @@ class Controller:
 
     async def command_start(self, message, state):
         await state.finish()
-        #print(self.db.get_admins())
         if not await self.subscribed(message.from_user.id):
             name = message.from_user.first_name
             text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
