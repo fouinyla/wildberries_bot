@@ -164,3 +164,24 @@ async def get_price_segmentation(query: str):
         finally:
             workbook.close()
         return path_to_excel
+
+
+async def get_month_sales(article: str) -> Tuple[str, bool]:
+    end_date = time.get_moscow_datetime().date()
+    start_date = end_date - datetime.timedelta(days=30)
+    async with httpx.AsyncClient(timeout=60) as client:
+        # получение кук для отправки запроса для получения SKU
+        main_page_response = await client.get(MPSTATS_MAIN_PAGE_URL)
+        main_page_response.raise_for_status()
+        cookies = main_page_response.headers['set-cookie']
+        headers = {'cookie': cookies + COOKIES_PART}
+
+        params = {'d1': start_date, 'd2': end_date}
+        response = await client.get(MPSTATS_SALES_URL.replace('ARTICLE', article),
+                                        headers=headers,
+                                        params=params,
+                                        follow_redirects=True)
+        response.raise_for_status()
+        # парсинг html ответа для получения SKU
+        result = response.json()
+        print(result['days'], result['sales'], result['balance'], sep='\n\n')

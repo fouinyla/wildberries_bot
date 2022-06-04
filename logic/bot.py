@@ -328,6 +328,16 @@ async def card_article_search(message: Message, state: FSMContext):
                             reply=False)
 
 
+# это меню 'Продажи по артикулу'
+@dp.message_handler(Text(equals='Продажи по артикулу'))
+async def month_sales_process(message: Message):
+    response = await c.month_sales()
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+
+
 # это меню 'Как пользоваться ботом'
 @dp.message_handler(commands='help', state='*')
 @dp.message_handler(Text(equals='Как пользоваться ботом'))

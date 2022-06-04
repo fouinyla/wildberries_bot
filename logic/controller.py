@@ -481,6 +481,12 @@ class Controller:
             markup = markups.another_price_segmentation_markup()
             return dict(text=text, markup=markup)
 
+    async def month_sales(self):
+        await mpstats.get_month_sales('39372867')
+        markup = markups.admin_start_menu_markup()
+        text = "month_sales"
+        return dict(text=text, markup=markup)
+
     async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()
         text = f"{FAQ} {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
