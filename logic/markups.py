@@ -143,6 +143,13 @@ def another_price_segmentation_markup():
     return markup
 
 
+def another_month_sales_markup():
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(KeyboardButton('Узнать продажи по артикулу повторно'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
 def inline_categories_markup(categories, cat_id=None, prev_page=False,
                              next_page=False, back_to=False, select=True):
     markup = InlineKeyboardMarkup(row_width=2)

@@ -86,6 +86,14 @@ class Database:
                                           user_id=user_id)
                 session.add(query)
 
+    def add_sales_article(self, article, tg_id):
+        with self.session() as session:
+            with session.begin():
+                user_id = session.query(User.id).filter(User.tg_id.__eq__(tg_id)).scalar()
+                query = MonthSales(article=article,
+                                   user_id=user_id)
+                session.add(query)
+
     def get_number_of_users(self):
         with self.session() as session:
             with session.begin():

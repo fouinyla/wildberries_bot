@@ -477,14 +477,50 @@ class Controller:
                 text = '<b>Пожалуйста, ценовая сегментация готова.</b>'
             else:
                 text = 'Ошибка на стороне сервера, пока что мы не можем этого исправить 😔\n\n' \
-                       'Попробуйте повторить запрос или изменить категорию товара.'
+                       'Попробуй повторить запрос или изменить категорию товара.'
             markup = markups.another_price_segmentation_markup()
             return dict(text=text, markup=markup)
 
-    async def month_sales(self):
-        await mpstats.get_month_sales('39372867')
-        markup = markups.admin_start_menu_markup()
-        text = "month_sales"
+    async def get_article_month_sales(self, state):
+        text = 'Пришли ОДИН артикул, по которому будем проверять статистику.\n' \
+               'Артикул всегда состоит из 8 цифр.'
+        markup = markups.back_to_main_menu_markup()
+        await state.set_state(states.NameGroup.article_for_sales)
+        return dict(text=text, markup=markup)
+
+    async def waiting_month_sales(self, message, state):
+        article_pattern = r'[0-9]{8}'
+        if re.fullmatch(article_pattern, message.text):
+            async with state.proxy() as data:
+                data['article_for_sales'] = message.text
+            text = '📈<b>Строим график..</b>\nРезультат скоро появится.'
+            markup = None
+            is_valid_article = True
+        else:
+            text = '<b>Проверь корректность введенного артикула.</b>\n'\
+                   'Артикул должен состоять только из 8 цифр.'
+            markup = markups.another_month_sales_markup()
+            is_valid_article = False
+        return dict(text=text, markup=markup, is_valid_article=is_valid_article)
+
+    async def ploting_graph_month_sales(self, message, state):
+        async with state.proxy() as data:
+            path_to_graph = await mpstats.plot_month_sales_graph(data['article_for_sales'])
+            if path_to_graph:
+                user = self.db.get_user(tg_id=message.from_user.id)
+                if user:
+                    self.db.add_sales_article(article=data['article_for_sales'],
+                                              tg_id=message.from_user.id)
+                await self.bot.send_document(chat_id=message.from_user.id,
+                                                document=InputFile(path_to_graph))
+                os.remove(path_to_graph)
+                text = '<b>Пожалуйста, график продаж и остатков готов.</b>'
+            else:
+                text = '<b>Что-то пошло не так.</b>\n' \
+                    'Проверь, правильность введенного артикула.\n' \
+                    'Для некоторых товаров с малым количеством продаж статистика отсутствует.'
+        markup = markups.another_month_sales_markup()
+        await state.finish()
         return dict(text=text, markup=markup)
 
     async def instruction_bar(self):

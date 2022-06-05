@@ -8,6 +8,8 @@ import datetime
 from typing import Tuple, List, Dict, Optional
 import string
 from const.const import *
+import matplotlib.pyplot as plt
+import math
 
 
 # создание директории для записи данных
@@ -30,6 +32,7 @@ async def get_trends_data(path: str, view: str) -> Optional[List[Dict]]:
             follow_redirects=True)
     if trends_response.status_code != 200 or not trends_response.json():
         return None
+    print(trends_response.json())
     return trends_response.json()
 
 
@@ -166,7 +169,7 @@ async def get_price_segmentation(query: str):
         return path_to_excel
 
 
-async def get_month_sales(article: str) -> Tuple[str, bool]:
+async def plot_month_sales_graph(article: str) -> Tuple[str, bool]:
     end_date = time.get_moscow_datetime().date()
     start_date = end_date - datetime.timedelta(days=30)
     async with httpx.AsyncClient(timeout=60) as client:
@@ -181,7 +184,27 @@ async def get_month_sales(article: str) -> Tuple[str, bool]:
                                         headers=headers,
                                         params=params,
                                         follow_redirects=True)
-        response.raise_for_status()
-        # парсинг html ответа для получения SKU
-        result = response.json()
-        print(result['days'], result['sales'], result['balance'], sep='\n\n')
+        if response.status_code != 200:
+            return False
+        graph_data = response.json()
+    # построение графиков
+    fig, ax1 = plt.subplots()
+    color1 = '#FF4D29'
+    ax1.plot(graph_data['days'], graph_data['sales'], color=color1)
+    ax1.set_ylabel('Продажи', color=color1)
+    ax1.tick_params(axis='y', labelcolor=color1)
+    ax1.grid(True, axis='both')
+
+    ax2 = ax1.twinx()
+    color2 = '#3870F5'
+    ax2.plot(graph_data['days'], graph_data['balance'], color=color2)
+    ax2.set_ylabel('Остатки', color=color2)
+    ax2.tick_params(axis='y', labelcolor=color2)
+    #ax2.grid(True, axis='y')
+
+    ax1.set_title(f'Продажи и остатки за месяц для артикула {article}')
+    ax1.tick_params(axis='x', which='major', labelsize=7, labelrotation=45)
+    # сохранение
+    image_path = f"results/month_sales_for_{article}.jpeg"
+    fig.savefig(image_path, dpi=1000)
+    return image_path

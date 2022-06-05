@@ -6,6 +6,7 @@ class NameGroup(StatesGroup):
     SEO_queries = State()
     range_search = State()
     price_category = State()
+    article_for_sales = State()
 
 
 class User(StatesGroup):
