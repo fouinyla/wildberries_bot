@@ -207,4 +207,16 @@ async def plot_month_sales_graph(article: str) -> Tuple[str, bool]:
     # сохранение
     image_path = f"results/month_sales_for_{article}.jpeg"
     fig.savefig(image_path, dpi=1000)
-    return image_path
+
+    # расчет доп. значений
+    start_day = graph_data['days'][0]
+    end_day = graph_data['days'][-1]
+    total_sales = sum(graph_data['sales'])
+    balance_at_the_end = graph_data['balance'][-1]
+    return dict(
+                image_path=image_path,
+                start_day=start_day,
+                end_day=end_day,
+                total_sales=total_sales,
+                balance_at_the_end=balance_at_the_end
+                )

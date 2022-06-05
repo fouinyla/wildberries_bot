@@ -505,16 +505,18 @@ class Controller:
 
     async def ploting_graph_month_sales(self, message, state):
         async with state.proxy() as data:
-            path_to_graph = await mpstats.plot_month_sales_graph(data['article_for_sales'])
-            if path_to_graph:
+            result = await mpstats.plot_month_sales_graph(data['article_for_sales'])
+            if result:
                 user = self.db.get_user(tg_id=message.from_user.id)
                 if user:
                     self.db.add_sales_article(article=data['article_for_sales'],
                                               tg_id=message.from_user.id)
                 await self.bot.send_document(chat_id=message.from_user.id,
-                                                document=InputFile(path_to_graph))
-                os.remove(path_to_graph)
-                text = '<b>Пожалуйста, график продаж и остатков готов.</b>'
+                                                document=InputFile(result['image_path']))
+                os.remove(result['image_path'])
+                text = f"Пожалуйста, график за {result['start_day']} - {result['end_day']} готов.\n" \
+                       f"<b>Всего продано товара за месяц: {result['total_sales']}\n" \
+                       f"Остаток товара на конец месяца: {result['balance_at_the_end']}</b>"
             else:
                 text = '<b>Что-то пошло не так.</b>\n' \
                     'Проверь, правильность введенного артикула.\n' \
