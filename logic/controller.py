@@ -1,3 +1,4 @@
+from numpy import number
 from db.db_connector import Database
 from logic.notification_service import Notification_Service
 from .inline_buttons_process_callback import InlineCallback
@@ -78,7 +79,8 @@ class Controller:
     async def get_number_of_users(self):
         markup = markups.admin_menu_markup()
         number_of_users = self.db.get_number_of_users()
-        text = f'В нашем боте зарегистриован {number_of_users} пользователь.'
+        last_number = number_of_users % 10
+        text = f'В нашем боте зарегистрировано {number_of_users} пользовател{ENDINGS_FOR_WORD_USER[last_number]}.'
         return dict(text=text, markup=markup)
 
     async def get_data_from_db(self, message):
