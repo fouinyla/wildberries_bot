@@ -229,6 +229,7 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def search_query(self, state):
+        print('search_query')
         markup = markups.back_to_main_menu_markup()
         text = '<b>Пожалуйста, введите один поисковой запрос</b> 🔎\n\nНаш робот выдаст список вариантов, как его можно "уточнить".\n' \
                'Подобрав наиболее точные поисковые запросы (лучше несколько), можете собрать по ним SEO - набор слов, ' \
@@ -237,33 +238,27 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def giving_hints(self, message, state):
-        if message.text == 'Сбор SEO ядра':
-            markup = markups.back_to_main_menu_markup()
-            text = '<b>Пожалуйста, отправьте мне все поисковые запросы для вашего товара</b>.\n\n' \
-                   'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
-                   '<b>Каждый запрос с новой строки.</b>'
-            await state.set_state(states.NameGroup.SEO_queries)
-            return dict(text=text, markup=markup)
-
+        print('giving_hints')
         async with state.proxy() as data:
             data['query'] = message.text
-        user = self.db.get_user(tg_id=message.from_user.id)
-        if user:
-            self.db.add_search_query(search_query=message.text,
-                                     user_id=user['id'])
-        hints = await wb.get_hints(data['query'])
-        if hints:
-            text = '\n'.join(hints)
-        elif hints == [] or (hints is None and await wb.product_exists(data['query'])):
-            text = 'Вы ввели конечный поисковый запрос. Его уже никак не улучшить.\n' \
-                   '<b>Может использовать его для сбора SEO?</b>'
-        else:
-            text = 'По вашему запросу продолжений на Wildberries не найдено.\n<b>Попробуйте другой запрос</b>.'
+            user = self.db.get_user(tg_id=message.from_user.id)
+            if user:
+                self.db.add_search_query(search_query=message.text,
+                                        user_id=user['id'])
+            hints = await wb.get_hints(data['query'])
+            if hints:
+                text = '\n'.join(hints)
+            elif hints == [] or (hints is None and await wb.product_exists(data['query'])):
+                text = 'Вы ввели конечный поисковый запрос. Его уже никак не улучшить.\n' \
+                       '<b>Может использовать его для сбора SEO?</b>'
+            else:
+                text = 'По вашему запросу продолжений на Wildberries не найдено.\n<b>Попробуйте другой запрос</b>.'
         markup = markups.another_search_query_markup()
         await state.finish()
         return dict(text=text, markup=markup)
 
     async def building_seo_core(self, state):
+        print('building_seo_core')
         markup = markups.back_to_main_menu_markup()
         text = '<b>Пожалуйста, отправьте мне все поисковые запросы для вашего товара</b>.\n\n' \
             'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
@@ -272,14 +267,17 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def waiting_seo_result(self, message, state):
+        print('waiting_seo_result')
         async with state.proxy() as data:
-            data['SEO_queries'] = message.text.lstrip('/')
+            data['SEO_queries'] = message.text
         text = '<b>Подготавливаем excel-файл..</b>\nЭто может занять до 1 минуты (в зависимости от количества запросов).'
         markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)
 
     async def building_seo_result(self, message, state):
+        print('building_seo_result')
         async with state.proxy() as data:
+            print(data['SEO_queries'])
             path_to_excel, flag_all_empty_queries = await mpstats.get_seo(data['SEO_queries'])
             if not flag_all_empty_queries:
                 await message.answer_document(document=InputFile(path_to_excel))
