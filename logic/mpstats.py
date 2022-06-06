@@ -192,21 +192,26 @@ async def plot_month_sales_graph(article: str) -> Tuple[str, bool]:
     color1 = '#FF4D29'
     ax1.plot(graph_data['days'], graph_data['sales'], color=color1)
     ax1.set_ylabel('Продажи', color=color1)
-    ax1.tick_params(axis='y', labelcolor=color1)
+    ax1.tick_params(axis='y', labelcolor=color1, color=color1)
     ax1.grid(True, axis='both')
 
     ax2 = ax1.twinx()
     color2 = '#3870F5'
     ax2.plot(graph_data['days'], graph_data['balance'], color=color2)
     ax2.set_ylabel('Остатки', color=color2)
-    ax2.tick_params(axis='y', labelcolor=color2)
-    #ax2.grid(True, axis='y')
+    ax2.tick_params(axis='y', labelcolor=color2, color=color2)
+    
+    ax3 = ax1.twinx()
+    color3 = 'g'
+    ax3.plot(graph_data['days'], graph_data['final_price'], color=color3)
+    ax3.set_ylabel('Цена', color=color3)
+    ax3.tick_params(axis='y', labelcolor=color3, color=color3, pad=45, labeltop=True)
 
-    ax1.set_title(f'Продажи и остатки за месяц для артикула {article}')
+    ax1.set_title(f'Данные по товару за месяц для артикула {article}')
     ax1.tick_params(axis='x', which='major', labelsize=7, labelrotation=45)
     # сохранение
     image_path = f"results/month_sales_for_{article}.jpeg"
-    fig.savefig(image_path, dpi=1000)
+    fig.savefig(image_path, dpi=1000, bbox_inches='tight')
 
     # расчет доп. значений
     start_day = graph_data['days'][0]
