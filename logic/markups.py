@@ -35,6 +35,7 @@ def start_menu_markup():
     markup.insert(KeyboardButton('Поиск по ранжированию'))
     markup.insert(KeyboardButton('Получить график'))
     markup.insert(KeyboardButton('Ценовая сегментация'))
+    markup.insert(KeyboardButton('Продажи по артикулу'))
     markup.insert(KeyboardButton('Как пользоваться ботом'))
     return markup
 
