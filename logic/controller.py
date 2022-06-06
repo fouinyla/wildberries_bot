@@ -1,3 +1,4 @@
+from numpy import number
 from db.db_connector import Database
 from logic.notification_service import Notification_Service
 from .inline_buttons_process_callback import InlineCallback
@@ -78,7 +79,8 @@ class Controller:
     async def get_number_of_users(self):
         markup = markups.admin_menu_markup()
         number_of_users = self.db.get_number_of_users()
-        text = f'В нашем боте зарегистриован {number_of_users} пользователь.'
+        last_number = number_of_users % 10
+        text = f'В нашем боте зарегистрировано {number_of_users} пользовател{ENDINGS_FOR_WORD_USER[last_number]}.'
         return dict(text=text, markup=markup)
 
     async def get_data_from_db(self, message):
@@ -227,6 +229,7 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def search_query(self, state):
+        print('search_query')
         markup = markups.back_to_main_menu_markup()
         text = '<b>Пожалуйста, введите один поисковой запрос</b> 🔎\n\nНаш робот выдаст список вариантов, как его можно "уточнить".\n' \
                'Подобрав наиболее точные поисковые запросы (лучше несколько), можете собрать по ним SEO - набор слов, ' \
@@ -235,33 +238,27 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def giving_hints(self, message, state):
-        if message.text == 'Сбор SEO ядра':
-            markup = markups.back_to_main_menu_markup()
-            text = '<b>Пожалуйста, отправьте мне все поисковые запросы для вашего товара</b>.\n\n' \
-                   'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
-                   '<b>Каждый запрос с новой строки.</b>'
-            await state.set_state(states.NameGroup.SEO_queries)
-            return dict(text=text, markup=markup)
-
+        print('giving_hints')
         async with state.proxy() as data:
             data['query'] = message.text
-        user = self.db.get_user(tg_id=message.from_user.id)
-        if user:
-            self.db.add_search_query(search_query=message.text,
-                                     user_id=user['id'])
-        hints = await wb.get_hints(data['query'])
-        if hints:
-            text = '\n'.join(hints)
-        elif hints == [] or (hints is None and await wb.product_exists(data['query'])):
-            text = 'Вы ввели конечный поисковый запрос. Его уже никак не улучшить.\n' \
-                   '<b>Может использовать его для сбора SEO?</b>'
-        else:
-            text = 'По вашему запросу продолжений на Wildberries не найдено.\n<b>Попробуйте другой запрос</b>.'
+            user = self.db.get_user(tg_id=message.from_user.id)
+            if user:
+                self.db.add_search_query(search_query=message.text,
+                                        user_id=user['id'])
+            hints = await wb.get_hints(data['query'])
+            if hints:
+                text = '\n'.join(hints)
+            elif hints == [] or (hints is None and await wb.product_exists(data['query'])):
+                text = 'Вы ввели конечный поисковый запрос. Его уже никак не улучшить.\n' \
+                       '<b>Может использовать его для сбора SEO?</b>'
+            else:
+                text = 'По вашему запросу продолжений на Wildberries не найдено.\n<b>Попробуйте другой запрос</b>.'
         markup = markups.another_search_query_markup()
         await state.finish()
         return dict(text=text, markup=markup)
 
     async def building_seo_core(self, state):
+        print('building_seo_core')
         markup = markups.back_to_main_menu_markup()
         text = '<b>Пожалуйста, отправьте мне все поисковые запросы для вашего товара</b>.\n\n' \
             'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
@@ -270,14 +267,17 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def waiting_seo_result(self, message, state):
+        print('waiting_seo_result')
         async with state.proxy() as data:
-            data['SEO_queries'] = message.text.lstrip('/')
+            data['SEO_queries'] = message.text
         text = '<b>Подготавливаем excel-файл..</b>\nЭто может занять до 1 минуты (в зависимости от количества запросов).'
         markup = markups.back_to_main_menu_markup()
         return dict(text=text, markup=markup)
 
     async def building_seo_result(self, message, state):
+        print('building_seo_result')
         async with state.proxy() as data:
+            print(data['SEO_queries'])
             path_to_excel, flag_all_empty_queries = await mpstats.get_seo(data['SEO_queries'])
             if not flag_all_empty_queries:
                 await message.answer_document(document=InputFile(path_to_excel))
@@ -477,9 +477,53 @@ class Controller:
                 text = '<b>Пожалуйста, ценовая сегментация готова.</b>'
             else:
                 text = 'Ошибка на стороне сервера, пока что мы не можем этого исправить 😔\n\n' \
-                       'Попробуйте повторить запрос или изменить категорию товара.'
+                       'Попробуй повторить запрос или изменить категорию товара.'
             markup = markups.another_price_segmentation_markup()
             return dict(text=text, markup=markup)
+
+    async def get_article_month_sales(self, state):
+        text = 'Пришли ОДИН артикул, по которому будем проверять статистику.\n' \
+               'Артикул всегда состоит из 8 цифр.'
+        markup = markups.back_to_main_menu_markup()
+        await state.set_state(states.NameGroup.article_for_sales)
+        return dict(text=text, markup=markup)
+
+    async def waiting_month_sales(self, message, state):
+        article_pattern = r'[0-9]{8}'
+        if re.fullmatch(article_pattern, message.text):
+            async with state.proxy() as data:
+                data['article_for_sales'] = message.text
+            text = '📈<b>Строим график..</b>\nРезультат скоро появится.'
+            markup = None
+            is_valid_article = True
+        else:
+            text = '<b>Проверь корректность введенного артикула.</b>\n'\
+                   'Артикул должен состоять только из 8 цифр.'
+            markup = markups.another_month_sales_markup()
+            is_valid_article = False
+        return dict(text=text, markup=markup, is_valid_article=is_valid_article)
+
+    async def ploting_graph_month_sales(self, message, state):
+        async with state.proxy() as data:
+            result = await mpstats.plot_month_sales_graph(data['article_for_sales'])
+            if result:
+                user = self.db.get_user(tg_id=message.from_user.id)
+                if user:
+                    self.db.add_sales_article(article=data['article_for_sales'],
+                                              tg_id=message.from_user.id)
+                await self.bot.send_document(chat_id=message.from_user.id,
+                                                document=InputFile(result['image_path']))
+                os.remove(result['image_path'])
+                text = f"Пожалуйста, график за {result['start_day']} - {result['end_day']} готов.\n" \
+                       f"<b>Всего продано товара за месяц: {result['total_sales']}\n" \
+                       f"Остаток товара на конец месяца: {result['balance_at_the_end']}</b>"
+            else:
+                text = '<b>Что-то пошло не так.</b>\n' \
+                    'Проверь, правильность введенного артикула.\n' \
+                    'Для некоторых товаров с малым количеством продаж статистика отсутствует.'
+        markup = markups.another_month_sales_markup()
+        await state.finish()
+        return dict(text=text, markup=markup)
 
     async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()

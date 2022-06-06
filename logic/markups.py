@@ -11,6 +11,7 @@ def admin_start_menu_markup():
     markup.insert(KeyboardButton('Поиск по ранжированию'))
     markup.insert(KeyboardButton('Получить график'))
     markup.insert(KeyboardButton('Ценовая сегментация'))
+    markup.insert(KeyboardButton('Продажи по артикулу'))
     markup.insert(KeyboardButton('Как пользоваться ботом'))
     markup.insert(KeyboardButton('Функции админа'))
     return markup
@@ -138,6 +139,13 @@ def another_trend_graph_markup():
 def another_price_segmentation_markup():
     markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.add(KeyboardButton('Узнать ценовую сегментацию повторно'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def another_month_sales_markup():
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(KeyboardButton('Узнать продажи по артикулу повторно'))
     markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 

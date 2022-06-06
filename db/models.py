@@ -42,3 +42,10 @@ class PriceSegmentation(Base):
     id = Column(Integer, primary_key=True)
     query_for_price = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    
+class MonthSales(Base):
+    __tablename__ = "month_sales"
+    id = Column(Integer, primary_key=True)
+    article = Column(Integer, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)

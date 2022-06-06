@@ -5,6 +5,7 @@ MPSTATS_SKU_URL = 'https://mpstats.io/wb/bysearch'
 MPSTATS_SEO_URL = 'https://mpstats.io/api/seo/keywords/expanding'
 MPSTATS_TRENDS_URL = 'https://mpstats.io/api/wb/get/category/trends'
 MPSTATS_PRICE_SEGMENTATION_URL = 'https://mpstats.io/api/wb/get/category/price_segmentation'
+MPSTATS_SALES_URL = 'https://mpstats.io/api/wb/get/item/ARTICLE/by_category'
 
 COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
     '_ga=GA1.1.2054104203.1651240592; _ym_isad=2; ' \
@@ -31,3 +32,6 @@ MPSTATS_SECTIONS = {'По товарам в категории': 'itemsInCategor
 
 WB_HINTS_URL = 'https://suggestions.wildberries.ru/api/v2/hint'
 WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common'
+
+ENDINGS_FOR_WORD_USER = {1: 'ь', 2: 'я', 3: 'я', 4: 'я', 5: 'ей',
+                         6: 'ей', 7: 'ей', 8: 'ей', 9: 'ей', 0: 'ей'}
