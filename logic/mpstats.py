@@ -9,7 +9,6 @@ from typing import Tuple, List, Dict, Optional
 import string
 from const.const import *
 import matplotlib.pyplot as plt
-import math
 
 
 # создание директории для записи данных
