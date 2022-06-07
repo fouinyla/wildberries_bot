@@ -11,6 +11,7 @@ def admin_start_menu_markup():
     markup.insert(KeyboardButton('Поиск по ранжированию'))
     markup.insert(KeyboardButton('Получить график'))
     markup.insert(KeyboardButton('Ценовая сегментация'))
+    markup.insert(KeyboardButton('Сменить название товара'))
     markup.insert(KeyboardButton('Как пользоваться ботом'))
     markup.insert(KeyboardButton('Функции админа'))
     return markup
@@ -34,6 +35,7 @@ def start_menu_markup():
     markup.insert(KeyboardButton('Поиск по ранжированию'))
     markup.insert(KeyboardButton('Получить график'))
     markup.insert(KeyboardButton('Ценовая сегментация'))
+    markup.insert(KeyboardButton('Сменить название товара'))
     markup.insert(KeyboardButton('Как пользоваться ботом'))
     return markup
 
@@ -106,6 +108,41 @@ def another_seo_building_markup():
 def another_card_position_search_markup():
     markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.add(KeyboardButton('Ввести запрос повторно'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def rename_card_again_markup():
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(KeyboardButton('Поменять название повторно'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def back_to_API_step():
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад к вводу API-ключа'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def back_to_supplierID_step():
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад к вводу supplier-id'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def back_to_article_and_new_name_step():
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад к вводу артикула и наименования'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def another_card_rename():
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Сменить наименование повторно'))
     markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 

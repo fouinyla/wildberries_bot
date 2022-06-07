@@ -26,3 +26,9 @@ class TrendGraph(StatesGroup):
     value_selection = State()
     date_1_selection = State()
     date_2_selection = State()
+
+
+class CardRename(StatesGroup):
+    get_API = State()
+    get_supID = State()
+    get_article_and_new_name = State()

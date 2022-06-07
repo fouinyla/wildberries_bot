@@ -1,3 +1,4 @@
+from sys import maxsize
 from db.db_connector import Database
 from logic.notification_service import Notification_Service
 from .inline_buttons_process_callback import InlineCallback
@@ -480,6 +481,66 @@ class Controller:
                        'Попробуйте повторить запрос или изменить категорию товара.'
             markup = markups.another_price_segmentation_markup()
             return dict(text=text, markup=markup)
+
+
+    async def rename_card_API_ask(self, state):
+            markup = markups.back_to_main_menu_markup()
+            text = CARD_RENAME_TEXT_1
+            await state.set_state(states.CardRename.get_API)
+            return dict(text=text, markup=markup)
+
+
+    async def rename_card_supplierID_ask(self, message, state):
+        # if len(message.text) == 149:    
+        async with state.proxy() as data:
+            markup = markups.back_to_API_step()
+            data["get_API"] = message.text
+            text = "Теперь введите supplier-id.\n" \
+                "<b>ВАЖНО!</b> Скопируйте id и вставьте его без лишних символов, " \
+                "иначе сменить название не получится."
+            await state.set_state(states.CardRename.get_supID)
+            return dict(text=text, markup=markup)
+        # else:
+        #     text = "Вы ввели API-ключ неверного формата, попробуйте снова."
+        #     markup = markups.back_to_main_menu_markup()
+        #     return dict(text=text, markup=markup)
+
+
+    async def rename_card_article_and_name_ask(self, message, state):
+        # if len(message.text) == 8 and message.text.isdigit():    
+        async with state.proxy() as data:
+            markup = markups.back_to_supplierID_step()
+            data["get_supID"] = message.text
+            text = "Теперь введите артикул товара и новое название через пробел\n" \
+                    "<b>Например</b> - 12345678 Свитер женский оверсайз"
+            await state.set_state(states.CardRename.get_article_and_new_name)
+            return dict(text=text, markup=markup)
+        # else:
+            # text = "Вы ввели API-ключ неверного формата"
+            # markup = markups.back_to_main_menu_markup()
+            # return dict(text=text, markup=markup)
+
+
+    async def rename_card(self, message, state):
+        async with state.proxy() as data:
+            data["get_article_and_new_name"] = message.text.split(' ', maxsplit = 1)
+            art_number = int(data["get_article_and_new_name"][0])
+            new_name = data["get_article_and_new_name"][1]
+            APIkey = data["get_API"]
+            supID = data["get_supID"]
+            if await wb.rename_the_card(new_name, art_number, APIkey, supID):
+                text = "Замечательно! Ваше наименование успешно изменено.\n" \
+                        "Название обновится в течение 20 минут."
+                markup = markups.another_card_rename()
+                await state.finish()
+                return dict(text=text, markup=markup)
+            else:
+                text = "Изменить наименование товара не получилось.\n" \
+                        "Проверьте корректность ввода API-ключа, supplier-id " \
+                        "или артикула и попробуйте снова."
+                markup = markups.back_to_article_and_new_name_step()
+                return dict(text=text, markup=markup)
+
 
     async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()
