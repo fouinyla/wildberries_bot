@@ -47,12 +47,12 @@ class Controller:
 
     async def command_start(self, message, state):
         await state.finish()
-        if not await self.subscribed(message.from_user.id):
-            name = message.from_user.first_name
-            text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
-                f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-            markup = markups.not_subscribed_markup()
-            return dict(text=text, markup=markup)
+        # if not await self.subscribed(message.from_user.id):
+        #     name = message.from_user.first_name
+        #     text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
+        #         f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+        #     markup = markups.not_subscribed_markup()
+        #     return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
@@ -244,7 +244,7 @@ class Controller:
             user = self.db.get_user(tg_id=message.from_user.id)
             if user:
                 self.db.add_search_query(search_query=message.text,
-                                        user_id=user['id'])
+                                         user_id=user['id'])
             hints = await wb.get_hints(data['query'])
             if hints:
                 text = '\n'.join(hints)
@@ -339,9 +339,9 @@ class Controller:
         categories = json.load(open(f'static/cats/{parent}.json'))
         text = phrase_for_categories_inline_keyboard(data=dict(category='',
                                                                current_page=1,
-                                                               total_page=ceil(len(categories)/10)))
+                                                               total_page=ceil(len(categories)/INLINE_CATS_COUNT_PER_PAGE)))
         markup = markups.inline_categories_markup(
-            categories=[dict(id=key, name=value.split('/')[-1]) for key, value in categories.items()][:10],
+            categories=[dict(id=key, name=value.split('/')[-1]) for key, value in categories.items()][:INLINE_CATS_COUNT_PER_PAGE],
             cat_id=parent,
             next_page=2,
             back_to=False,
@@ -512,7 +512,7 @@ class Controller:
                     self.db.add_sales_article(article=data['article_for_sales'],
                                               tg_id=message.from_user.id)
                 await self.bot.send_document(chat_id=message.from_user.id,
-                                                document=InputFile(result['image_path']))
+                                             document=InputFile(result['image_path']))
                 os.remove(result['image_path'])
                 text = f"Пожалуйста, график за {result['start_day']} - {result['end_day']} готов.\n" \
                        f"<b>Всего продано товара за месяц: {result['total_sales']}\n" \

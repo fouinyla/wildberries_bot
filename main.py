@@ -13,7 +13,10 @@ async def root():
 
 @app.post("/")
 async def process_update(request: Request):
-    update = await request.json()
-    update = types.Update(**update)
-    print("incoming", update)
-    await dp.process_update(update)
+    try:
+        update = await request.json()
+        update = types.Update(**update)
+        print("incoming", update)
+        await dp.process_update(update)
+    except ValueError:
+        print("body", await request.body())

@@ -12,7 +12,7 @@ def phrase_for_notify_admins_about_some_event(data):
 
 
 def phrase_for_categories_inline_keyboard(data):
-    return "По какой категории определяем ценовую сегментацию?\nКатегория: " + data["category"] + "\nСтраница: " + str(data["current_page"]) + " из " + str(data["total_page"])
+    return "По какой категории собрать данные?\nКатегория: " + data["category"] + "\nСтраница: " + str(data["current_page"]) + " из " + str(data["total_page"])
 
 
 def phrase_for_categories_inline_keyboard_final(data):

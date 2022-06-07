@@ -35,3 +35,5 @@ WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common'
 
 ENDINGS_FOR_WORD_USER = {1: 'ь', 2: 'я', 3: 'я', 4: 'я', 5: 'ей',
                          6: 'ей', 7: 'ей', 8: 'ей', 9: 'ей', 0: 'ей'}
+
+INLINE_CATS_COUNT_PER_PAGE = 7

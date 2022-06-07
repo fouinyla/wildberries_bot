@@ -1,5 +1,6 @@
 from math import ceil
 from const import phrases
+from const.const import *
 from .utils import get_callback
 from . import markups
 from . import memory
@@ -51,13 +52,13 @@ class InlineCallback():
                 data=dict(
                     category=cat_json[cat_id] if not cat_id == '0' else '',
                     current_page=1,
-                    total_page=ceil(len(subcats)/10)
+                    total_page=ceil(len(subcats)/INLINE_CATS_COUNT_PER_PAGE)
                 )
             )
             markup = markups.inline_categories_markup(
-                categories=subcats[:10],
+                categories=subcats[:INLINE_CATS_COUNT_PER_PAGE],
                 cat_id=cat_id,
-                next_page=2 if len(subcats) > 10 else False,
+                next_page=2 if len(subcats) > INLINE_CATS_COUNT_PER_PAGE else False,
                 back_to=cat_id.rsplit('.', 1)[0] if cat_id.count('.') > 0 else False,
                 select=cat_id.count('.') != 0
             )
@@ -76,15 +77,15 @@ class InlineCallback():
                 data=dict(
                     category="" if cat_id == "0" else cat_json[cat_id],
                     current_page=page,
-                    total_page=ceil(len(siblings)/10)
+                    total_page=ceil(len(siblings)/INLINE_CATS_COUNT_PER_PAGE)
                 )
             )
             markup = markups.inline_categories_markup(
-                categories=siblings[10*(page-1):10*(page)],
+                categories=siblings[INLINE_CATS_COUNT_PER_PAGE*(page-1):INLINE_CATS_COUNT_PER_PAGE*(page)],
                 cat_id=cat_id,
                 prev_page=page-1,
-                next_page=page+1 if len(siblings[10*(page-1):]) > 10 else False,
-                back_to=cat_id.rsplit('.', 1)[0] if cat_id.count('.') > 1 else False,
+                next_page=page+1 if len(siblings[INLINE_CATS_COUNT_PER_PAGE*(page-1):]) > INLINE_CATS_COUNT_PER_PAGE else False,
+                back_to=cat_id.rsplit('.', 1)[0] if cat_id.count('.') > 0 else False,
                 select=cat_id.count('.') != 0
             )
             await self.edit_message(
@@ -103,15 +104,15 @@ class InlineCallback():
                 data=dict(
                     category='' if cat_id == "0" else cat_json[cat_id],
                     current_page=page,
-                    total_page=ceil(len(siblings)/10)
+                    total_page=ceil(len(siblings)/INLINE_CATS_COUNT_PER_PAGE)
                 )
             )
             markup = markups.inline_categories_markup(
-                categories=siblings[10*(page-1):10*(page)],
+                categories=siblings[INLINE_CATS_COUNT_PER_PAGE*(page-1):INLINE_CATS_COUNT_PER_PAGE*(page)],
                 cat_id=cat_id,
                 prev_page=page-1,
-                next_page=page+1 if len(siblings[10*(page-1):]) > 10 else False,
-                back_to=cat_id.rsplit('.', 1)[0] if cat_id.count('.') > 1 else False,
+                next_page=page+1 if len(siblings[INLINE_CATS_COUNT_PER_PAGE*(page-1):]) > INLINE_CATS_COUNT_PER_PAGE else False,
+                back_to=cat_id.rsplit('.', 1)[0] if cat_id.count('.') > 0 else False,
                 select=cat_id.count('.') != 0
             )
             await self.edit_message(
