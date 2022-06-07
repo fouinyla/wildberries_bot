@@ -8,7 +8,7 @@ async def get_hints(query: str, gender: str = 'common', locale: str = 'ru',
     """
         Returns a list of Wildberries hints for the given query
     """
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=60) as client:
         response = await client.get(WB_HINTS_URL, params={'query': query,
                                                           'gender': gender,
                                                           'locale': locale,
@@ -23,7 +23,7 @@ async def product_exists(query: str) -> bool:
     """
         Checks if there are products on Wildberries for the given query
     """
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=60) as client:
         response = await client.get(WB_SEARCH_URL, params={'query': query})
     response.raise_for_status()
     json = response.json()
@@ -47,7 +47,7 @@ def get_page_url(query):
 async def search_for_article(article, query):
     card_counter = 3
     page_counter = 0
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=60) as client:
         for url in get_page_url(query):
             response = await client.get(url=url)
             page_counter += 1
