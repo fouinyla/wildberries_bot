@@ -12,6 +12,7 @@ def admin_start_menu_markup():
     markup.insert(KeyboardButton('Получить график'))
     markup.insert(KeyboardButton('Ценовая сегментация'))
     markup.insert(KeyboardButton('Продажи по артикулу'))
+    markup.insert(KeyboardButton('Сменить название товара'))
     markup.insert(KeyboardButton('Как пользоваться ботом'))
     markup.insert(KeyboardButton('Функции админа'))
     return markup
@@ -36,6 +37,7 @@ def start_menu_markup():
     markup.insert(KeyboardButton('Получить график'))
     markup.insert(KeyboardButton('Ценовая сегментация'))
     markup.insert(KeyboardButton('Продажи по артикулу'))
+    markup.insert(KeyboardButton('Сменить название товара'))
     markup.insert(KeyboardButton('Как пользоваться ботом'))
     return markup
 
@@ -112,6 +114,41 @@ def another_card_position_search_markup():
     return markup
 
 
+def rename_card_again_markup():
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(KeyboardButton('Поменять название повторно'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def back_to_API_step():
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад к вводу API-ключа'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def back_to_supplierID_step():
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад к вводу supplier-id'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def back_to_article_and_new_name_step():
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Назад к вводу артикула и наименования'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def another_card_rename():
+    markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Сменить наименование повторно'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
 # _______________________клавиатуры для выдачи графиков_______________________
 def graph_view_selection_markup():
     markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
@@ -153,6 +190,66 @@ def another_month_sales_markup():
 
 def inline_categories_markup(categories, cat_id=None, prev_page=False,
                              next_page=False, back_to=False, select=True):
+    PREV_BUTTON = InlineKeyboardButton(
+        "⬅️",
+        callback_data=callback(
+            (
+                dict(
+                    a="PRV",
+                    d=str(cat_id),
+                    p=prev_page
+                ) if prev_page
+                else (
+                    dict(
+                        a='.'
+                    )
+                )
+            )
+        )
+    )
+
+    NEXT_BUTTON = InlineKeyboardButton(
+        "➡️",
+        callback_data=callback(
+            (
+                dict(
+                    a="NXT",
+                    d=str(cat_id),
+                    p=next_page
+                ) if next_page
+                else (
+                    dict(
+                        a='.'
+                    )
+                )
+            )
+        )
+    )
+
+    BACK_BUTTON = InlineKeyboardButton(
+        ("Назад" if back_to else "❌"),
+        callback_data=callback(
+            (
+                dict(
+                    a="PCK",
+                    d=back_to,
+                ) if back_to
+                else dict(
+                    a='.'
+                )
+            )
+        )
+    )
+
+    MAIN_MENU_BUTTON = InlineKeyboardButton(
+        "В главное меню",
+        callback_data=callback(
+            dict(
+                a="ABR"
+            )
+        )
+    )
+
     markup = InlineKeyboardMarkup(row_width=2)
     if select:
         markup.add(
@@ -180,65 +277,25 @@ def inline_categories_markup(categories, cat_id=None, prev_page=False,
             )
         )
 
-    markup.add(
-        InlineKeyboardButton(
-            ("⬅️" if prev_page else "❌"),
-            callback_data=callback(
-                (
-                    dict(
-                        a="PRV",
-                        d=str(cat_id),
-                        p=prev_page
-                    ) if prev_page
-                    else (
-                        dict(
-                            a='.'
-                        )
-                    )
-                )
-            )
-        ),
-        InlineKeyboardButton(
-            ("➡️" if next_page else "❌"),
-            callback_data=callback(
-                (
-                    dict(
-                        a="NXT",
-                        d=str(cat_id),
-                        p=next_page
-                    ) if next_page
-                    else (
-                        dict(
-                            a='.'
-                        )
-                    )
-                )
-            )
-        )
-    )
+    row = []
+    if prev_page and next_page:
+        markup.add(PREV_BUTTON, NEXT_BUTTON)
+        if back_to:
+            row.append(BACK_BUTTON)
+        row.append(MAIN_MENU_BUTTON)
+        markup.add(*row)
+    else:
+        if prev_page:
+            row.append(PREV_BUTTON)
+        if back_to:
+            row.append(BACK_BUTTON)
+        else:
+            row.append(MAIN_MENU_BUTTON)
+        if next_page:
+            row.append(NEXT_BUTTON)
+        markup.add(*row)
 
-    markup.add(
-        InlineKeyboardButton(
-            ("Назад" if back_to else "❌"),
-            callback_data=callback(
-                (
-                    dict(
-                        a="PCK",
-                        d=back_to,
-                    ) if back_to
-                    else dict(
-                        a='.'
-                    )
-                )
-            )
-        ),
-        InlineKeyboardButton(
-            "В главное меню",
-            callback_data=callback(
-                dict(
-                    a="ABR"
-                )
-            )
-        )
-    )
+        if back_to:
+            markup.add(MAIN_MENU_BUTTON)
+
     return markup

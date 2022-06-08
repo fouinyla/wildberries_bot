@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, CallbackQuery
 from os import getenv
-from .states import NameGroup, User, Admin, TrendGraph
+from .states import CardRename, NameGroup, User, Admin, TrendGraph
 from db.db_connector import Database
 from . import memory
 
@@ -335,9 +335,9 @@ async def card_article_search(message: Message, state: FSMContext):
 async def get_article_month_sales_process(message: Message, state: FSMContext):
     response = await c.get_article_month_sales(state=state)
     await message.reply(text=response['text'],
-                        reply_markup=response['markup'],
-                        parse_mode='HTML',
-                        reply=False)
+                    reply_markup=response['markup'],
+                    parse_mode='HTML',
+                    reply=False)
 
 
 # это выдача данных для 'Продажи по артикулу'
@@ -345,15 +345,60 @@ async def get_article_month_sales_process(message: Message, state: FSMContext):
 async def waiting_month_sales_process(message: Message, state: FSMContext):
     response = await c.waiting_month_sales(message=message, state=state)
     await message.reply(text=response['text'],
-                        reply_markup=response['markup'],
-                        parse_mode='HTML',
-                        reply=False)
+                    reply_markup=response['markup'],
+                    parse_mode='HTML',
+                    reply=False)
     if response['is_valid_article']:
         response = await c.ploting_graph_month_sales(message=message, state=state)
         await message.reply(text=response['text'],
                             reply_markup=response['markup'],
                             parse_mode='HTML',
                             reply=False)
+
+
+# меню получения API-ключа
+@dp.message_handler(commands='rename', state='*')
+@dp.message_handler(Text(equals='Сменить название товара'), state='*')
+@dp.message_handler(Text(equals='Назад к вводу API-ключа'), state='*')
+async def rename_card_API_ask_process(message: Message, state: FSMContext):
+    response = await c.rename_card_API_ask(state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+
+
+# меню получения supplier-id
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=CardRename.get_API)
+@dp.message_handler(Text(equals='Назад к вводу supplier-id'), state='*')
+async def rename_card_supplierID_ask_process(message: Message, state: FSMContext):
+    response = await c.rename_card_supplierID_ask(message, state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+
+
+# меню получения артикула и нового имени
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=CardRename.get_supID)
+@dp.message_handler(Text(equals='Назад к вводу артикула и наименования'), state='*')
+async def rename_card_article_and_name_ask_process(message: Message, state: FSMContext):
+    response = await c.rename_card_article_and_name_ask(message, state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+
+
+# основное меню смены названия
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=CardRename.get_article_and_new_name)
+@dp.message_handler(Text(equals='Сменить наименование повторно'), state='*')
+async def rename_card_process(message: Message, state: FSMContext):
+    response = await c.rename_card(message, state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
 
 
 # это меню 'Как пользоваться ботом'

@@ -58,3 +58,60 @@ async def search_for_article(article, query):
                 if card['id'] == article:
                     return page_counter, card_counter
                 card_counter += 1
+
+
+async def find_the_card(article, APIkey, supplierID):
+    headers = {
+        "accept": "*/*",
+        "Authorization": APIkey,
+        "Content-type": "application/json"
+    }
+    data_list = {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "params": {
+            "filter": {
+                "find": [{
+                    "column": "nomenclatures.nmId",
+                    "search": article
+                }]
+            },
+            "query": {
+                "limit": 1,
+                "offset": 0,
+                "total": 0
+            },
+            "supplierID": supplierID,
+            "isArchive": True,
+            "withError": False
+        }
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.post("https://suppliers-api.wildberries.ru/card/list", headers=headers, json=data_list)
+        if response.status_code == 200:
+            return response.json()["result"]["cards"][0]
+        else:
+            return None
+
+
+async def rename_the_card(new_name, article, APIkey, supplierID):
+    headers = {
+        "accept": "*/*",
+        "Authorization": APIkey,
+        "Content-type": "application/json"
+    }
+    data = {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "params": {
+            "card": {}
+        }
+    }
+    async with httpx.AsyncClient() as client:
+        data["params"]["card"] = await find_the_card(article, APIkey, supplierID)
+        if data["params"]["card"]:
+            data["params"]["card"]["addin"][1]["params"][0]["value"] = new_name
+            await client.post("https://suppliers-api.wildberries.ru/card/update", headers=headers, json=data)
+            return True
+        else:
+            return None

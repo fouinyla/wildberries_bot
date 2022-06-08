@@ -1,4 +1,3 @@
-from numpy import number
 from db.db_connector import Database
 from logic.notification_service import Notification_Service
 from .inline_buttons_process_callback import InlineCallback
@@ -47,12 +46,12 @@ class Controller:
 
     async def command_start(self, message, state):
         await state.finish()
-        if not await self.subscribed(message.from_user.id):
-            name = message.from_user.first_name
-            text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
-                f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
-            markup = markups.not_subscribed_markup()
-            return dict(text=text, markup=markup)
+        # if not await self.subscribed(message.from_user.id):
+        #     name = message.from_user.first_name
+        #     text = f"<b>Приветствую, {name}!</b>\n\nЭто наш бот🤖 для улучшения карточки твоего товара на WB.\n" \
+        #         f"Для доступа к функционалу бота, пожалуйста, подпишись на канал {hlink('OPTSHOP', 'https://t.me/opt_tyrke')}"
+        #     markup = markups.not_subscribed_markup()
+        #     return dict(text=text, markup=markup)
 
         user = self.db.get_user(message.from_user.id)
         if user:
@@ -244,7 +243,7 @@ class Controller:
             user = self.db.get_user(tg_id=message.from_user.id)
             if user:
                 self.db.add_search_query(search_query=message.text,
-                                        user_id=user['id'])
+                                         user_id=user['id'])
             hints = await wb.get_hints(data['query'])
             if hints:
                 text = '\n'.join(hints)
@@ -339,9 +338,9 @@ class Controller:
         categories = json.load(open(f'static/cats/{parent}.json'))
         text = phrase_for_categories_inline_keyboard(data=dict(category='',
                                                                current_page=1,
-                                                               total_page=ceil(len(categories)/10)))
+                                                               total_page=ceil(len(categories)/INLINE_CATS_COUNT_PER_PAGE)))
         markup = markups.inline_categories_markup(
-            categories=[dict(id=key, name=value.split('/')[-1]) for key, value in categories.items()][:10],
+            categories=[dict(id=key, name=value.split('/')[-1]) for key, value in categories.items()][:INLINE_CATS_COUNT_PER_PAGE],
             cat_id=parent,
             next_page=2,
             back_to=False,
@@ -481,12 +480,14 @@ class Controller:
             markup = markups.another_price_segmentation_markup()
             return dict(text=text, markup=markup)
 
+
     async def get_article_month_sales(self, state):
         text = 'Пришли ОДИН артикул, по которому будем проверять статистику.\n' \
                'Артикул всегда состоит из 8 цифр.'
         markup = markups.back_to_main_menu_markup()
         await state.set_state(states.NameGroup.article_for_sales)
         return dict(text=text, markup=markup)
+
 
     async def waiting_month_sales(self, message, state):
         article_pattern = r'[0-9]{8}'
@@ -503,6 +504,7 @@ class Controller:
             is_valid_article = False
         return dict(text=text, markup=markup, is_valid_article=is_valid_article)
 
+
     async def ploting_graph_month_sales(self, message, state):
         async with state.proxy() as data:
             result = await mpstats.plot_month_sales_graph(data['article_for_sales'])
@@ -512,7 +514,7 @@ class Controller:
                     self.db.add_sales_article(article=data['article_for_sales'],
                                               tg_id=message.from_user.id)
                 await self.bot.send_document(chat_id=message.from_user.id,
-                                                document=InputFile(result['image_path']))
+                                             document=InputFile(result['image_path']))
                 os.remove(result['image_path'])
                 text = f"Пожалуйста, график за {result['start_day']} - {result['end_day']} готов.\n" \
                        f"<b>Всего продано товара за месяц: {result['total_sales']}\n" \
@@ -524,6 +526,56 @@ class Controller:
         markup = markups.another_month_sales_markup()
         await state.finish()
         return dict(text=text, markup=markup)
+
+
+    async def rename_card_API_ask(self, state):
+            markup = markups.back_to_main_menu_markup()
+            text = CARD_RENAME_TEXT_1
+            await state.set_state(states.CardRename.get_API)
+            return dict(text=text, markup=markup)
+
+
+    async def rename_card_supplierID_ask(self, message, state):  
+        async with state.proxy() as data:
+            markup = markups.back_to_API_step()
+            data["get_API"] = message.text
+            text = "Теперь введите supplier-id.\n" \
+                "<b>ВАЖНО!</b> Скопируйте id и вставьте его без лишних символов, " \
+                "иначе сменить название не получится."
+            await state.set_state(states.CardRename.get_supID)
+            return dict(text=text, markup=markup)
+
+
+    async def rename_card_article_and_name_ask(self, message, state):   
+        async with state.proxy() as data:
+            markup = markups.back_to_supplierID_step()
+            data["get_supID"] = message.text
+            text = "Теперь введите артикул товара и новое название через пробел\n" \
+                    "<b>Например</b> - 12345678 Свитер женский оверсайз"
+            await state.set_state(states.CardRename.get_article_and_new_name)
+            return dict(text=text, markup=markup)
+
+
+    async def rename_card(self, message, state):
+        async with state.proxy() as data:
+            data["get_article_and_new_name"] = message.text.split(' ', maxsplit = 1)
+            art_number = int(data["get_article_and_new_name"][0])
+            new_name = data["get_article_and_new_name"][1]
+            APIkey = data["get_API"]
+            supID = data["get_supID"]
+            if await wb.rename_the_card(new_name, art_number, APIkey, supID):
+                text = "Замечательно! Ваше наименование успешно изменено.\n" \
+                        "Название обновится в течение 20 минут."
+                markup = markups.another_card_rename()
+                await state.finish()
+                return dict(text=text, markup=markup)
+            else:
+                text = "Изменить наименование товара не получилось.\n" \
+                        "Проверьте корректность ввода API-ключа, supplier-id " \
+                        "или артикула и попробуйте снова."
+                markup = markups.back_to_article_and_new_name_step()
+                return dict(text=text, markup=markup)
+
 
     async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()
