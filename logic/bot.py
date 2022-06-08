@@ -356,6 +356,35 @@ async def waiting_month_sales_process(message: Message, state: FSMContext):
                             reply=False)
 
 
+
+# это запрос артикула для 'Позиция карточки при запросах'
+@dp.message_handler(commands='card_search', state='*')
+@dp.message_handler(Text(equals='Позиция карточки при запросах'), state='*')
+@dp.message_handler(Text(equals='Узнать позицию по артикулу повторно'), state='*')
+async def get_article_card_queries_process(message: Message, state: FSMContext):
+    response = await c.get_article_card_queries(state=state)
+    await message.reply(text=response['text'],
+                    reply_markup=response['markup'],
+                    parse_mode='HTML',
+                    reply=False)
+
+
+# это выдача данных для 'Позиция карточки при запросах'
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=NameGroup.article_for_queries)
+async def creating_queries_table_process(message: Message, state: FSMContext):
+    response = await c.waiting_queries_table(message=message, state=state)
+    await message.reply(text=response['text'],
+                    reply_markup=response['markup'],
+                    parse_mode='HTML',
+                    reply=False)
+    if response['is_valid_article']:
+        response = await c.creating_queries_table(message=message, state=state)
+        await message.reply(text=response['text'],
+                            reply_markup=response['markup'],
+                            parse_mode='HTML',
+                            reply=False)
+
+
 # меню получения API-ключа
 @dp.message_handler(commands='rename', state='*')
 @dp.message_handler(Text(equals='Сменить название товара'), state='*')
