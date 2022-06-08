@@ -9,9 +9,10 @@ def admin_start_menu_markup():
     markup.insert(KeyboardButton('Поисковой запрос'))
     markup.insert(KeyboardButton('Сбор SEO ядра'))
     markup.insert(KeyboardButton('Поиск по ранжированию'))
-    markup.insert(KeyboardButton('Получить график'))
+    markup.insert(KeyboardButton('Позиция карточки при запросах'))
     markup.insert(KeyboardButton('Ценовая сегментация'))
     markup.insert(KeyboardButton('Продажи по артикулу'))
+    markup.insert(KeyboardButton('Получить график'))
     markup.insert(KeyboardButton('Сменить название товара'))
     markup.insert(KeyboardButton('Как пользоваться ботом'))
     markup.insert(KeyboardButton('Функции админа'))
@@ -34,9 +35,10 @@ def start_menu_markup():
     markup.insert(KeyboardButton('Поисковой запрос'))
     markup.insert(KeyboardButton('Сбор SEO ядра'))
     markup.insert(KeyboardButton('Поиск по ранжированию'))
-    markup.insert(KeyboardButton('Получить график'))
+    markup.insert(KeyboardButton('Позиция карточки при запросах'))
     markup.insert(KeyboardButton('Ценовая сегментация'))
     markup.insert(KeyboardButton('Продажи по артикулу'))
+    markup.insert(KeyboardButton('Получить график'))
     markup.insert(KeyboardButton('Сменить название товара'))
     markup.insert(KeyboardButton('Как пользоваться ботом'))
     return markup
@@ -184,6 +186,13 @@ def another_price_segmentation_markup():
 def another_month_sales_markup():
     markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     markup.add(KeyboardButton('Узнать продажи по артикулу повторно'))
+    markup.insert(KeyboardButton('Назад в главное меню'))
+    return markup
+
+
+def another_card_queries_markup():
+    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(KeyboardButton('Узнать позицию по артикулу повторно'))
     markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 

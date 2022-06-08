@@ -49,3 +49,10 @@ class MonthSales(Base):
     id = Column(Integer, primary_key=True)
     article = Column(Integer, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    
+class CardQueries(Base):
+    __tablename__ = "card_queries"
+    id = Column(Integer, primary_key=True)
+    article = Column(Integer, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)

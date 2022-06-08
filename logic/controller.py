@@ -33,8 +33,10 @@ class Controller:
             with open("static/cats/" + f, mode="r") as json_file:
                 memory.categories[f.split(".json")[0]] = json_file.read()
 
+
     def load_admins(self):
         memory.admins = self.db.get_admins()
+        
 
     async def subscribed(self, user_id: int) -> bool:
         """
@@ -72,7 +74,7 @@ class Controller:
     async def admin_menu(self, state):
         await state.finish()
         markup = markups.admin_menu_markup()
-        text = '<b>Это меню админа.</b>'
+        text = '<b>Это меню админа</b>'
         return dict(text=text, markup=markup)
 
     async def get_number_of_users(self):
@@ -507,7 +509,11 @@ class Controller:
 
     async def ploting_graph_month_sales(self, message, state):
         async with state.proxy() as data:
-            result = await mpstats.plot_month_sales_graph(data['article_for_sales'])
+            graph_data = await mpstats.get_card_data(data['article_for_sales'])
+            if graph_data:
+                result = utils.plot_month_sales_graph(graph_data, data['article_for_sales'])
+            else:
+                result = None
             if result:
                 user = self.db.get_user(tg_id=message.from_user.id)
                 if user:
@@ -521,9 +527,61 @@ class Controller:
                        f"Остаток товара на конец месяца: {result['balance_at_the_end']}</b>"
             else:
                 text = '<b>Что-то пошло не так.</b>\n' \
-                    'Проверь, правильность введенного артикула.\n' \
-                    'Для некоторых товаров с малым количеством продаж статистика отсутствует.'
+                       'Проверь, правильность введенного артикула.\n' \
+                       'Для некоторых товаров с малым количеством продаж статистика отсутствует.'
         markup = markups.another_month_sales_markup()
+        await state.finish()
+        return dict(text=text, markup=markup)
+
+    
+    async def get_article_card_queries(self, state):
+        text = 'Пришли ОДИН артикул, по которому будем проверять статистику запросов.\n' \
+               'Артикул всегда состоит из 8 цифр.\n' \
+               '<b>В статистику гарантированно попадает информация только первой страницы ' \
+               'результатов поиска на WB (до 100 позиций).</b>'
+        markup = markups.back_to_main_menu_markup()
+        await state.set_state(states.NameGroup.article_for_queries)
+        return dict(text=text, markup=markup)
+
+
+    async def waiting_queries_table(self, message, state):
+        article_pattern = r'[0-9]{8}'
+        if re.fullmatch(article_pattern, message.text):
+            async with state.proxy() as data:
+                data['article_for_queries'] = message.text
+            text = '📏<b>Строим таблицу..</b>\nРезультат скоро появится.'
+            markup = None
+            is_valid_article = True
+        else:
+            text = '<b>Проверь корректность введенного артикула.</b>\n'\
+                   'Артикул должен состоять только из 8 цифр.'
+            markup = markups.another_card_queries_markup()
+            is_valid_article = False
+        return dict(text=text, markup=markup, is_valid_article=is_valid_article)
+
+
+    async def creating_queries_table(self, message, state):
+        async with state.proxy() as data:
+            card_data = await mpstats.get_card_data(data['article_for_queries'])
+            if card_data:
+                result = utils.create_queries_table(card_data, data['article_for_queries'])
+            else:
+                result = None
+            if result:
+                user = self.db.get_user(tg_id=message.from_user.id)
+                if user:
+                    self.db.add_search_article(article=data['article_for_queries'],
+                                               tg_id=message.from_user.id)
+                await self.bot.send_document(chat_id=message.from_user.id,
+                                             document=InputFile(result))
+                os.remove(result)
+                text = f'<b>Пожалуйста, таблица с позициями товара в выдачах по наиболее популярным запросам.</b>\n' \
+                        'В таблице тире "-" означает, что позиция товара по данному запросу больше 100.'
+            else:
+                text = '<b>Что-то пошло не так.</b>\n' \
+                       'Проверь, правильность введенного артикула.\n' \
+                       'Для некоторых товаров с малым количеством продаж статистика отсутствует.'
+        markup = markups.another_card_queries_markup()
         await state.finish()
         return dict(text=text, markup=markup)
 
