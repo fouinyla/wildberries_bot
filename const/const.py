@@ -1,4 +1,4 @@
-CUSTOMER_CHANNEL_ID = '@wb_sales_test'
+CUSTOMER_CHANNEL_ID = '@opt_tyrke'
 
 MPSTATS_MAIN_PAGE_URL = 'https://mpstats.io/'
 MPSTATS_SKU_URL = 'https://mpstats.io/wb/bysearch'
