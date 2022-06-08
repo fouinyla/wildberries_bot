@@ -35,6 +35,7 @@ class Controller:
 
     def load_admins(self):
         memory.admins = self.db.get_admins()
+        
 
     async def subscribed(self, user_id: int) -> bool:
         """
@@ -507,7 +508,7 @@ class Controller:
 
     async def ploting_graph_month_sales(self, message, state):
         async with state.proxy() as data:
-            result = await mpstats.plot_month_sales_graph(data['article_for_sales'])
+            result = utils.plot_month_sales_graph(data['article_for_sales'])
             if result:
                 user = self.db.get_user(tg_id=message.from_user.id)
                 if user:
