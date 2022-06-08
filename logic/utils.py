@@ -3,8 +3,9 @@ from datetime import date
 from typing import List, Tuple
 import typing
 import matplotlib.pyplot as plt
-from const.const import MPSTATS_TRENDS
-from . import mpstats
+from const.const import *
+import xlsxwriter
+
 
 # using:
 # d = Dict(
@@ -75,8 +76,7 @@ def make_graph(graph_data: List[typing.Dict], date_1: date, date_2: date,
     return image_path
 
 
-def plot_month_sales_graph(article: str):
-    graph_data = mpstats.get_card_data(article)
+def plot_month_sales_graph(graph_data: str, article: str):
     # построение графиков
     fig, ax1 = plt.subplots()
     color1 = '#FF4D29'
@@ -117,6 +117,37 @@ def plot_month_sales_graph(article: str):
                 )
 
 
-# def create_queries_table(article: str):
-#     print(graph_data)
-#     print(graph_data['words'])
+def create_queries_table(card_data: str, article: str):
+    queries = tuple(filter(lambda query: query[1]['count'] > 4, card_data['words'].items()))
+    queries = sorted(queries, key=lambda query: query[1]['count'], reverse=True)
+    path_to_excel = \
+        f'results/search_queries_for_{article}.xlsx'
+    try:
+        workbook = xlsxwriter.Workbook(path_to_excel)
+        worksheet = workbook.add_worksheet(name=f'артикул={article}')
+        worksheet.set_column(0, 0, 40)
+        worksheet.set_column(1, 3, 11)
+        header_format = workbook.add_format({'bold': True,
+                                             'text_wrap': True,
+                                             'bg_color': '#D9D9D9',
+                                             'valign': 'vcenter'})
+        #bold_format = workbook.add_format({'bold': True})
+        worksheet.write(0, 0, 'Ключевое слово', header_format)
+        worksheet.write(0, 1, 'Частотность', header_format)
+        worksheet.write(0, 2, 'Всего результатов', header_format)
+        worksheet.write(0, 3, 'Средняя позиция', header_format)
+        for column, day in enumerate(card_data['days'], start=4):  
+            worksheet.write(0, column, day, header_format)
+            worksheet.set_column(column, column, 5)
+        for row, (query, data) in enumerate(queries, start=1):
+            worksheet.write(row, 0, query)
+            worksheet.write(row, 1, data['count'])
+            worksheet.write(row, 2, data['total'])
+            worksheet.write(row, 3, data['avgPos'])
+            for column, number in enumerate(data['pos'], start=4):
+                if str(number) == 'NaN':
+                    number = '-'
+                worksheet.write(row, column, number)  
+    finally:
+        workbook.close()
+    return path_to_excel

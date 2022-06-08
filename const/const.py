@@ -1,11 +1,11 @@
-CUSTOMER_CHANNEL_ID = '@wb_sales_test'
+CUSTOMER_CHANNEL_ID = '@opt_tyrke'
 
 MPSTATS_MAIN_PAGE_URL = 'https://mpstats.io/'
 MPSTATS_SKU_URL = 'https://mpstats.io/wb/bysearch'
 MPSTATS_SEO_URL = 'https://mpstats.io/api/seo/keywords/expanding'
 MPSTATS_TRENDS_URL = 'https://mpstats.io/api/wb/get/category/trends'
 MPSTATS_PRICE_SEGMENTATION_URL = 'https://mpstats.io/api/wb/get/category/price_segmentation'
-MPSTATS_SALES_URL = 'https://mpstats.io/api/wb/get/item/ARTICLE/by_category'
+MPSTATS_SALES_URL = 'https://mpstats.io/api/wb/get/item/ARTICLE/by_keywords'
 
 COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
     '_ga=GA1.1.2054104203.1651240592; _ym_isad=2; ' \
