@@ -133,7 +133,7 @@ def create_queries_table(card_data: str, article: str):
                                              'valign': 'vcenter'})
         #bold_format = workbook.add_format({'bold': True})
         worksheet.write(0, 0, 'Ключевое слово', header_format)
-        worksheet.write(0, 1, 'Частотность', header_format)
+        worksheet.write(0, 1, 'Частотность запроса', header_format)
         worksheet.write(0, 2, 'Всего результатов', header_format)
         worksheet.write(0, 3, 'Средняя позиция', header_format)
         for column, day in enumerate(card_data['days'], start=4):  
