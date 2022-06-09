@@ -79,7 +79,8 @@ class Controller:
         markup = markups.admin_menu_markup()
         number_of_users = self.db.get_number_of_users()
         last_number = number_of_users % 10
-        text = f'В нашем боте зарегистрировано {number_of_users} пользовател{ENDINGS_FOR_WORD_USER[last_number]}.'
+        ending = '' if last_number == 1 else 'о'
+        text = f'В нашем боте зарегистрирован{ending} {number_of_users} пользовател{ENDINGS_FOR_WORD_USER[last_number]}.'
         return dict(text=text, markup=markup)
 
     async def get_data_from_db(self, message):
@@ -172,7 +173,6 @@ class Controller:
         markup = markups.admin_menu_markup()
         await state.finish()
         return dict(text=text, markup=markup)
-
     # ____________________end_of_admin_part____________________________
 
     async def message_name_state(self, message, state):
@@ -228,7 +228,6 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def search_query(self, state):
-        print('search_query')
         markup = markups.back_to_main_menu_markup()
         text = '<b>Пожалуйста, введите один поисковой запрос</b> 🔎\n\nНаш робот выдаст список вариантов, как его можно "уточнить".\n' \
                'Подобрав наиболее точные поисковые запросы (лучше несколько), можете собрать по ним SEO - набор слов, ' \
@@ -237,7 +236,6 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def giving_hints(self, message, state):
-        print('giving_hints')
         async with state.proxy() as data:
             data['query'] = message.text
             user = self.db.get_user(tg_id=message.from_user.id)
@@ -257,7 +255,6 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def building_seo_core(self, state):
-        print('building_seo_core')
         markup = markups.back_to_main_menu_markup()
         text = '<b>Пожалуйста, отправьте мне все поисковые запросы для вашего товара</b>.\n\n' \
             'Я соберу SEO у 100 популярнейших карточек на WB по этим запросам.\n' \
@@ -266,7 +263,6 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def waiting_seo_result(self, message, state):
-        print('waiting_seo_result')
         async with state.proxy() as data:
             data['SEO_queries'] = message.text
         text = '<b>Подготавливаем excel-файл..</b>\nЭто может занять до 1 минуты (в зависимости от количества запросов).'
@@ -274,7 +270,6 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def building_seo_result(self, message, state):
-        print('building_seo_result')
         async with state.proxy() as data:
             print(data['SEO_queries'])
             path_to_excel, flag_all_empty_queries = await mpstats.get_seo(data['SEO_queries'])
@@ -400,9 +395,9 @@ class Controller:
     async def graph_date_1_selection(self, message, state):
         async with state.proxy() as state:
             pass
-        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', message.text) or date(*map(int, message.text.split('-'))) < state["min_date"]:
+        if not utils.validate_trand_graph_date(message.text, state['min_date'], state['max_date']):
             text = f'Вы ввели неверную дату начала периода.\n' \
-                   f'Введите дату начала периода в формате гггг-мм-дд, начиная с {state["min_date"]}'
+                   f'Введите дату начала периода в формате гггг-мм-дд с {state["min_date"]} по {state["max_date"]}'
             markup = markups.back_to_main_menu_markup()
             await message.answer(text=text, reply_markup=markup)
             return False
@@ -417,9 +412,9 @@ class Controller:
     async def graph_date_2_selection(self, message, state):
         async with state.proxy() as state:
             pass
-        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', message.text) or date(*map(int, message.text.split('-'))) > state["max_date"]:
+        if not utils.validate_trand_graph_date(message.text, state['date_1'], state['max_date']):
             text = f'Вы ввели неверную дату окончания периода.\n' \
-                   f'Введите дату окончания периода в формате гггг-мм-дд, заканчивая {state["max_date"]}'
+                   f'Введите дату окончания периода в формате гггг-мм-дд c {state["date_1"]} по {state["max_date"]}'
             markup = markups.back_to_main_menu_markup()
             await message.answer(text=text, reply_markup=markup)
             return False
@@ -428,11 +423,11 @@ class Controller:
         text = 'Подготавливаем график...'
         markup = markups.back_to_main_menu_markup()
         await message.answer(text=text, reply_markup=markup)
-        path_to_graph = utils.make_graph(category=state['category'],
-                                         value=state['value'],
-                                         graph_data=state['graph_data'],
-                                         date_1=state['date_1'],
-                                         date_2=state['date_2'])
+        path_to_graph = utils.make_trand_graph(category=state['category'],
+                                               value=state['value'],
+                                               graph_data=state['graph_data'],
+                                               date_1=state['date_1'],
+                                               date_2=state['date_2'])
         if path_to_graph:
             await self.bot.send_document(chat_id=message.from_user.id,
                                          document=InputFile(path_to_graph))

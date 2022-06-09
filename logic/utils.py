@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from const.const import *
 from xlsxwriter import Workbook
 from random import randint
+import re
 
 
 # using:
@@ -49,11 +50,19 @@ def get_min_max_week(graph_data: List[typing.Dict], value: str):
     return min_date, max_date
 
 
-def make_graph(graph_data: List[typing.Dict], date_1: date, date_2: date,
-               category: str, value: str):
+def validate_trand_graph_date(text: str, max_date: date, min_date: date) -> bool:
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', text):
+        return False
+    user_date = date(*map(int, text.split('-')))
+    if min_date <= user_date <= max_date:
+        return True
+    return False
+
+
+def make_trand_graph(graph_data: List[typing.Dict], date_1: date, date_2: date,
+                     category: str, value: str):
     """
     value: key from MPSTATS_TRENDS
-    view: key from MPSTATS_SECTIONS
     """
     value_english = MPSTATS_TRENDS[value]
     dates = []
