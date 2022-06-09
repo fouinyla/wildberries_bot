@@ -3,14 +3,21 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import func, inspect, text
 from .models import *
 from os import getenv
-import xlsxwriter 
+import xlsxwriter
 from datetime import date
 from logic import memory
 
 
 class Database:
     def __init__(self):
-        self.engine = database.create_engine(getenv('DATABASE'))
+        db_credentials = "mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}".format(
+            user=getenv('RDS_USERNAME'),
+            password=getenv('RDS_PASSWORD'),
+            host=getenv('RDS_HOSTNAME'),
+            port=getenv('RDS_PORT'),
+            db_name=getenv('RDS_DB_NAME')
+        )
+        self.engine = database.create_engine(db_credentials)
         self.session = scoped_session(sessionmaker(bind=self.engine))
 
     def add_user(self, tg_id, tg_nickname, name, email, phone_number):
@@ -42,7 +49,6 @@ class Database:
                 result = [int(id[0]) for id in query]
                 return result
 
-
     def get_admins(self):
         with self.session() as session:
             with session.begin():
@@ -50,13 +56,11 @@ class Database:
                 result = [tg_id[0] for tg_id in query]
                 return result
 
-
     def add_admin_to_user(self, tg_id):
         with self.session() as session:
             with session.begin():
                 session.query(User).where(User.tg_id == tg_id).update({User.is_admin: 1})
                 memory.admins.append(tg_id)
-
 
     def delete_admin_to_user(self, tg_id):
         with self.session() as session:
@@ -64,11 +68,10 @@ class Database:
                 session.query(User).where(User.tg_id == tg_id).update({User.is_admin: 0})
                 memory.admins.remove(tg_id)
 
-
     def add_search_query(self, search_query, user_id):
         with self.session() as session:
             with session.begin():
-                query = Query(search_query=search_query,user_id=user_id)
+                query = Query(search_query=search_query, user_id=user_id)
                 session.add(query)
 
     def add_SEO_query(self, query_for_SEO, tg_id):
