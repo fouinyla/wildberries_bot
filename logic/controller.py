@@ -33,10 +33,8 @@ class Controller:
             with open("static/cats/" + f, mode="r") as json_file:
                 memory.categories[f.split(".json")[0]] = json_file.read()
 
-
     def load_admins(self):
         memory.admins = self.db.get_admins()
-        
 
     async def subscribed(self, user_id: int) -> bool:
         """
@@ -357,25 +355,11 @@ class Controller:
             return False
         async with state.proxy() as state:
             state['category'] = category
-        text = 'Выберите раздел'
-        markup = markups.graph_view_selection_markup()
+        text = 'По какому параметру составить график?'
+        markup = markups.graph_value_selection_markup()
         await self.bot.send_message(chat_id=query.from_user.id,
                                     text=text,
                                     reply_markup=markup)
-        return True
-
-    # выбрали view -> предлагаем выбрать value
-    async def graph_view_selection(self, message, state):
-        if message.text not in MPSTATS_SECTIONS:
-            text = 'Вы ввели невалидный раздел. Пожалуйста, используйте предложенную клавиатуру.'
-            markup = markups.graph_view_selection_markup()
-            await message.answer(text=text, reply_markup=markup)
-            return False
-        async with state.proxy() as state:
-            state['view'] = message.text
-        text = 'По какому параметру составить график?'
-        markup = markups.graph_value_selection_markup()
-        await message.answer(text=text, reply_markup=markup)
         return True
 
     # выбрали value -> предлагаем ввести date_1
@@ -390,7 +374,7 @@ class Controller:
         text = 'Проверяем наличие статистики...'
         markup = markups.back_to_main_menu_markup()
         await message.answer(text=text, reply_markup=markup)
-        graph_data = await mpstats.get_trends_data(state['category'], state['view'])
+        graph_data = await mpstats.get_trends_data(state['category'])
         if not graph_data:
             text = 'К сожалению у нас нет статистики по данной категории, выберите другую категорию'
             markup = markups.another_trend_graph_markup()
@@ -445,7 +429,6 @@ class Controller:
         markup = markups.back_to_main_menu_markup()
         await message.answer(text=text, reply_markup=markup)
         path_to_graph = utils.make_graph(category=state['category'],
-                                         view=state['view'],
                                          value=state['value'],
                                          graph_data=state['graph_data'],
                                          date_1=state['date_1'],

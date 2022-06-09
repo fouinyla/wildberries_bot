@@ -14,10 +14,9 @@ from const.const import *
 os.makedirs('results', exist_ok=True)
 
 
-async def get_trends_data(path: str, view: str) -> Optional[List[Dict]]:
+async def get_trends_data(path: str) -> Optional[List[Dict]]:
     """
         path: 'Детям/Детское питание/Детская смесь' (example)
-        view: key from MPSTATS_SECTIONS
     """
     async with httpx.AsyncClient(timeout=60) as client:
         main_page_response = await client.get(MPSTATS_MAIN_PAGE_URL)
@@ -26,11 +25,10 @@ async def get_trends_data(path: str, view: str) -> Optional[List[Dict]]:
         trends_response = await client.get(
             MPSTATS_TRENDS_URL,
             headers={'cookie': cookie + COOKIES_PART},
-            params={'view': MPSTATS_SECTIONS[view], 'path': path},
+            params={'view': 'itemsInCategory', 'path': path},
             follow_redirects=True)
     if trends_response.status_code != 200 or not trends_response.json():
         return None
-    print(trends_response.json())
     return trends_response.json()
 
 

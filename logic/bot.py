@@ -228,8 +228,8 @@ async def waiting_seo_result_process(message: Message, state: FSMContext):
 @dp.message_handler(commands='graph', state='*')
 @dp.message_handler(Text(equals='Ценовая сегментация'), state='*')
 @dp.message_handler(Text(equals='Узнать ценовую сегментацию повторно'), state='*')
-@dp.message_handler(Text(equals='Получить график'), state='*')
-@dp.message_handler(Text(equals='Получить другой график'), state='*')
+@dp.message_handler(Text(equals='Получить график тренда'), state='*')
+@dp.message_handler(Text(equals='Получить другой график тренда'), state='*')
 async def category_selection_process(message: Message, state: FSMContext):
     if 'график' in message.text or 'graph' in message.text:
         await state.set_state(TrendGraph.category_selection)
@@ -253,25 +253,16 @@ async def callback_price_segmentation_process(query: CallbackQuery):
 
 
 # __________________________логика по выдаче графика__________________________
-# выбираем category для выдачи графика -> предлагаем выбрать view
+# выбираем category для выдачи графика -> предлагаем выбрать value
 @dp.callback_query_handler(state=TrendGraph.category_selection)
 async def callback_graph_category_selection_process(query: CallbackQuery, state: FSMContext):
     successful_step = await c.callback_graph_category_selection(query, state)
-    if successful_step:
-        await state.set_state(TrendGraph.view_selection)
-
-
-# выбрали view -> предлагаем выбрать value
-@dp.message_handler(lambda x: not str(x).startswith('Назад'),
-                    state=TrendGraph.view_selection)
-async def graph_view_selection_process(message: Message, state: FSMContext):
-    successful_step = await c.graph_view_selection(message, state)
     if successful_step:
         await state.set_state(TrendGraph.value_selection)
 
 
 # выбрали value -> предлагаем ввести date_1
-@dp.message_handler(lambda x: not str(x).startswith('Назад'),
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')),
                     state=TrendGraph.value_selection)
 async def graph_value_selection_process(message: Message, state: FSMContext):
     successful_step = await c.graph_value_selection(message, state)
@@ -282,7 +273,7 @@ async def graph_value_selection_process(message: Message, state: FSMContext):
 
 
 # ввели date_1 -> предлагаем ввести date_2
-@dp.message_handler(lambda x: not str(x).startswith('Назад'),
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')),
                     state=TrendGraph.date_1_selection)
 async def graph_date_1_selection_process(message: Message, state: FSMContext):
     successful_step = await c.graph_date_1_selection(message, state)
@@ -291,7 +282,7 @@ async def graph_date_1_selection_process(message: Message, state: FSMContext):
 
 
 # выбрали date_2 -> выдаем график
-@dp.message_handler(lambda x: not str(x).startswith('Назад'),
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')),
                     state=TrendGraph.date_2_selection)
 async def graph_date_2_selection_process(message: Message, state: FSMContext):
     successful_step = await c.graph_date_2_selection(message, state)
@@ -313,7 +304,8 @@ async def card_position_search(message: Message, state: FSMContext):
 
 
 # это меню ожидания и выдачи позиции товара
-@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=NameGroup.range_search)
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')),
+                    state=NameGroup.range_search)
 async def card_article_search(message: Message, state: FSMContext):
     response = await c.waiting_for_article_search(message, state)
     await message.reply(text=response['text'],
@@ -341,7 +333,8 @@ async def get_article_month_sales_process(message: Message, state: FSMContext):
 
 
 # это выдача данных для 'Продажи по артикулу'
-@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=NameGroup.article_for_sales)
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')),
+                    state=NameGroup.article_for_sales)
 async def waiting_month_sales_process(message: Message, state: FSMContext):
     response = await c.waiting_month_sales(message=message, state=state)
     await message.reply(text=response['text'],
@@ -349,7 +342,8 @@ async def waiting_month_sales_process(message: Message, state: FSMContext):
                         parse_mode='HTML',
                         reply=False)
     if response['is_valid_article']:
-        response = await c.ploting_graph_month_sales(message=message, state=state)
+        response = await c.ploting_graph_month_sales(message=message,
+                                                     state=state)
         await message.reply(text=response['text'],
                             reply_markup=response['markup'],
                             parse_mode='HTML',
@@ -369,7 +363,8 @@ async def get_article_card_queries_process(message: Message, state: FSMContext):
 
 
 # это выдача данных для 'Позиция карточки при запросах'
-@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=NameGroup.article_for_queries)
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')),
+                    state=NameGroup.article_for_queries)
 async def creating_queries_table_process(message: Message, state: FSMContext):
     response = await c.waiting_queries_table(message=message, state=state)
     await message.reply(text=response['text'],
@@ -398,7 +393,8 @@ async def rename_card_API_ask_process(message: Message, state: FSMContext):
 
 
 # меню получения supplier-id
-@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=CardRename.get_API)
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')),
+                    state=CardRename.get_API)
 @dp.message_handler(Text(equals='Назад к вводу supplier-id'), state='*')
 async def rename_card_supplierID_ask_process(message: Message, state: FSMContext):
     response = await c.rename_card_supplierID_ask(message, state)
@@ -409,7 +405,8 @@ async def rename_card_supplierID_ask_process(message: Message, state: FSMContext
 
 
 # меню получения артикула и нового имени
-@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=CardRename.get_supID)
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')),
+                    state=CardRename.get_supID)
 @dp.message_handler(Text(equals='Назад к вводу артикула и наименования'), state='*')
 async def rename_card_article_and_name_ask_process(message: Message, state: FSMContext):
     response = await c.rename_card_article_and_name_ask(message, state)
@@ -420,7 +417,8 @@ async def rename_card_article_and_name_ask_process(message: Message, state: FSMC
 
 
 # основное меню смены названия
-@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')), state=CardRename.get_article_and_new_name)
+@dp.message_handler(lambda x: not str(x.text).startswith(('Назад', '/')),
+                    state=CardRename.get_article_and_new_name)
 @dp.message_handler(Text(equals='Сменить наименование повторно'), state='*')
 async def rename_card_process(message: Message, state: FSMContext):
     response = await c.rename_card(message, state)

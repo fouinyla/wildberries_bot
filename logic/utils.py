@@ -50,7 +50,7 @@ def get_min_max_week(graph_data: List[typing.Dict], value: str):
 
 
 def make_graph(graph_data: List[typing.Dict], date_1: date, date_2: date,
-               category: str, value: str, view: str):
+               category: str, value: str):
     """
     value: key from MPSTATS_TRENDS
     view: key from MPSTATS_SECTIONS

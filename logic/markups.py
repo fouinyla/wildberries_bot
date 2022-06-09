@@ -1,7 +1,7 @@
 from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
                            InlineKeyboardMarkup, InlineKeyboardButton)
 from .utils import callback
-from const.const import MPSTATS_TRENDS, MPSTATS_SECTIONS
+from const.const import MPSTATS_TRENDS
 
 
 def admin_start_menu_markup():
@@ -12,7 +12,7 @@ def admin_start_menu_markup():
     markup.insert(KeyboardButton('Позиция карточки при запросах'))
     markup.insert(KeyboardButton('Ценовая сегментация'))
     markup.insert(KeyboardButton('Продажи по артикулу'))
-    markup.insert(KeyboardButton('Получить график'))
+    markup.insert(KeyboardButton('Получить график тренда'))
     markup.insert(KeyboardButton('Сменить название товара'))
     markup.insert(KeyboardButton('Как пользоваться ботом'))
     markup.insert(KeyboardButton('Функции админа'))
@@ -38,7 +38,7 @@ def start_menu_markup():
     markup.insert(KeyboardButton('Позиция карточки при запросах'))
     markup.insert(KeyboardButton('Ценовая сегментация'))
     markup.insert(KeyboardButton('Продажи по артикулу'))
-    markup.insert(KeyboardButton('Получить график'))
+    markup.insert(KeyboardButton('Получить график тренда'))
     markup.insert(KeyboardButton('Сменить название товара'))
     markup.insert(KeyboardButton('Как пользоваться ботом'))
     return markup
@@ -152,14 +152,6 @@ def another_card_rename():
 
 
 # _______________________клавиатуры для выдачи графиков_______________________
-def graph_view_selection_markup():
-    markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    for section in MPSTATS_SECTIONS:
-        markup.insert(KeyboardButton(section))
-    markup.add(KeyboardButton('Назад в главное меню'))
-    return markup
-
-
 def graph_value_selection_markup():
     markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     for value in MPSTATS_TRENDS:
@@ -170,7 +162,7 @@ def graph_value_selection_markup():
 
 def another_trend_graph_markup():
     markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add(KeyboardButton('Получить другой график'))
+    markup.add(KeyboardButton('Получить другой график тренда'))
     markup.insert(KeyboardButton('Назад в главное меню'))
     return markup
 # ___________________окончание клавиатур для выдачи графиков___________________
