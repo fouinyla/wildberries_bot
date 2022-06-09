@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import func, inspect, text
 from .models import *
 from os import getenv
-import xlsxwriter
+from  xlsxwriter import Workbook
 from datetime import date
 from logic import memory
 
@@ -114,8 +114,7 @@ class Database:
     def get_data_from_db(self):
         today_date = date.today()
         file_name = f'db_damp_{today_date}.xlsx'
-        try:
-            workbook = xlsxwriter.Workbook(file_name)
+        with Workbook(file_name) as workbook:
             inspector = inspect(self.engine)
             with self.engine.connect() as connection:
                 for table_name in inspector.get_table_names()[-1::-1]:
@@ -125,8 +124,6 @@ class Database:
                     result = connection.execute(text(f'select * from {table_name}'))
                     for row_index, data in enumerate(result, start=1):
                         worksheet.write_row(row_index, 0, data)
-        finally:
-            workbook.close()
         return file_name
 
     def add_search_position_query(self, search_position_query, tg_id):
