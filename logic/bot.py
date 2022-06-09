@@ -335,9 +335,9 @@ async def card_article_search(message: Message, state: FSMContext):
 async def get_article_month_sales_process(message: Message, state: FSMContext):
     response = await c.get_article_month_sales(state=state)
     await message.reply(text=response['text'],
-                    reply_markup=response['markup'],
-                    parse_mode='HTML',
-                    reply=False)
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
 
 
 # это выдача данных для 'Продажи по артикулу'
@@ -345,16 +345,15 @@ async def get_article_month_sales_process(message: Message, state: FSMContext):
 async def waiting_month_sales_process(message: Message, state: FSMContext):
     response = await c.waiting_month_sales(message=message, state=state)
     await message.reply(text=response['text'],
-                    reply_markup=response['markup'],
-                    parse_mode='HTML',
-                    reply=False)
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
     if response['is_valid_article']:
         response = await c.ploting_graph_month_sales(message=message, state=state)
         await message.reply(text=response['text'],
                             reply_markup=response['markup'],
                             parse_mode='HTML',
                             reply=False)
-
 
 
 # это запрос артикула для 'Позиция карточки при запросах'
@@ -364,9 +363,9 @@ async def waiting_month_sales_process(message: Message, state: FSMContext):
 async def get_article_card_queries_process(message: Message, state: FSMContext):
     response = await c.get_article_card_queries(state=state)
     await message.reply(text=response['text'],
-                    reply_markup=response['markup'],
-                    parse_mode='HTML',
-                    reply=False)
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
 
 
 # это выдача данных для 'Позиция карточки при запросах'
@@ -374,9 +373,9 @@ async def get_article_card_queries_process(message: Message, state: FSMContext):
 async def creating_queries_table_process(message: Message, state: FSMContext):
     response = await c.waiting_queries_table(message=message, state=state)
     await message.reply(text=response['text'],
-                    reply_markup=response['markup'],
-                    parse_mode='HTML',
-                    reply=False)
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
     if response['is_valid_article']:
         response = await c.creating_queries_table(message=message, state=state)
         await message.reply(text=response['text'],
@@ -385,6 +384,7 @@ async def creating_queries_table_process(message: Message, state: FSMContext):
                             reply=False)
 
 
+# ___________________начало логики смены названия карточки___________________
 # меню получения API-ключа
 @dp.message_handler(commands='rename', state='*')
 @dp.message_handler(Text(equals='Сменить название товара'), state='*')
@@ -428,6 +428,7 @@ async def rename_card_process(message: Message, state: FSMContext):
                         reply_markup=response['markup'],
                         parse_mode='HTML',
                         reply=False)
+# __________________окончание логики смены названия карточки__________________
 
 
 # это меню 'Как пользоваться ботом'

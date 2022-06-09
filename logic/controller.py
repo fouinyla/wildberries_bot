@@ -482,14 +482,12 @@ class Controller:
             markup = markups.another_price_segmentation_markup()
             return dict(text=text, markup=markup)
 
-
     async def get_article_month_sales(self, state):
         text = 'Пришли ОДИН артикул, по которому будем проверять статистику.\n' \
                'Артикул всегда состоит из 8 цифр.'
         markup = markups.back_to_main_menu_markup()
         await state.set_state(states.NameGroup.article_for_sales)
         return dict(text=text, markup=markup)
-
 
     async def waiting_month_sales(self, message, state):
         article_pattern = r'[0-9]{8}'
@@ -505,7 +503,6 @@ class Controller:
             markup = markups.another_month_sales_markup()
             is_valid_article = False
         return dict(text=text, markup=markup, is_valid_article=is_valid_article)
-
 
     async def ploting_graph_month_sales(self, message, state):
         async with state.proxy() as data:
@@ -533,7 +530,6 @@ class Controller:
         await state.finish()
         return dict(text=text, markup=markup)
 
-    
     async def get_article_card_queries(self, state):
         text = 'Пришли ОДИН артикул, по которому будем проверять статистику запросов.\n' \
                'Артикул всегда состоит из 8 цифр.\n' \
@@ -542,7 +538,6 @@ class Controller:
         markup = markups.back_to_main_menu_markup()
         await state.set_state(states.NameGroup.article_for_queries)
         return dict(text=text, markup=markup)
-
 
     async def waiting_queries_table(self, message, state):
         article_pattern = r'[0-9]{8}'
@@ -558,7 +553,6 @@ class Controller:
             markup = markups.another_card_queries_markup()
             is_valid_article = False
         return dict(text=text, markup=markup, is_valid_article=is_valid_article)
-
 
     async def creating_queries_table(self, message, state):
         async with state.proxy() as data:
@@ -585,13 +579,11 @@ class Controller:
         await state.finish()
         return dict(text=text, markup=markup)
 
-
     async def rename_card_API_ask(self, state):
             markup = markups.back_to_main_menu_markup()
             text = CARD_RENAME_TEXT_1
             await state.set_state(states.CardRename.get_API)
             return dict(text=text, markup=markup)
-
 
     async def rename_card_supplierID_ask(self, message, state):  
         async with state.proxy() as data:
@@ -603,7 +595,6 @@ class Controller:
             await state.set_state(states.CardRename.get_supID)
             return dict(text=text, markup=markup)
 
-
     async def rename_card_article_and_name_ask(self, message, state):   
         async with state.proxy() as data:
             markup = markups.back_to_supplierID_step()
@@ -612,7 +603,6 @@ class Controller:
                     "<b>Например</b> - 12345678 Свитер женский оверсайз"
             await state.set_state(states.CardRename.get_article_and_new_name)
             return dict(text=text, markup=markup)
-
 
     async def rename_card(self, message, state):
         async with state.proxy() as data:
@@ -633,7 +623,6 @@ class Controller:
                         "или артикула и попробуйте снова."
                 markup = markups.back_to_article_and_new_name_step()
                 return dict(text=text, markup=markup)
-
 
     async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()

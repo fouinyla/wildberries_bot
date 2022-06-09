@@ -1,14 +1,13 @@
 import httpx
 from bs4 import BeautifulSoup
 import json
-import xlsxwriter
+from xlsxwriter import Workbook
 from . import time
 import os
 import datetime
 from typing import Tuple, List, Dict, Optional
 import string
 from const.const import *
-import matplotlib.pyplot as plt
 
 
 # создание директории для записи данных
@@ -52,8 +51,7 @@ async def get_seo(queries: str) -> Tuple[str, bool]:
             query_for_tablename = 'символьный_запрос'
         path_to_excel = f'results/SEO_{query_for_tablename[0:30]}_{today_date}.xlsx'
 
-        try:
-            workbook = xlsxwriter.Workbook(path_to_excel)
+        with Workbook(path_to_excel) as workbook:
             for num, query in enumerate(queries, start=1):
                 # запрос на получение html с SKU
                 sku_response = await client.get(MPSTATS_SKU_URL,
@@ -104,8 +102,6 @@ async def get_seo(queries: str) -> Tuple[str, bool]:
                         worksheet.write(row, 1, ', '.join(word['words']))
                         worksheet.write(row, 2, str(word['count']))
                         worksheet.write(row, 3, str(word['keys_count_sum']))
-        finally:
-            workbook.close()
     return path_to_excel, flag_all_queries_are_empty
 
 
@@ -115,8 +111,7 @@ async def get_price_segmentation(query: str):
     params = {'d1': start_date, 'd2': end_date, 'path': query}
     what_to_delete = query.maketrans('', '', string.punctuation)
     query_for_name = query.translate(what_to_delete)
-    path_to_excel = \
-        f'results/price_segmentation_{query_for_name[0:30]}_{end_date}.xlsx'
+    path_to_excel = f'results/price_segmentation_{query_for_name[0:30]}_{end_date}.xlsx'
 
     async with httpx.AsyncClient(timeout=60) as client:
         main_page_response = await client.get(MPSTATS_MAIN_PAGE_URL)
@@ -130,8 +125,7 @@ async def get_price_segmentation(query: str):
         if response.status_code != 200 or not response.json():
             return False
         data = response.json()
-        try:
-            workbook = xlsxwriter.Workbook(path_to_excel)
+        with Workbook(path_to_excel) as workbook:
             worksheet = workbook.add_worksheet(name=query_for_name[0:30])
             worksheet.set_column(0, 12, 12)
             header_format = workbook.add_format({'bold': True,
@@ -163,8 +157,6 @@ async def get_price_segmentation(query: str):
                             worksheet.write(row_index, col_index, value)
                     else:
                         number_of_missed_cols += 1
-        finally:
-            workbook.close()
         return path_to_excel
 
 

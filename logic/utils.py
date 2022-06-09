@@ -1,10 +1,11 @@
 import json
 from datetime import date
-from typing import List, Tuple
+from typing import List
 import typing
 import matplotlib.pyplot as plt
 from const.const import *
-import xlsxwriter
+from xlsxwriter import Workbook
+from random import randint
 
 
 # using:
@@ -71,12 +72,12 @@ def make_graph(graph_data: List[typing.Dict], date_1: date, date_2: date,
     ax.grid(True, axis='both')
     ax.tick_params(axis='x', which='major', labelsize=7, labelrotation=45)
 
-    image_path = f"results/{category.replace('/', '_')}.jpeg"
+    image_path = f"results/trand_graph_{category.replace('/', '_')}_{randint(1, 1000)}.jpeg"
     fig.savefig(image_path, dpi=1000)
     return image_path
 
 
-def plot_month_sales_graph(graph_data: str, article: str):
+def plot_month_sales_graph(graph_data: typing.Dict, article: str):
     # построение графиков
     fig, ax1 = plt.subplots()
     color1 = '#FF4D29'
@@ -117,13 +118,11 @@ def plot_month_sales_graph(graph_data: str, article: str):
                 )
 
 
-def create_queries_table(card_data: str, article: str):
+def create_queries_table(card_data: typing.Dict, article: str):
     queries = tuple(filter(lambda query: query[1]['count'] > 4, card_data['words'].items()))
     queries = sorted(queries, key=lambda query: query[1]['count'], reverse=True)
-    path_to_excel = \
-        f'results/search_queries_for_{article}.xlsx'
-    try:
-        workbook = xlsxwriter.Workbook(path_to_excel)
+    path_to_excel = f'results/search_queries_for_{article}.xlsx'
+    with Workbook(path_to_excel) as workbook:
         worksheet = workbook.add_worksheet(name=f'артикул={article}')
         worksheet.set_column(0, 0, 40)
         worksheet.set_column(1, 3, 11)
@@ -147,7 +146,5 @@ def create_queries_table(card_data: str, article: str):
             for column, number in enumerate(data['pos'], start=4):
                 if str(number) == 'NaN':
                     number = '-'
-                worksheet.write(row, column, number)  
-    finally:
-        workbook.close()
+                worksheet.write(row, column, number)
     return path_to_excel
