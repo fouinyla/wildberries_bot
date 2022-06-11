@@ -29,6 +29,8 @@ MPSTATS_TRENDS = {'Число продаж': 'sales',
 
 WB_HINTS_URL = 'https://suggestions.wildberries.ru/api/v2/hint'
 WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common'
+WB_CARD_SEARCH_URL = 'https://suppliers-api.wildberries.ru/card/list'
+WB_CARD_UPDATE_URL = 'https://suppliers-api.wildberries.ru/card/update'
 
 ENDINGS_FOR_WORD_USER = {1: 'ь', 2: 'я', 3: 'я', 4: 'я', 5: 'ей',
                          6: 'ей', 7: 'ей', 8: 'ей', 9: 'ей', 0: 'ей'}

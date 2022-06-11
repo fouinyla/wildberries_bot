@@ -1,13 +1,14 @@
-import httpx
+from httpx import AsyncClient
 from bs4 import BeautifulSoup
-import json
 from xlsxwriter import Workbook
-from . import time
-import os
-import datetime
 from typing import Tuple, List, Dict, Optional
+import datetime
 import string
+import json
+import os
 from const.const import *
+from .web import request_with_retry
+from . import time
 
 
 # создание директории для записи данных
@@ -18,16 +19,20 @@ async def get_trends_data(path: str) -> Optional[List[Dict]]:
     """
         path: 'Детям/Детское питание/Детская смесь' (example)
     """
-    async with httpx.AsyncClient(timeout=60) as client:
-        main_page_response = await client.get(MPSTATS_MAIN_PAGE_URL)
-        main_page_response.raise_for_status()
-        cookie = main_page_response.headers['set-cookie']
-        trends_response = await client.get(
-            MPSTATS_TRENDS_URL,
-            headers={'cookie': cookie + COOKIES_PART},
+    async with AsyncClient() as client:
+        main_page_response = await request_with_retry(
+            client=client,
+            method='GET',
+            url=MPSTATS_MAIN_PAGE_URL)
+        cookies = main_page_response.headers['set-cookie']
+        trends_response = await request_with_retry(
+            client=client,
+            method='GET',
+            url=MPSTATS_TRENDS_URL,
             params={'view': 'itemsInCategory', 'path': path},
-            follow_redirects=True)
-    if trends_response.status_code != 200 or not trends_response.json():
+            headers={'cookie': cookies + COOKIES_PART}
+        )
+    if trends_response.status_code != 200:
         return None
     return trends_response.json()
 
@@ -36,10 +41,11 @@ async def get_seo(queries: str) -> Tuple[str, bool]:
     flag_all_queries_are_empty = True  # флаг, если все запросы пустые
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()
-    async with httpx.AsyncClient(timeout=60) as client:
-        # получение кук для отправки запроса для получения SKU
-        main_page_response = await client.get(MPSTATS_MAIN_PAGE_URL)
-        main_page_response.raise_for_status()
+    async with AsyncClient() as client:
+        main_page_response = await request_with_retry(
+            client=client,
+            method='GET',
+            url=MPSTATS_MAIN_PAGE_URL)
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
         # создание excel-файла для записи данных
@@ -52,11 +58,13 @@ async def get_seo(queries: str) -> Tuple[str, bool]:
         with Workbook(path_to_excel) as workbook:
             for num, query in enumerate(queries, start=1):
                 # запрос на получение html с SKU
-                sku_response = await client.get(MPSTATS_SKU_URL,
-                                                headers=headers,
-                                                params={'query': query},
-                                                follow_redirects=True)
-                sku_response.raise_for_status()
+                sku_response = await request_with_retry(
+                    client=client,
+                    method='GET',
+                    url=MPSTATS_SKU_URL,
+                    headers=headers,
+                    params={'query': query}
+                )
                 # парсинг html ответа для получения SKU
                 html = sku_response.text
                 soup = BeautifulSoup(html, 'lxml')
@@ -73,10 +81,13 @@ async def get_seo(queries: str) -> Tuple[str, bool]:
                         'searchFullWord': False,
                         'd1': today_date - datetime.timedelta(days=30),
                         'd2': today_date}
-                response = await client.post(MPSTATS_SEO_URL,
-                                             headers=headers,
-                                             data=data)
-                response.raise_for_status()
+                response = await request_with_retry(
+                    client=client,
+                    method='POST',
+                    url=MPSTATS_SEO_URL,
+                    headers=headers,
+                    data=data
+                )
                 result = response.json()['result']
                 # создание страницы в excel-файле с названиями колонок
                 what_to_delete = query.maketrans('', '', string.punctuation)
@@ -111,15 +122,20 @@ async def get_price_segmentation(query: str):
     query_for_name = query.translate(what_to_delete)
     path_to_excel = f'results/price_segmentation_{query_for_name[0:30]}_{end_date}.xlsx'
 
-    async with httpx.AsyncClient(timeout=60) as client:
-        main_page_response = await client.get(MPSTATS_MAIN_PAGE_URL)
-        main_page_response.raise_for_status()
+    async with AsyncClient() as client:
+        main_page_response = await request_with_retry(
+            client=client,
+            method='GET',
+            url=MPSTATS_MAIN_PAGE_URL)
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
-        response = await client.get(MPSTATS_PRICE_SEGMENTATION_URL,
-                                    params=params,
-                                    headers=headers,
-                                    follow_redirects=True)
+        response = await request_with_retry(
+            client=client,
+            method='GET',
+            url=MPSTATS_PRICE_SEGMENTATION_URL,
+            params=params,
+            headers=headers
+        )
         if response.status_code != 200 or not response.json():
             return False
         data = response.json()
@@ -161,18 +177,21 @@ async def get_price_segmentation(query: str):
 async def get_card_data(article: str):
     end_date = time.get_moscow_datetime().date()
     start_date = end_date - datetime.timedelta(days=30)
-    async with httpx.AsyncClient(timeout=60) as client:
-        # получение кук для отправки запроса для получения SKU
-        main_page_response = await client.get(MPSTATS_MAIN_PAGE_URL)
-        main_page_response.raise_for_status()
+    async with AsyncClient() as client:
+        main_page_response = await request_with_retry(
+            client=client,
+            method='GET',
+            url=MPSTATS_MAIN_PAGE_URL)
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
-
         params = {'d1': start_date, 'd2': end_date}
-        response = await client.get(MPSTATS_SALES_URL.replace('ARTICLE', article),
-                                        headers=headers,
-                                        params=params,
-                                        follow_redirects=True)
+        response = await request_with_retry(
+            client=client,
+            method='GET',
+            url=MPSTATS_SALES_URL.replace('ARTICLE', article),
+            headers=headers,
+            params=params
+        )
         if response.status_code != 200:
             return False
         return response.json()

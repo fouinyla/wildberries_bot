@@ -10,13 +10,13 @@ from const.phrases import *
 from const.const import *
 from . import memory
 from aiogram.utils.markdown import hlink
+from aiogram.utils.exceptions import BotBlocked
 from aiogram.types import InputFile
 from math import ceil
 from datetime import date
 import json
 import re
 import os
-from aiogram.utils.exceptions import BotBlocked
 
 
 class Controller:
@@ -101,20 +101,16 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def add_admin(self, message, state):
-        if message.text == 'Назад в главное меню':
-            await state.finish()
-            text = "<b>Это главное меню</b>"
-        else:
-            if message.text.isdigit():
-                new_admin_tg_id = int(message.text)
-                new_admin = self.db.get_user(new_admin_tg_id)
-                if new_admin:
-                    self.db.add_admin_to_user(new_admin_tg_id)
-                    text = f"Пользователю {new_admin['tg_nickname']} добавлены права админа."
-                else:
-                    text = f'Такого пользователя нет в БД.\nСначала ему необходимо зарегистрироваться в боте.'
+        if message.text.isdigit():
+            new_admin_tg_id = int(message.text)
+            new_admin = self.db.get_user(new_admin_tg_id)
+            if new_admin:
+                self.db.add_admin_to_user(new_admin_tg_id)
+                text = f"Пользователю {new_admin['tg_nickname']} добавлены права админа."
             else:
-                text = 'Пожалуйста, введите id в числовом формате.'
+                text = f'Такого пользователя нет в БД.\nСначала ему необходимо зарегистрироваться в боте.'
+        else:
+            text = 'Пожалуйста, введите id в числовом формате.'
         markup = markups.admin_menu_markup()
         await state.finish()
         return dict(text=text, markup=markup)
@@ -129,20 +125,16 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def delete_admin(self, message, state):
-        if message.text == 'Назад в главное меню':
-            await state.finish()
-            text = "<b>Это главное меню</b>"
-        else:
-            if message.text.isdigit():
-                del_admin_tg_id = int(message.text)
-                del_admin = self.db.get_user(del_admin_tg_id)
-                if del_admin:
-                    self.db.delete_admin_to_user(del_admin_tg_id)
-                    text = f"У пользователя {del_admin['tg_nickname']} удалены права админа."
-                else:
-                    text = f'Такого пользователя нет в БД.\nА значит и админки у него нет.'
+        if message.text.isdigit():
+            del_admin_tg_id = int(message.text)
+            del_admin = self.db.get_user(del_admin_tg_id)
+            if del_admin:
+                self.db.delete_admin_to_user(del_admin_tg_id)
+                text = f"У пользователя {del_admin['tg_nickname']} удалены права админа."
             else:
-                text = 'Пожалуйста, введите id в числовом формате.'
+                text = f'Такого пользователя нет в БД.\nА значит и админки у него нет.'
+        else:
+            text = 'Пожалуйста, введите id в числовом формате.'
         markup = markups.admin_menu_markup()
         await state.finish()
         return dict(text=text, markup=markup)
@@ -271,7 +263,6 @@ class Controller:
 
     async def building_seo_result(self, message, state):
         async with state.proxy() as data:
-            print(data['SEO_queries'])
             path_to_excel, flag_all_empty_queries = await mpstats.get_seo(data['SEO_queries'])
             if not flag_all_empty_queries:
                 await message.answer_document(document=InputFile(path_to_excel))
