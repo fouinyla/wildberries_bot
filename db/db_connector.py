@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import func, inspect, text
 from .models import *
 from os import getenv
-from  xlsxwriter import Workbook
+from xlsxwriter import Workbook
 from datetime import date
 from logic import memory
 
@@ -33,13 +33,13 @@ class Database:
     def get_user(self, tg_id):
         with self.session() as session:
             with session.begin():
-                query = session.query(User).filter(User.tg_id.__eq__(tg_id)).scalar()  # scalar?
+                query = session.query(User).filter(User.tg_id.__eq__(tg_id)).scalar()
 
                 if query:
                     return dict(id=query.id,
                                 tg_nickname=query.tg_nickname,
                                 is_admin=query.is_admin)
-                return False
+                return None
 
     def get_all_users_list(self):
         with self.session() as session:
