@@ -71,6 +71,8 @@ def back_to_name_markup():
 
 def back_to_email_markup():
     markup = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    markup.insert(KeyboardButton('Отправить номер телефона',
+                                 request_contact=True))
     markup.insert(KeyboardButton('Назад к вводу почты'))
     return markup
 

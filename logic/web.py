@@ -17,7 +17,7 @@ async def request_with_retry(
         json: Dict = None,
         ) -> Optional[Response]:
     """
-    request_function: get, post, delete...
+    Coroutine for sending async requests with retries
     """
     n = 1
     data_for_log = f'{url=}, {method=}, {params=}, {headers=}, {data=}, {json=}'
