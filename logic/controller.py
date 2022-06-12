@@ -11,7 +11,7 @@ from const.const import *
 from . import memory
 from aiogram.utils.markdown import hlink
 from aiogram.utils.exceptions import BotBlocked
-from aiogram.types import InputFile
+from aiogram.types import InputFile, ReplyKeyboardRemove
 from math import ceil
 from datetime import date
 import json
@@ -68,7 +68,7 @@ class Controller:
             await state.set_state(states.User.name)
         return dict(text=text, markup=markup)
 
-    # ________________________admin_part_______________________________
+    # _________________________Функции админа________________________________
     async def admin_menu(self, state):
         await state.finish()
         markup = markups.admin_menu_markup()
@@ -165,9 +165,10 @@ class Controller:
         markup = markups.admin_menu_markup()
         await state.finish()
         return dict(text=text, markup=markup)
-    # ____________________end_of_admin_part____________________________
+    # _____________________Окончание функций админа____________________________
 
-    async def message_name_state(self, message, state):
+    # ________________________Сбор данных пользователя________________________
+    async def get_name(self, message, state):
         name_pattern = r'[ёЁА-Яа-я- A-za-z]+'
         if re.fullmatch(name_pattern, message.text):
             async with state.proxy() as data:
@@ -180,44 +181,45 @@ class Controller:
             markup = None
         return dict(text=text, markup=markup)
 
-    async def message_email_state(self, message, state):
+    async def get_email(self, message, state):
         email_pattern = r'([A-Za-z0-9]+[\.\-\_])*[A-Za-z0-9]+@[A-Za-z0-9]+[A-Za-z0-9-\+]*[A-Za-z0-9]+(\.[A-Z|a-z]{2,})+'
         if re.fullmatch(email_pattern, message.text):
             async with state.proxy() as data:
                 data['email'] = message.text
-            text = '<b>Пожалуйста, введите ваш номер телефона</b>.'
+            text = "<b>Для регистрации в нашем боте необходим номер телефона</b>.\nПожалуйста, воспользуйтесь кнопкой 'Отправить номер телефона'"
             markup = markups.back_to_email_markup()
             await state.set_state(states.User.phone_number)
         elif message.text == 'Назад к вводу имени':
             text = '<b>Пожалуйста, введите ваше имя</b>.'
-            markup = None
+            markup = ReplyKeyboardRemove()
             await state.set_state(states.User.name)
         else:
             text = 'Не похоже на email. Введите что-то более корректное (только английские буквы, цифры и спецсимволы).'
             markup = markups.back_to_name_markup()
         return dict(text=text, markup=markup)
 
-    async def message_phone_number_state(self, message, state):
-        phone_pattern = re.compile(r'[0-9 \+\-\(\)]{7,}')
-        if re.fullmatch(phone_pattern, message.text):
-            async with state.proxy() as data:
-                data['phone_number'] = message.text
-                self.db.add_user(message.from_user.id,
-                                 message.from_user.username,
-                                 data['name'],
-                                 data['email'],
-                                 data['phone_number'])
-            await state.finish()
-            text = '<b>Спасибо за информацию!</b>\nТеперь вам доступны все функции нашего бота.'
-            markup = markups.start_menu_markup()
-        elif message.text == 'Назад к вводу почты':
+    async def get_phone_number(self, message, state):
+        if message.text == 'Назад к вводу почты':
             text = '<b>Пожалуйста, введите ваш e-mail</b>.'
             markup = markups.back_to_name_markup()
             await state.set_state(states.User.email)
+        elif message.contact:
+            async with state.proxy() as data:
+                self.db.add_user(
+                    tg_id=message.from_user.id,
+                    tg_nickname=message.from_user.username,
+                    name=data['name'],
+                    email=data['email'],
+                    phone_number=message.contact.phone_number.strip('+'))
+            await state.finish()
+            text = '<b>Спасибо за информацию!</b>\nТеперь вам доступны все функции нашего бота.'
+            markup = markups.start_menu_markup()
         else:
-            text = 'Не похоже на номер телефона. Введите что-то более корректное (только цифры, плюс, минус или скобки).'
+            text = "<b>Для регистрации в нашем боте необходим номер телефона</b>.\nПожалуйста, воспользуйтесь кнопкой 'Отправить номер телефона'"
             markup = markups.back_to_email_markup()
         return dict(text=text, markup=markup)
+
+    # __________________Окончание сбора данных пользователя__________________
 
     async def search_query(self, state):
         markup = markups.back_to_main_menu_markup()
