@@ -20,6 +20,7 @@ async def request_with_retry(
     request_function: get, post, delete...
     """
     n = 1
+    data_for_log = f'{url=}, {method=}, {params=}, {headers=}, {data=}, {json=}'
     while True:
         try:
             response = await client.request(
@@ -31,14 +32,15 @@ async def request_with_retry(
                 json=json,
                 timeout=TIMEOUT,
                 follow_redirects=True)
-            response.raise_for_status()
         except TimeoutException as err:
-            print(f'Retry # {n} failed: {err=}, {url=}, {method=}, {params=}, {headers=}')
+            print(f'Retry # {n} failed: {err=}, {data_for_log}')
             if n > MAX_RETRIES:
-                print(f'No response received for {n} retries: {err=}, {url=}, {method=}, {params=}, {headers=}')
+                print(f'No response received for {n} retries: {err=}, {data_for_log}')
                 return None
             n += 1
             # await asyncio.sleep(2 ** n + randint(0, 1000) / 1000)  # add jitter 0-1000 ms
             await asyncio.sleep(5 + (randint(0, 1000) / 1000))
         else:
+            if response.status_code != 200:
+                print(f'Status={response.status_code}, {data_for_log}')
             return response
