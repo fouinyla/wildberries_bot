@@ -362,13 +362,13 @@ class Controller:
         await message.answer(text=text, reply_markup=markup)
         graph_data = await mpstats.get_trends_data(state['category'])
         if not graph_data:
-            text = 'К сожалению у нас нет статистики по данной категории, выберите другую категорию'
+            text = 'К сожалению, у нас нет статистики по данной категории, выберите другую категорию'
             markup = markups.another_trend_graph_markup()
             await message.answer(text=text, reply_markup=markup)
             return None
         min_date, max_date = utils.get_min_max_week(graph_data, state['value'])
         if min_date is None:
-            text = 'К сожалению по данному параметру у нас нет статистики, выберите другой параметр'
+            text = 'К сожалению, по данному параметру у нас нет статистики, выберите другой параметр'
             markup = markups.graph_value_selection_markup()
             await message.answer(text=text, reply_markup=markup)
             return False
