@@ -1,19 +1,24 @@
-import httpx
-from typing import Union, List
+from httpx import AsyncClient
+from typing import Optional, List
 from const.const import *
+from .web import request_with_retry
 
 
 async def get_hints(query: str, gender: str = 'common', locale: str = 'ru',
-                    lang: str = 'ru') -> Union[List[str], None]:
+                    lang: str = 'ru') -> Optional[List[str]]:
     """
         Returns a list of Wildberries hints for the given query
     """
-    async with httpx.AsyncClient(timeout=60) as client:
-        response = await client.get(WB_HINTS_URL, params={'query': query,
-                                                          'gender': gender,
-                                                          'locale': locale,
-                                                          'lang': lang})
-    response.raise_for_status()
+    async with AsyncClient() as client:
+        response = await request_with_retry(
+            client=client,
+            method='GET',
+            url=WB_HINTS_URL,
+            params={'query': query,
+                    'gender': gender,
+                    'locale': locale,
+                    'lang': lang}
+        )
     if response.status_code == 204:
         return None
     return [obj['name'] for obj in response.json() if obj['type'] == 'suggest']
@@ -23,9 +28,13 @@ async def product_exists(query: str) -> bool:
     """
         Checks if there are products on Wildberries for the given query
     """
-    async with httpx.AsyncClient(timeout=60) as client:
-        response = await client.get(WB_SEARCH_URL, params={'query': query})
-    response.raise_for_status()
+    async with AsyncClient() as client:
+        response = await request_with_retry(
+            client=client,
+            method='GET',
+            url=WB_SEARCH_URL,
+            params={'query': query}
+        )
     json = response.json()
     return (bool(json)
             and json['query'] != 'preset=1001'
@@ -47,10 +56,13 @@ def get_page_url(query):
 async def search_for_article(article, query):
     card_counter = 3
     page_counter = 0
-    async with httpx.AsyncClient(timeout=60) as client:
+    async with AsyncClient() as client:
         for url in get_page_url(query):
-            response = await client.get(url=url)
             page_counter += 1
+            response = await request_with_retry(
+                client=client,
+                method='GET',
+                url=url)
             if not response.json():
                 return None
             card_list = response.json()['catalog']['data']['products']
@@ -62,56 +74,64 @@ async def search_for_article(article, query):
 
 async def find_the_card(article, APIkey, supplierID):
     headers = {
-        "accept": "*/*",
-        "Authorization": APIkey,
-        "Content-type": "application/json"
+        'accept': '*/*',
+        'Authorization': APIkey,
+        'Content-type': 'application/json'
     }
     data_list = {
-        "id": 1,
-        "jsonrpc": "2.0",
-        "params": {
-            "filter": {
-                "find": [{
-                    "column": "nomenclatures.nmId",
-                    "search": article
+        'id': 1,
+        'jsonrpc': '2.0',
+        'params': {
+            'filter': {
+                'find': [{
+                    'column': 'nomenclatures.nmId',
+                    'search': article
                 }]
             },
-            "query": {
-                "limit": 1,
-                "offset": 0,
-                "total": 0
+            'query': {
+                'limit': 1,
+                'offset': 0,
+                'total': 0
             },
-            "supplierID": supplierID,
-            "isArchive": True,
-            "withError": False
+            'supplierID': supplierID,
+            'isArchive': True,
+            'withError': False
         }
     }
-    async with httpx.AsyncClient() as client:
-        response = await client.post("https://suppliers-api.wildberries.ru/card/list", headers=headers, json=data_list)
+    async with AsyncClient() as client:
+        response = await request_with_retry(
+            client=client,
+            method='POST',
+            url=WB_CARD_SEARCH_URL,
+            headers=headers,
+            json=data_list)
         if response.status_code == 200:
-            return response.json()["result"]["cards"][0]
-        else:
-            return None
+            return response.json()['result']['cards'][0]
+        return None
 
 
 async def rename_the_card(new_name, article, APIkey, supplierID):
     headers = {
-        "accept": "*/*",
-        "Authorization": APIkey,
-        "Content-type": "application/json"
+        'accept': '*/*',
+        'Authorization': APIkey,
+        'Content-type': 'application/json'
     }
     data = {
-        "id": 1,
-        "jsonrpc": "2.0",
-        "params": {
-            "card": {}
+        'id': 1,
+        'jsonrpc': '2.0',
+        'params': {
+            'card': {}
         }
     }
-    async with httpx.AsyncClient() as client:
-        data["params"]["card"] = await find_the_card(article, APIkey, supplierID)
-        if data["params"]["card"]:
-            data["params"]["card"]["addin"][1]["params"][0]["value"] = new_name
-            await client.post("https://suppliers-api.wildberries.ru/card/update", headers=headers, json=data)
+    async with AsyncClient() as client:
+        data['params']['card'] = await find_the_card(article, APIkey, supplierID)
+        if data['params']['card']:
+            data['params']['card']['addin'][1]['params'][0]['value'] = new_name
+            await request_with_retry(
+                client=client,
+                method='POST',
+                url=WB_CARD_UPDATE_URL,
+                headers=headers,
+                json=data)
             return True
-        else:
-            return None
+        return None

@@ -50,7 +50,7 @@ def get_min_max_week(graph_data: List[typing.Dict], value: str):
     return min_date, max_date
 
 
-def validate_trand_graph_date(text: str, max_date: date, min_date: date) -> bool:
+def validate_trand_graph_date(text: str, min_date: date, max_date: date) -> bool:
     if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', text):
         return False
     user_date = date(*map(int, text.split('-')))
