@@ -249,8 +249,8 @@ async def waiting_seo_result_process(message: Message, state: FSMContext):
 @dp.message_handler(commands='graph', state='*')
 @dp.message_handler(Text(equals='Ценовая сегментация'), state='*')
 @dp.message_handler(Text(equals='Узнать ценовую сегментацию повторно'), state='*')
-@dp.message_handler(Text(equals='Получить график'), state='*')
-@dp.message_handler(Text(equals='Получить другой график'), state='*')
+@dp.message_handler(Text(equals='Получить график тренда'), state='*')
+@dp.message_handler(Text(equals='Получить другой график тренда'), state='*')
 async def category_selection_process(message: Message, state: FSMContext):
     if 'график' in message.text or 'graph' in message.text:
         await state.set_state(TrendGraph.category_selection)
