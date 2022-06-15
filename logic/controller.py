@@ -528,7 +528,8 @@ class Controller:
     async def creating_queries_table(self, message, state):
         async with state.proxy() as data:
             card_data = await mpstats.get_card_data(data['article_for_queries'])
-            if card_data and type(card_data) == dict and 'words' in card_data.keys() and 'days' in card_data.keys():
+            print(card_data)
+            if card_data and type(card_data) == dict and type(card_data['words']) == dict:
                 result = utils.create_queries_table(card_data, data['article_for_queries'])
             else:
                 result = None
