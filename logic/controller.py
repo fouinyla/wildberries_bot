@@ -583,17 +583,17 @@ class Controller:
             new_name = data["get_article_and_new_name"][1]
             APIkey = data["get_API"]
             supID = data["get_supID"]
-        if await wb.rename_the_card(new_name, art_number, APIkey, supID):
-            text = "Замечательно! Ваше наименование успешно изменено.\n" \
-                   "Название обновится в течение 20 минут."
-            markup = markups.another_card_rename()
-            await state.finish()
-        else:
-            text = "Изменить наименование товара не получилось.\n" \
-                   "Проверьте корректность ввода API-ключа, supplier-id " \
-                   "или артикула и попробуйте снова."
-            markup = markups.back_to_article_and_new_name_step()
-        return dict(text=text, markup=markup)
+            if await wb.rename_the_card(new_name, art_number, APIkey, supID):
+                text = "Замечательно! Ваше наименование успешно изменено.\n" \
+                    "Название обновится в течение 20 минут."
+                markup = markups.another_card_rename()
+                await state.finish()
+            else:
+                text = "Изменить наименование товара не получилось.\n" \
+                    "Проверьте корректность ввода API-ключа, supplier-id " \
+                    "или артикула и попробуйте снова."
+                markup = markups.back_to_article_and_new_name_step()
+            return dict(text=text, markup=markup)
 
     async def instruction_bar(self):
         markup = markups.back_to_main_menu_markup()
