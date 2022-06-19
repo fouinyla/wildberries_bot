@@ -106,8 +106,14 @@ async def find_the_card(article, APIkey, supplierID):
             headers=headers,
             json=data_list)
         if response.status_code == 200:
-            return response.json()['result']['cards'][0]
-        return None
+            try:
+                print(response.json())
+                return response.json()['result']['cards'][0]
+            except KeyError:
+                print(response.json())
+                return None
+        else:
+            return None
 
 
 async def rename_the_card(new_name, article, APIkey, supplierID):

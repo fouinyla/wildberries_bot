@@ -410,6 +410,9 @@ async def creating_queries_table_process(message: Message, state: FSMContext):
 # меню получения API-ключа
 @dp.message_handler(Text(equals='Назад к вводу API-ключа'), state='*')
 @dp.message_handler(Text(equals='Сменить название товара'), state='*')
+@dp.message_handler(
+    Text(equals='Сменить наименование повторно'),
+    state='*')
 @dp.message_handler(commands='rename', state='*')
 async def rename_card_API_ask_process(message: Message, state: FSMContext):
     response = await c.rename_card_API_ask(state)
@@ -453,9 +456,6 @@ async def rename_card_article_and_name_ask_process(message: Message, state: FSMC
 @dp.message_handler(
     lambda msg: not msg.text.startswith(('Назад', '/')),
     state=CardRename.get_article_and_new_name)
-@dp.message_handler(
-    Text(equals='Сменить наименование повторно'),
-    state='*')
 async def rename_card_process(message: Message, state: FSMContext):
     response = await c.rename_card(message, state)
     await message.reply(text=response['text'],
