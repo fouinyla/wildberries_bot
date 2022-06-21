@@ -594,7 +594,7 @@ class Controller:
             return dict(text=text, markup=markup)
 
     
-    async def rename_card(self, message, state):
+    async def rename_card(self, state):
         async with state.proxy() as data:
             art_number = int(data["get_article_and_new_name"][0])
             new_name = data["get_article_and_new_name"][1]
