@@ -457,11 +457,17 @@ async def rename_card_article_and_name_ask_process(message: Message, state: FSMC
     lambda msg: not msg.text.startswith(('Назад', '/')),
     state=CardRename.get_article_and_new_name)
 async def rename_card_process(message: Message, state: FSMContext):
-    response = await c.rename_card(message, state)
+    response = await c.check_article_and_name(message, state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
                         parse_mode='HTML',
                         reply=False)
+    if response["is_valid"]:
+        response = await c.rename_card(message, state)
+        await message.reply(text=response['text'],
+                            reply_markup=response['markup'],
+                            parse_mode='HTML',
+                            reply=False)
 # __________________окончание логики смены названия карточки__________________
 
 

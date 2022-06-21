@@ -576,9 +576,26 @@ class Controller:
         await state.set_state(states.CardRename.get_article_and_new_name)
         return dict(text=text, markup=markup)
 
+    
+    async def check_article_and_name(self, message, state):
+        new_name_pattern = r'[0-9]{8}\s.+'
+        if re.fullmatch(new_name_pattern, message.text):
+            async with state.proxy() as data:
+                data["get_article_and_new_name"] = message.text.split(' ', maxsplit = 1)
+            text = "Все готово к смене наименования, пожалуйста, подождите."
+            markup = None
+            is_valid = True
+            return dict(text=text, markup=markup, is_valid=is_valid)
+        else:
+            text = "<b>Проверьте корректность введенного запроса.</b>\n"\
+                   "Запрос должен состоять из артикула (8 цифр) и нового наименования,"\
+                   " разделенных пробелом."
+            markup = markups.back_to_article_and_new_name_step()
+            return dict(text=text, markup=markup)
+
+    
     async def rename_card(self, message, state):
         async with state.proxy() as data:
-            data["get_article_and_new_name"] = message.text.split(' ', maxsplit = 1)
             art_number = int(data["get_article_and_new_name"][0])
             new_name = data["get_article_and_new_name"][1]
             APIkey = data["get_API"]
@@ -590,9 +607,8 @@ class Controller:
                 await state.finish()
             else:
                 text = "Изменить наименование товара не получилось.\n" \
-                    "Проверьте корректность ввода API-ключа, supplier-id " \
-                    "или артикула и попробуйте снова."
-                markup = markups.back_to_article_and_new_name_step()
+                    "Проверьте корректность ввода API-ключа или supplier-id."
+                markup = markups.another_card_rename()
             return dict(text=text, markup=markup)
 
     async def instruction_bar(self):

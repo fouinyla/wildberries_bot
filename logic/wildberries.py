@@ -105,9 +105,8 @@ async def find_the_card(article, APIkey, supplierID):
             url=WB_CARD_SEARCH_URL,
             headers=headers,
             json=data_list)
-        result = response.json()
         if response.status_code == 200:
-            return result.get('result', {}).get('cards', [None])[0]
+            return response.json().get('result', {}).get('cards', [None])[0]
         return None
 
 
