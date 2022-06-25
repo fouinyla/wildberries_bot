@@ -558,23 +558,35 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def rename_card_supplierID_ask(self, message, state):  
-        async with state.proxy() as data:
-            data["get_API"] = message.text
-        markup = markups.back_to_API_step()
-        text = "Теперь введите supplier-id.\n" \
-               "<b>ВАЖНО!</b> Скопируйте id и вставьте его без лишних символов, " \
-               "иначе сменить название не получится."
-        await state.set_state(states.CardRename.get_supID)
-        return dict(text=text, markup=markup)
+        if message.text.isascii():
+            async with state.proxy() as data:
+                data["get_API"] = message.text
+            markup = markups.back_to_API_step()
+            text = "Теперь введите supplier-id.\n" \
+                "<b>ВАЖНО!</b> Скопируйте id и вставьте его без лишних символов, " \
+                "иначе сменить название не получится."
+            await state.set_state(states.CardRename.get_supID)
+            return dict(text=text, markup=markup)
+        else:
+            text = "Вы ввели API-ключ неверного формата.\n" \
+                "Попробуйте снова."
+            markup = None
+            return dict(text=text, markup=markup)
 
     async def rename_card_article_and_name_ask(self, message, state):   
-        async with state.proxy() as data:
-            data["get_supID"] = data.get("get_supID", message.text)
-        markup = markups.back_to_supplierID_step()
-        text = "Теперь введите артикул товара и новое название через пробел\n" \
-               "<b>Например</b> - 12345678 Свитер женский оверсайз"
-        await state.set_state(states.CardRename.get_article_and_new_name)
-        return dict(text=text, markup=markup)
+        if message.text.isascii():
+            async with state.proxy() as data:
+                data["get_supID"] = data.get("get_supID", message.text)
+            markup = markups.back_to_supplierID_step()
+            text = "Теперь введите артикул товара и новое название через пробел\n" \
+                "<b>Например</b> - 12345678 Свитер женский оверсайз"
+            await state.set_state(states.CardRename.get_article_and_new_name)
+            return dict(text=text, markup=markup)
+        else:
+            text = "Вы ввели supplier-id неверного формата.\n" \
+                "Попробуйте снова."
+            markup = None
+            return dict(text=text, markup=markup)
 
     async def check_article_and_name(self, message, state):
         new_name_pattern = r'[0-9]{8}\s.+'
