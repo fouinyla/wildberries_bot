@@ -105,15 +105,15 @@ async def find_the_card(article, APIkey, supplierID):
             url=WB_CARD_SEARCH_URL,
             headers=headers,
             json=data_list)
-        if response.status_code == 200:
-            return response.json().get('result', {}).get('cards', [None])[0]
-        return None
+        print('RESPONSE', response.json())
+        cards = response.json()['result']['cards']
+        return None if not cards else cards[0]
 
 
 async def rename_the_card(new_name, article, APIkey, supplierID):
-    print("call rename_the_card:", new_name, article, APIkey, supplierID)
+    # print("call rename_the_card:", new_name, article, APIkey, supplierID)
     headers = {
-        'accept': '*/*',
+        'accept': 'application/json',
         'Authorization': APIkey,
         'Content-type': 'application/json'
     }

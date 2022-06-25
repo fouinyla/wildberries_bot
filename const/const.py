@@ -27,7 +27,7 @@ MPSTATS_TRENDS = {'Число продаж': 'sales',
                   'Выручка на товар': 'product_revenue',
                   'Cредний чек': 'average_order_value'}
 
-WB_HINTS_URL = 'https://suggestions.wildberries.ru/api/v2/hint'
+WB_HINTS_URL = 'https://search.wb.ru/suggests/api/v2/hint'
 WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common'
 WB_CARD_SEARCH_URL = 'https://suppliers-api.wildberries.ru/card/list'
 WB_CARD_UPDATE_URL = 'https://suppliers-api.wildberries.ru/card/update'
