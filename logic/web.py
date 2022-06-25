@@ -4,7 +4,7 @@ from random import randint
 from typing import Optional, Dict
 
 TIMEOUT = 40
-MAX_RETRIES = float('inf')
+MAX_RETRIES = 7
 
 
 async def request_with_retry(
@@ -19,9 +19,8 @@ async def request_with_retry(
     """
     Coroutine for sending async requests with retries
     """
-    n = 1
     data_for_log = f'{url=}, {method=}, {params=}, {headers=}, {data=}, {json=}'
-    while True:
+    for n in range(MAX_RETRIES):
         try:
             response = await client.request(
                 method=method,
@@ -34,13 +33,15 @@ async def request_with_retry(
                 follow_redirects=True)
         except TimeoutException as err:
             print(f'Retry # {n} failed: {err=}, {data_for_log}')
-            if n > MAX_RETRIES:
-                print(f'No response received for {n} retries: {err=}, {data_for_log}')
-                return None
-            n += 1
             # await asyncio.sleep(2 ** n + randint(0, 1000) / 1000)  # add jitter 0-1000 ms
             await asyncio.sleep(5 + (randint(0, 1000) / 1000))
+        except Exception as err:
+            print(f'Retry # {n} failed: {err=}, {data_for_log}')
+            # notify admins
+            return None
         else:
-            if response.status_code != 200:
-                print(f'Status={response.status_code}, {data_for_log}')
-            return response
+            if response.status_code == 500:
+                print(f'Retry # {n} failed: status=500, {data_for_log}')
+                await asyncio.sleep(5 + (randint(0, 1000) / 1000))
+            else:
+                return response

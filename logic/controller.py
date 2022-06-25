@@ -569,14 +569,13 @@ class Controller:
 
     async def rename_card_article_and_name_ask(self, message, state):   
         async with state.proxy() as data:
-            data["get_supID"] = message.text
+            data["get_supID"] = data.get("get_supID", message.text)
         markup = markups.back_to_supplierID_step()
         text = "Теперь введите артикул товара и новое название через пробел\n" \
                "<b>Например</b> - 12345678 Свитер женский оверсайз"
         await state.set_state(states.CardRename.get_article_and_new_name)
         return dict(text=text, markup=markup)
 
-    
     async def check_article_and_name(self, message, state):
         new_name_pattern = r'[0-9]{8}\s.+'
         if re.fullmatch(new_name_pattern, message.text):
@@ -585,16 +584,15 @@ class Controller:
             text = "Все готово к смене наименования, пожалуйста, подождите."
             markup = None
             is_valid = True
-            return dict(text=text, markup=markup, is_valid=is_valid)
         else:
             text = "<b>Проверьте корректность введенного запроса.</b>\n"\
                    "Запрос должен состоять из артикула (8 цифр) и нового наименования,"\
                    " разделенных пробелом."
             markup = markups.back_to_article_and_new_name_step()
-            return dict(text=text, markup=markup)
+            is_valid = False
+        return dict(text=text, markup=markup, is_valid=is_valid)
 
-    
-    async def rename_card(self, message, state):
+    async def rename_card(self, state):
         async with state.proxy() as data:
             art_number = int(data["get_article_and_new_name"][0])
             new_name = data["get_article_and_new_name"][1]

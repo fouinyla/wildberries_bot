@@ -463,7 +463,7 @@ async def rename_card_process(message: Message, state: FSMContext):
                         parse_mode='HTML',
                         reply=False)
     if response["is_valid"]:
-        response = await c.rename_card(message, state)
+        response = await c.rename_card(state)
         await message.reply(text=response['text'],
                             reply_markup=response['markup'],
                             parse_mode='HTML',
