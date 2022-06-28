@@ -31,5 +31,5 @@ class TrendGraph(StatesGroup):
 
 class CardRename(StatesGroup):
     get_API = State()
-    get_supID = State()
+    get_sup_id = State()
     get_article_and_new_name = State()

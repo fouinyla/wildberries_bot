@@ -1,10 +1,12 @@
-from httpx import Response, TimeoutException, AsyncClient
-import asyncio
+from httpx import TimeoutException, AsyncClient
+from asyncio import sleep
 from random import randint
-from typing import Optional, Dict
+from typing import Dict
 
 TIMEOUT = 40
 MAX_RETRIES = 7
+
+error = object()
 
 
 async def request_with_retry(
@@ -15,7 +17,7 @@ async def request_with_retry(
         headers: Dict = None,
         data: Dict = None,
         json: Dict = None,
-        ) -> Optional[Response]:
+        ):
     """
     Coroutine for sending async requests with retries
     """
@@ -33,15 +35,16 @@ async def request_with_retry(
                 follow_redirects=True)
         except TimeoutException as err:
             print(f'Retry # {n} failed: {err=}, {data_for_log}')
-            # await asyncio.sleep(2 ** n + randint(0, 1000) / 1000)  # add jitter 0-1000 ms
-            await asyncio.sleep(5 + (randint(0, 1000) / 1000))
+            # await sleep(2 ** n + randint(0, 1000) / 1000)  # add jitter 0-1000 ms
+            await sleep(5 + (randint(0, 1000) / 1000))
         except Exception as err:
             print(f'Retry # {n} failed: {err=}, {data_for_log}')
             # notify admins
-            return None
+            return error
         else:
-            if response.status_code == 500:
-                print(f'Retry # {n} failed: status=500, {data_for_log}')
-                await asyncio.sleep(5 + (randint(0, 1000) / 1000))
+            if response.is_error:
+                print(f'Retry # {n} failed: status={response.status_code}, {data_for_log}')
+                await sleep(5 + (randint(0, 1000) / 1000))
             else:
                 return response
+    return error

@@ -283,9 +283,7 @@ async def callback_graph_category_selection_process(query: CallbackQuery, state:
 
 
 # выбрали value -> предлагаем ввести date_1
-@dp.message_handler(
-    lambda msg: not msg.text.startswith(('Назад', '/')),
-    state=TrendGraph.value_selection)
+@dp.message_handler(lambda msg: not msg.text.startswith(('Назад', '/')), state=TrendGraph.value_selection)
 async def graph_value_selection_process(message: Message, state: FSMContext):
     successful_step = await c.graph_value_selection(message, state)
     if successful_step is None:
@@ -295,9 +293,7 @@ async def graph_value_selection_process(message: Message, state: FSMContext):
 
 
 # ввели date_1 -> предлагаем ввести date_2
-@dp.message_handler(
-    lambda msg: not msg.text.startswith(('Назад', '/')),
-    state=TrendGraph.date_1_selection)
+@dp.message_handler(lambda msg: not msg.text.startswith(('Назад', '/')), state=TrendGraph.date_1_selection)
 async def graph_date_1_selection_process(message: Message, state: FSMContext):
     successful_step = await c.graph_date_1_selection(message, state)
     if successful_step:
@@ -305,9 +301,7 @@ async def graph_date_1_selection_process(message: Message, state: FSMContext):
 
 
 # выбрали date_2 -> выдаем график
-@dp.message_handler(
-    lambda msg: not msg.text.startswith(('Назад', '/')),
-    state=TrendGraph.date_2_selection)
+@dp.message_handler(lambda msg: not msg.text.startswith(('Назад', '/')), state=TrendGraph.date_2_selection)
 async def graph_date_2_selection_process(message: Message, state: FSMContext):
     successful_step = await c.graph_date_2_selection(message, state)
     if successful_step:
@@ -328,9 +322,7 @@ async def card_position_search(message: Message, state: FSMContext):
 
 
 # это меню ожидания и выдачи позиции товара
-@dp.message_handler(
-    lambda msg: not msg.text.startswith(('Назад', '/')),
-    state=NameGroup.range_search)
+@dp.message_handler(lambda msg: not msg.text.startswith(('Назад', '/')), state=NameGroup.range_search)
 async def card_article_search(message: Message, state: FSMContext):
     response = await c.waiting_for_article_search(message, state)
     await message.reply(text=response['text'],
@@ -358,9 +350,7 @@ async def get_article_month_sales_process(message: Message, state: FSMContext):
 
 
 # это выдача данных для 'Продажи по артикулу'
-@dp.message_handler(
-    lambda msg: not msg.text.startswith(('Назад', '/')),
-    state=NameGroup.article_for_sales)
+@dp.message_handler(lambda msg: not msg.text.startswith(('Назад', '/')), state=NameGroup.article_for_sales)
 async def waiting_month_sales_process(message: Message, state: FSMContext):
     response = await c.waiting_month_sales(message=message, state=state)
     await message.reply(text=response['text'],
@@ -389,9 +379,7 @@ async def get_article_card_queries_process(message: Message, state: FSMContext):
 
 
 # это выдача данных для 'Позиция карточки при запросах'
-@dp.message_handler(
-    lambda msg: not msg.text.startswith(('Назад', '/')),
-    state=NameGroup.article_for_queries)
+@dp.message_handler(lambda msg: not msg.text.startswith(('Назад', '/')), state=NameGroup.article_for_queries)
 async def creating_queries_table_process(message: Message, state: FSMContext):
     response = await c.waiting_queries_table(message=message, state=state)
     await message.reply(text=response['text'],
@@ -407,57 +395,77 @@ async def creating_queries_table_process(message: Message, state: FSMContext):
 
 
 # ___________________начало логики смены названия карточки___________________
-# меню получения API-ключа
-@dp.message_handler(Text(equals='Назад к вводу API-ключа'), state='*')
+# выдача стартовой инструкции
 @dp.message_handler(Text(equals='Сменить название товара'), state='*')
-@dp.message_handler(
-    Text(equals='Сменить наименование повторно'),
-    state='*')
+@dp.message_handler(Text(equals='Сменить наименование повторно'), state='*')
 @dp.message_handler(commands='rename', state='*')
-async def rename_card_API_ask_process(message: Message, state: FSMContext):
-    response = await c.rename_card_API_ask(state)
+async def rename_card_start_process(message: Message, state: FSMContext):
+    response = await c.rename_card_start(state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+    response = await c.rename_card_get_api_key(state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
                         parse_mode='HTML',
                         reply=False)
 
 
-# меню получения supplier-id
-@dp.message_handler(
-    lambda msg: not msg.text.startswith(('Назад', '/')),
-    state=CardRename.get_API)
-@dp.message_handler(
-    Text(equals='Назад к вводу supplier-id'),
-    state='*')
-async def rename_card_supplierID_ask_process(message: Message, state: FSMContext):
-    response = await c.rename_card_supplierID_ask(message, state)
+# повторное получение API-ключа
+@dp.message_handler(Text(equals='Назад к вводу API-ключа'), state=CardRename.get_sup_id)
+async def rename_card_get_api_key_process(message: Message, state: FSMContext):
+    response = await c.rename_card_get_api_key(state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
                         parse_mode='HTML',
                         reply=False)
 
 
-# меню получения артикула и нового имени
-@dp.message_handler(
-    lambda msg: not msg.text.startswith(('Назад', '/')),
-    state=CardRename.get_supID)
-@dp.message_handler(
-    Text(equals='Назад к вводу артикула и наименования'),
-    state='*')
+# повторное получение supplier-id
+@dp.message_handler(Text(equals='Назад к вводу supplier-id'), state=CardRename.get_article_and_new_name)
+async def rename_card_repeat_supplier_id_ask_process(message: Message, state: FSMContext):
+    response = await c.rename_card_get_supplier_id(state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+
+
+# повторное получение артикула и нового имени
+@dp.message_handler(Text(equals='Назад к вводу артикула и наименования'), state='*')
 async def rename_card_article_and_name_ask_process(message: Message, state: FSMContext):
-    response = await c.rename_card_article_and_name_ask(message, state)
+    response = await c.rename_card_get_article_and_name(state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
                         parse_mode='HTML',
                         reply=False)
 
 
-# основное меню смены названия
-@dp.message_handler(
-    lambda msg: not msg.text.startswith(('Назад', '/')),
-    state=CardRename.get_article_and_new_name)
+# получение supplier-id
+@dp.message_handler(lambda msg: not msg.text.startswith(('Назад', '/')), state=CardRename.get_API)
+async def rename_card_supplier_id_ask_process(message: Message, state: FSMContext):
+    response = await c.rename_card_api_verification(message, state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+
+
+# получение supplier-id
+@dp.message_handler(lambda msg: not msg.text.startswith(('Назад', '/')), state=CardRename.get_sup_id)
+async def rename_card_supplier_id_ask_process(message: Message, state: FSMContext):
+    response = await c.rename_card_sup_id_verification(message, state)
+    await message.reply(text=response['text'],
+                        reply_markup=response['markup'],
+                        parse_mode='HTML',
+                        reply=False)
+
+
+# основная функция смены названия
+@dp.message_handler(lambda msg: not msg.text.startswith(('Назад', '/')), state=CardRename.get_article_and_new_name)
 async def rename_card_process(message: Message, state: FSMContext):
-    response = await c.check_article_and_name(message, state)
+    response = await c.rename_card_article_and_name_verification(message, state)
     await message.reply(text=response['text'],
                         reply_markup=response['markup'],
                         parse_mode='HTML',
