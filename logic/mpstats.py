@@ -1,13 +1,12 @@
 from httpx import AsyncClient
 from bs4 import BeautifulSoup
 from xlsxwriter import Workbook
-from typing import Tuple, List, Dict, Optional
 import datetime
 import string
 import json
 import os
 from const.const import *
-from .web import request_with_retry
+from .web import request_with_retry, error
 from . import time
 
 
@@ -15,7 +14,7 @@ from . import time
 os.makedirs('results', exist_ok=True)
 
 
-async def get_trends_data(path: str) -> Optional[List[Dict]]:
+async def get_trends_data(path: str):
     """
         path: 'Детям/Детское питание/Детская смесь' (example)
     """
@@ -24,6 +23,8 @@ async def get_trends_data(path: str) -> Optional[List[Dict]]:
             client=client,
             method='GET',
             url=MPSTATS_MAIN_PAGE_URL)
+        if main_page_response is error:
+            return error
         cookies = main_page_response.headers['set-cookie']
         trends_response = await request_with_retry(
             client=client,
@@ -32,12 +33,14 @@ async def get_trends_data(path: str) -> Optional[List[Dict]]:
             params={'view': 'itemsInCategory', 'path': path},
             headers={'cookie': cookies + COOKIES_PART}
         )
+    if trends_response is error:
+        return error
     if trends_response.status_code != 200:
         return None
     return trends_response.json()
 
 
-async def get_seo(queries: str) -> Tuple[str, bool]:
+async def get_seo(queries: str):
     flag_all_queries_are_empty = True  # флаг, если все запросы пустые
     queries = queries.split('\n')
     today_date = time.get_moscow_datetime().date()
@@ -46,6 +49,8 @@ async def get_seo(queries: str) -> Tuple[str, bool]:
             client=client,
             method='GET',
             url=MPSTATS_MAIN_PAGE_URL)
+        if main_page_response is error:
+            return error
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
         # создание excel-файла для записи данных
@@ -65,6 +70,8 @@ async def get_seo(queries: str) -> Tuple[str, bool]:
                     headers=headers,
                     params={'query': query}
                 )
+                if sku_response is error:
+                    return error
                 # парсинг html ответа для получения SKU
                 html = sku_response.text
                 soup = BeautifulSoup(html, 'lxml')
@@ -88,6 +95,8 @@ async def get_seo(queries: str) -> Tuple[str, bool]:
                     headers=headers,
                     data=data
                 )
+                if response is error:
+                    return error
                 result = response.json()['result']
                 # создание страницы в excel-файле с названиями колонок
                 what_to_delete = query.maketrans('', '', string.punctuation)
@@ -127,6 +136,8 @@ async def get_price_segmentation(query: str):
             client=client,
             method='GET',
             url=MPSTATS_MAIN_PAGE_URL)
+        if main_page_response is error:
+            return error
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
         response = await request_with_retry(
@@ -136,6 +147,8 @@ async def get_price_segmentation(query: str):
             params=params,
             headers=headers
         )
+        if response is error:
+            return error
         if response.status_code != 200 or not response.json():
             return False
         data = response.json()
@@ -182,6 +195,8 @@ async def get_card_data(article: str):
             client=client,
             method='GET',
             url=MPSTATS_MAIN_PAGE_URL)
+        if main_page_response is error:
+            return error
         cookies = main_page_response.headers['set-cookie']
         headers = {'cookie': cookies + COOKIES_PART}
         params = {'d1': start_date, 'd2': end_date}
@@ -190,8 +205,9 @@ async def get_card_data(article: str):
             method='GET',
             url=MPSTATS_SALES_URL.replace('ARTICLE', article),
             headers=headers,
-            params=params
-        )
-        if response.status_code != 200:
-            return False
-        return response.json()
+            params=params)
+    if response is error:
+        return error
+    if response.status_code != 200:
+        return False
+    return response.json()
