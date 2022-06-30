@@ -1,23 +1,26 @@
+import logging
 from .controller import Controller
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import *
+from .middlewares import LoggingMiddleware
 from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, CallbackQuery
 from os import getenv
 from .states import CardRename, NameGroup, User, Admin, TrendGraph
-from db.db_connector import Database
 from . import memory
-
 
 from dotenv import load_dotenv
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
+
 bot = Bot(token=getenv('BOT_TOKEN'))
 Bot.set_current(bot)
 dp = Dispatcher(bot, storage=MemoryStorage())
+dp.middleware.setup(LoggingMiddleware())
 c = Controller(bot=bot)
-database = Database()
 
 
 # меню старт
@@ -488,3 +491,10 @@ async def instruction_bar_process(message: Message):
                         reply_markup=response['markup'],
                         parse_mode='HTML',
                         reply=False)
+
+
+@dp.errors_handler(exception=BotBlocked)
+async def botblocked_error_handler(update: types.Update, e):
+    logging.warning("Error occured")
+    logging.warning(e)
+    return True
