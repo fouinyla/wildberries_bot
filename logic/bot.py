@@ -3,7 +3,6 @@ from .controller import Controller
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
-from aiogram.utils.exceptions import *
 from .middlewares import LoggingMiddleware
 from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, CallbackQuery
@@ -493,8 +492,8 @@ async def instruction_bar_process(message: Message):
                         reply=False)
 
 
-@dp.errors_handler(exception=BotBlocked)
-async def botblocked_error_handler(update: types.Update, e):
-    logging.warning("Error occured")
+@dp.errors_handler(exception=Exception)
+async def exception_error_handler(update: types.Update, e):
+    logging.warning("Error occurred")
     logging.warning(e)
     return True
