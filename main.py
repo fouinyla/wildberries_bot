@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, Request
 from aiogram import types
 from logic.bot import dp
@@ -16,7 +17,6 @@ async def process_update(request: Request):
     try:
         update = await request.json()
         update = types.Update(**update)
-        print("incoming", update)
         await dp.process_update(update)
     except ValueError:
-        print("body", await request.body())
+        logging.warning("body", await request.body())
