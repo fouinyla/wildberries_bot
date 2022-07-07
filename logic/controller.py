@@ -302,7 +302,7 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def waiting_for_article_search(self, message, state):
-        range_search_pattern = r'[0-9]{8}\s.+'
+        range_search_pattern = r'[0-9]{8,9}\s.+'
         if re.fullmatch(range_search_pattern, message.text):
             async with state.proxy() as data:
                 data['range_search'] = message.text.split(' ', maxsplit=1)
@@ -311,7 +311,7 @@ class Controller:
             is_valid_query = True
         else:
             text = '<b>Проверьте корректность введенного запроса.</b>\n'\
-                   'Запрос должен состоять из артикула (8 цифр) и поискового запроса, разделенных пробелом.'
+                   'Запрос должен состоять из артикула (8 или 9 цифр) и поискового запроса, разделенных пробелом.'
             markup = another_card_position_search_markup()
             is_valid_query = False
         return dict(text=text, markup=markup, is_valid_query=is_valid_query)
@@ -480,13 +480,13 @@ class Controller:
 
     async def get_article_month_sales(self, state):
         text = 'Пришли ОДИН артикул, по которому будем проверять статистику.\n' \
-               'Артикул всегда состоит из 8 цифр.'
+               'Артикул состоит из 8 или 9 цифр.'
         markup = back_to_main_menu_markup()
         await state.set_state(states.NameGroup.article_for_sales)
         return dict(text=text, markup=markup)
 
     async def waiting_month_sales(self, message, state):
-        article_pattern = r'[0-9]{8}'
+        article_pattern = r'[0-9]{8,9}'
         if re.fullmatch(article_pattern, message.text):
             async with state.proxy() as proxy:
                 proxy['article_for_sales'] = message.text
@@ -495,7 +495,7 @@ class Controller:
             is_valid_article = True
         else:
             text = '<b>Проверь корректность введенного артикула.</b>\n'\
-                   'Артикул должен состоять только из 8 цифр.'
+                   'Артикул должен состоять из 8 или 9 цифр.'
             markup = another_month_sales_markup()
             is_valid_article = False
         return dict(text=text, markup=markup, is_valid_article=is_valid_article)
@@ -528,7 +528,7 @@ class Controller:
 
     async def get_article_card_queries(self, state):
         text = 'Пришли ОДИН артикул, по которому будем проверять статистику запросов.\n' \
-               'Артикул всегда состоит из 8 цифр.\n' \
+               'Артикул состоит из 8 или 9 цифр.\n' \
                '<b>В статистику гарантированно попадает информация только первой страницы ' \
                'результатов поиска на WB (до 100 позиций).</b>'
         markup = back_to_main_menu_markup()
@@ -536,7 +536,7 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def waiting_queries_table(self, message, state):
-        article_pattern = r'[0-9]{8}'
+        article_pattern = r'[0-9]{8,9}'
         if re.fullmatch(article_pattern, message.text):
             async with state.proxy() as proxy:
                 proxy['article_for_queries'] = message.text
@@ -545,7 +545,7 @@ class Controller:
             is_valid_article = True
         else:
             text = '<b>Проверь корректность введенного артикула.</b>\n'\
-                   'Артикул должен состоять только из 8 цифр.'
+                   'Артикул должен состоять из 8 или 9 цифр.'
             markup = another_card_queries_markup()
             is_valid_article = False
         return dict(text=text, markup=markup, is_valid_article=is_valid_article)
@@ -633,7 +633,7 @@ class Controller:
         return dict(text=text, markup=markup)
 
     async def rename_card_article_and_name_verification(self, message, state):
-        new_name_pattern = r'[0-9]{8}\s.+'
+        new_name_pattern = r'[0-9]{8,9}\s.+'
         if re.fullmatch(new_name_pattern, message.text):
             async with state.proxy() as proxy:
                 proxy['article_and_new_name'] = message.text.split(' ', maxsplit=1)
@@ -642,7 +642,7 @@ class Controller:
             is_valid = True
         else:
             text = '<b>Проверьте корректность введенного запроса.</b>\n'\
-                   'Запрос должен состоять из артикула (8 цифр) и нового наименования,'\
+                   'Запрос должен состоять из артикула (8 или 9 цифр) и нового наименования,'\
                    ' разделенных пробелом.'
             markup = back_to_article_and_new_name_step()
             is_valid = False
