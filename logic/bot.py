@@ -495,5 +495,5 @@ async def instruction_bar_process(message: Message):
 @dp.errors_handler(exception=Exception)
 async def exception_error_handler(update: types.Update, e):
     logging.warning("Error occurred")
-    logging.warning(e)
+    logging.warning(e, exc_info=True)
     return True

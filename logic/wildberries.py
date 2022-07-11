@@ -70,7 +70,7 @@ async def search_for_article(article, query):
                 return error
             if not response.json():
                 return None
-            card_list = response.json()['catalog']['data']['products']
+            card_list = response.json().get('catalog', {}).get('data', {}).get('products', [])
             for card in card_list:
                 if card['id'] == article:
                     return page_counter, card_counter
@@ -112,7 +112,7 @@ async def find_the_card(article, APIkey, supplierID):
             json=data_list)
     if response is error:
         return error
-    cards = response.json()['result']['cards']
+    cards = response.json().get('result', {}).get('cards', [])
     return None if not cards else cards[0]
 
 
