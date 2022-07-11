@@ -25,7 +25,7 @@ async def get_trends_data(path: str):
             url=MPSTATS_MAIN_PAGE_URL)
         if main_page_response is error:
             return error
-        cookies = main_page_response.headers['set-cookie']
+        cookies = main_page_response.headers.get('set-cookie', '')
         trends_response = await request_with_retry(
             client=client,
             method='GET',
@@ -51,7 +51,7 @@ async def get_seo(queries: str):
             url=MPSTATS_MAIN_PAGE_URL)
         if main_page_response is error:
             return error
-        cookies = main_page_response.headers['set-cookie']
+        cookies = main_page_response.headers.get('set-cookie', '')
         headers = {'cookie': cookies + COOKIES_PART}
         # создание excel-файла для записи данных
         what_to_delete = queries[0].maketrans('', '', string.punctuation)
@@ -97,7 +97,7 @@ async def get_seo(queries: str):
                 )
                 if response is error:
                     return error
-                result = response.json()['result']
+                result = response.json().get('result', [])
                 # создание страницы в excel-файле с названиями колонок
                 what_to_delete = query.maketrans('', '', string.punctuation)
                 query_for_worksheet = query.translate(what_to_delete)
@@ -138,7 +138,7 @@ async def get_price_segmentation(query: str):
             url=MPSTATS_MAIN_PAGE_URL)
         if main_page_response is error:
             return error
-        cookies = main_page_response.headers['set-cookie']
+        cookies = main_page_response.headers.get('set-cookie', '')
         headers = {'cookie': cookies + COOKIES_PART}
         response = await request_with_retry(
             client=client,
@@ -197,7 +197,7 @@ async def get_card_data(article: str):
             url=MPSTATS_MAIN_PAGE_URL)
         if main_page_response is error:
             return error
-        cookies = main_page_response.headers['set-cookie']
+        cookies = main_page_response.headers.get('set-cookie', '')
         headers = {'cookie': cookies + COOKIES_PART}
         params = {'d1': start_date, 'd2': end_date}
         response = await request_with_retry(
