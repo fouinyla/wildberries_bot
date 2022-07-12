@@ -1,3 +1,4 @@
+import logging
 from httpx import AsyncClient
 from const.const import *
 from .web import request_with_retry, error
@@ -132,8 +133,9 @@ async def rename_the_card(new_name, article, APIkey, supplierID):
     card = await find_the_card(article, APIkey, supplierID)
     if card is error:
         return error
-    data['params']['card'] = await find_the_card(article, APIkey, supplierID)
-    if data['params']['card']:
+    data['params']['card'] = card
+    logging.info("Card: ", card)
+    if card:
         data['params']['card']['addin'][1]['params'][0]['value'] = new_name
         async with AsyncClient() as client:
             response = await request_with_retry(
