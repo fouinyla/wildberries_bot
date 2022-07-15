@@ -7,6 +7,7 @@ from const.const import *
 from xlsxwriter import Workbook
 from random import randint
 import re
+import gc
 
 
 # using:
@@ -83,6 +84,12 @@ def make_trand_graph(graph_data: List[typing.Dict], date_1: date, date_2: date,
 
     image_path = f"results/trand_graph_{category.replace('/', '_')}_{randint(1, 1000)}.jpeg"
     fig.savefig(image_path, dpi=1000)
+
+    del fig
+    gc.collect()
+    plt.clf()
+    plt.close()
+
     return image_path
 
 
@@ -112,6 +119,11 @@ def plot_month_sales_graph(graph_data: typing.Dict, article: str):
     # сохранение
     image_path = f"results/month_sales_for_{article}.jpeg"
     fig.savefig(image_path, dpi=1000, bbox_inches='tight')
+
+    del fig
+    gc.collect()
+    plt.clf()
+    plt.close()
 
     # расчет доп. значений
     start_day = graph_data['days'][0]
