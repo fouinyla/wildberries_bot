@@ -19,4 +19,4 @@ async def process_update(request: Request):
         update = types.Update(**update)
         await dp.process_update(update)
     except ValueError:
-        logging.warning("body", await request.body())
+        logging.info("body", await request.body())
