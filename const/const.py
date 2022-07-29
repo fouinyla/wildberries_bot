@@ -26,7 +26,7 @@ MPSTATS_TRENDS = {'Число продаж': 'sales',
                   'Продавцов с продажами': 'sellers_with_sells',
                   'Выручка на товар': 'product_revenue',
                   'Cредний чек': 'average_order_value'}
-# https://search.wb.ru/suggests/api/v2/hint?query=%D0%BC%D1%8B%D1%88%D0%BA%D0%B0&gender=common&locale=ru&lang=ru
+
 
 WB_HINTS_URL = 'https://search.wb.ru/suggests/api/v2/hint'
 WB_SEARCH_URL = 'https://wbxsearch.wildberries.ru/exactmatch/v2/common'

@@ -236,7 +236,8 @@ class Controller:
         if user:
             self.db.add_search_query(search_query=query, user_id=user['id'])
         hints = await wb.get_hints(query)
-        product_exists = await wb.product_exists(query)
+        # product_exists = await wb.product_exists(query)
+        product_exists = True
         if error in (hints, product_exists):
             text = phrase_service_unavailable()
         elif hints:
