@@ -26,26 +26,6 @@ async def get_hints(query: str, gender: str = 'common', locale: str = 'ru',
     return [obj['name'] for obj in response.json() if obj['type'] == 'suggest']
 
 
-async def product_exists(query: str):
-    """
-        Checks if there are products on Wildberries for the given query
-    """
-    async with AsyncClient() as client:
-        response = await request_with_retry(
-            client=client,
-            method='GET',
-            url=WB_SEARCH_URL,
-            params={'query': query}
-        )
-    if response is error:
-        return error
-    json = response.json()
-    return (bool(json)
-            and json['query'] != 'preset=1001'
-            and ('t1' not in json['query']
-            or 't2' in json['query']))
-
-
 def get_page_url(query):
     for page in range(1, 10000):
         url = 'https://wbxsearch.wildberries.ru/exactmatch/v3/common?' \
