@@ -236,17 +236,13 @@ class Controller:
         if user:
             self.db.add_search_query(search_query=query, user_id=user['id'])
         hints = await wb.get_hints(query)
-        # product_exists = await wb.product_exists(query)
-        product_exists = True
-        if error in (hints, product_exists):
+        if hints is error:
             text = phrase_service_unavailable()
         elif hints:
             text = '\n'.join(hints)
-        elif hints == [] or (hints is None and product_exists):
+        else:
             text = 'Вы ввели конечный поисковый запрос. Его уже никак не улучшить.\n' \
                    '<b>Может использовать его для сбора SEO?</b>'
-        else:
-            text = 'По вашему запросу продолжений на Wildberries не найдено.\n<b>Попробуйте другой запрос</b>.'
         markup = another_search_query_markup()
         await state.finish()
         return dict(text=text, markup=markup)
