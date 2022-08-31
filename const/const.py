@@ -7,15 +7,6 @@ MPSTATS_TRENDS_URL = 'https://mpstats.io/api/wb/get/category/trends'
 MPSTATS_PRICE_SEGMENTATION_URL = 'https://mpstats.io/api/wb/get/category/price_segmentation'
 MPSTATS_SALES_URL = 'https://mpstats.io/api/wb/get/item/ARTICLE/by_keywords'
 
-# COOKIES_PART = '_ym_uid=1651240592234847018; _ym_d=1651240592; ' \
-#     '_ga=GA1.1.2054104203.1651240592; _ym_isad=2; ' \
-#     'supportOnlineTalkID=r85EpoyBIxTRA3agMH9GXs5yZQOApJun; ' \
-#     '_ym_hostIndex=0-3%2C1-0; _ym_visorc=w; ' \
-#     'userlogin=a%3A2%3A%7Bs%3A3%3A%22lgn%22%3Bs%3A29%3A%22ip.' \
-#     'evgeniy.bogdanov%40gmail.com%22%3Bs%3A3%3A%22pwd%22%3Bs%' \
-#     '3A32%3A%2299fa197de27558f79782ea8373471beb%22%3B%7D; ' \
-#     '_ga_8S8Y1X62NG=GS1.1.1651240592.1.1.1651240652.0'
-
 COOKIES_PART = '_ym_uid=1661966793670747865; _ym_d=1661966793; ' \
                'roistat_visit=3290381; roistat_first_visit=3290381; ' \
                'roistat_visit_cookie_expire=1209600; roistat_is_need_' \
