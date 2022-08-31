@@ -44,8 +44,7 @@ class Database:
     def get_all_users_list(self):
         with self.session() as session:
             with session.begin():
-                query = session\
-                    .query(User.tg_id)
+                query = session.query(User.tg_id)
                 result = [int(id[0]) for id in query]
                 return result
 
